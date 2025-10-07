@@ -1,0 +1,38 @@
+{{- $localDir := joinPath .chezmoi.homeDir ".local" -}}
+{{- $homebrewPrefix := "" -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   if eq .chezmoi.arch "arm64" -}}
+{{-     $homebrewPrefix = "/opt/homebrew" -}}
+{{-   else -}}
+{{-     $homebrewPrefix = "/usr/local" -}}
+{{-   end -}}
+{{- else if eq .chezmoi.os "linux" -}}
+{{-   $homebrewPrefix = "/home/linuxbrew/.linuxbrew" -}}
+{{- end -}}
+
+[data]
+    # XDG Base Directory specification
+    xdg_config_home = {{ joinPath .chezmoi.homeDir ".config" | quote }}
+    xdg_data_home = {{ joinPath $localDir "share" | quote }}
+    xdg_cache_home = {{ joinPath .chezmoi.homeDir ".cache" | quote }}
+    xdg_state_home = {{ joinPath $localDir "state" | quote }}
+
+    # Local directory structure
+    local_dir = {{ $localDir | quote }}
+
+    # Rust environment
+    rustup_home = {{ joinPath $localDir "share" "rustup" | quote }}
+    cargo_home = {{ joinPath $localDir "share" "cargo" | quote }}
+
+    # Homebrew paths (OS-aware)
+    homebrew_prefix = {{ $homebrewPrefix | quote }}
+    homebrew_cellar = {{ joinPath $homebrewPrefix "Cellar" | quote }}
+    homebrew_repository = {{ $homebrewPrefix | quote }}
+
+    # Shell tools
+    editor = "nvim"
+    pager = "less"
+    git_pager = "delta"
+
+    # 1Password SSH agent
+    ssh_auth_sock = {{ joinPath .chezmoi.homeDir "Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" | quote }}

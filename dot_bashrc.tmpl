@@ -1,0 +1,70 @@
+# XDG Base Directory specification
+export XDG_CONFIG_HOME="{{ .xdg_config_home }}"
+export XDG_DATA_HOME="{{ .xdg_data_home }}"
+export XDG_CACHE_HOME="{{ .xdg_cache_home }}"
+export XDG_STATE_HOME="{{ .xdg_state_home }}"
+
+# Local directory structure
+export LOCAL="{{ .local_dir }}"
+
+# Rust environment
+export RUSTUP_HOME="{{ .rustup_home }}"
+export CARGO_HOME="{{ .cargo_home }}"
+
+# Shell tools
+export EDITOR=nvim
+export PAGER=less
+export GIT_PAGER=delta
+
+# Add 1Password SSH agent
+export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+# Add local paths
+export CONFIG="$HOME/.config"
+export LOCAL_BIN="$LOCAL/bin"
+
+# Add brew to path
+export HOMEBREW_PREFIX=/opt/homebrew
+export HOMEBREW_CELLAR=/opt/homebrew/Cellar
+export HOMEBREW_REPOSITORY=/opt/homebrew
+
+# Set up manuals and docs
+export MANPATH="$LOCAL/share/man:$HOMEBREW_PREFIX/share/man${MANPATH:+:$MANPATH}"
+export INFOPATH="$LOCAL/share/info:$HOMEBREW_PREFIX/share/info${INFOPATH:+:$INFOPATH}"
+
+# Set up FZF
+export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git
+--color=always"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_DEFAULT_OPTS="--ansi"
+eval "$(fzf --bash)"
+
+# Function to safely add path only if directory exists and is readable
+safe_add_path() {
+    local dir="$1"
+    local prepend="$2"
+
+    # Check if directory exists and is readable
+    if [ -d "$dir" ] && [ -r "$dir" ]; then
+        # Check if path is not already in PATH
+        case ":$PATH:" in
+            *":$dir:"*) ;;  # Already in PATH
+            *)
+                if [ "$prepend" = "prepend" ]; then
+                    export PATH="$dir:$PATH"
+                else
+                    export PATH="$PATH:$dir"
+                fi
+                ;;
+        esac
+    fi
+}
+
+# Set path using safe_add_path (in reverse order for prepending)
+safe_add_path "$CARGO_HOME/bin" prepend
+safe_add_path "$LOCAL/bin" prepend
+safe_add_path "$HOMEBREW_PREFIX/bin" prepend
+safe_add_path "$HOMEBREW_PREFIX/sbin" prepend
+
+# Add ASDF to path (always prepend if shims directory exists)
+safe_add_path "${ASDF_DATA_DIR:-$HOME/.asdf}/shims" prepend

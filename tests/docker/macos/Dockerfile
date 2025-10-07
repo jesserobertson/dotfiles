@@ -1,0 +1,40 @@
+# Note: True macOS containers require special licensing and hardware
+# This uses a macOS-like environment for testing Homebrew paths and logic
+FROM --platform=linux/amd64 ubuntu:22.04
+
+# Install basic dependencies including those needed for Homebrew on Linux
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    sudo \
+    ca-certificates \
+    build-essential \
+    procps \
+    file \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user for testing
+RUN useradd -m -s /bin/bash testuser && \
+    echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Switch to test user
+USER testuser
+WORKDIR /home/testuser
+
+# Set up environment to simulate macOS paths for testing
+ENV HOME=/home/testuser
+ENV PATH="${HOME}/.local/bin:${PATH}"
+
+# Create macOS-like directory structure for testing Homebrew detection logic
+RUN sudo mkdir -p /opt/homebrew/bin /usr/local/bin
+
+# Install chezmoi first (as required by bootstrap)
+RUN mkdir -p ${HOME}/.local/bin && \
+    BINDIR="${HOME}/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
+
+# Copy test scripts
+COPY --chown=testuser:testuser test-bootstrap-macos.sh /home/testuser/
+COPY --chown=testuser:testuser test-bootstrap-offline.sh /home/testuser/
+RUN chmod +x /home/testuser/test-bootstrap-macos.sh /home/testuser/test-bootstrap-offline.sh
+
+CMD ["/home/testuser/test-bootstrap-offline.sh"]

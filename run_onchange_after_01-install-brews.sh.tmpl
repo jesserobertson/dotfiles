@@ -1,0 +1,81 @@
+#!/bin/sh
+# Brewfile hash: {{ include "Brewfile.tmpl" | sha256sum }}
+
+# Set environment variables
+export RUSTUP_HOME="{{ .rustup_home }}"
+export CARGO_HOME="{{ .cargo_home }}"
+
+echo "Installing Homebrew packages..."
+
+# Get homebrew prefix from chezmoi data
+HOMEBREW_PREFIX="{{ .homebrew_prefix }}"
+PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:$PATH"
+
+echo "Using Homebrew prefix: ${HOMEBREW_PREFIX}"
+
+# Install packages from Brewfile
+echo "Rendering and installing packages from Brewfile..."
+{{- if hasKey .chezmoi "force" }}
+{{- if .chezmoi.force }}
+echo "Force mode enabled - reinstalling all packages..."
+chezmoi cat "{{ .chezmoi.sourceDir }}/Brewfile.tmpl" | brew bundle install --force --file=/dev/stdin --verbose
+{{- else }}
+chezmoi cat "{{ .chezmoi.sourceDir }}/Brewfile.tmpl" | brew bundle install --file=/dev/stdin --verbose
+{{- end }}
+{{- else }}
+chezmoi cat "{{ .chezmoi.sourceDir }}/Brewfile.tmpl" | brew bundle install --file=/dev/stdin --verbose
+{{- end }}
+
+echo "Homebrew installation and package setup complete!"
+
+# Initialize Rust toolchain
+echo "Checking Rust toolchain..."
+if command -v rustup >/dev/null 2>&1; then
+{{- if hasKey .chezmoi "force" }}
+{{- if .chezmoi.force }}
+    echo "Force mode enabled - reinstalling Rust toolchains..."
+    rustup toolchain uninstall stable 2>/dev/null || true
+    rustup toolchain uninstall nightly 2>/dev/null || true
+    echo "Installing stable toolchain..."
+    rustup toolchain install stable
+    echo "Installing nightly toolchain..."
+    rustup toolchain install nightly
+{{- else }}
+    # Check if stable is already installed
+    if ! rustup toolchain list | grep -q 'stable'; then
+        echo "Installing stable toolchain..."
+        rustup toolchain install stable
+    else
+        echo "Stable toolchain already installed"
+    fi
+
+    # Check if nightly is already installed
+    if ! rustup toolchain list | grep -q 'nightly'; then
+        echo "Installing nightly toolchain..."
+        rustup toolchain install nightly
+    else
+        echo "Nightly toolchain already installed"
+    fi
+{{- end }}
+{{- else }}
+    # Check if stable is already installed
+    if ! rustup toolchain list | grep -q 'stable'; then
+        echo "Installing stable toolchain..."
+        rustup toolchain install stable
+    else
+        echo "Stable toolchain already installed"
+    fi
+
+    # Check if nightly is already installed
+    if ! rustup toolchain list | grep -q 'nightly'; then
+        echo "Installing nightly toolchain..."
+        rustup toolchain install nightly
+    else
+        echo "Nightly toolchain already installed"
+    fi
+{{- end }}
+
+    echo "Rust toolchain check complete!"
+else
+    echo "Warning: rustup not found, skipping Rust toolchain installation"
+fi

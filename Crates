@@ -1,0 +1,40 @@
+# Rust crates to install via cargo
+# Format: crate-name@version (omit @version to use latest)
+# alacritty: a betterer terminal
+alacritty@0.13.1
+# bat: better cat
+bat@0.24.0
+# eza: better ls
+eza@0.20.14
+# tokei: for counting and managing files
+tokei@12.1.2
+# cargo-hack: for testing feature powersets
+cargo-hack@0.6.33
+# ripgrep: better grep
+ripgrep@14.1.1
+# fd: better file finding
+fd-find@10.2.0
+# git-delta: better git diffs
+git-delta@0.18.2
+# bacon: background rust code checker
+bacon@3.8.0
+# hyperfine: benchmarking tool
+hyperfine@1.19.0
+# cargo-nextest: next-generation test runner
+cargo-nextest@0.9.85
+# cargo-audit: audit dependencies for security vulnerabilities
+cargo-audit@0.20.1
+# cargo-outdated: check for outdated dependencies
+cargo-outdated@0.16.0
+# cargo-edit: add/remove/upgrade dependencies from CLI
+cargo-edit@0.13.0
+# cargo-udeps: find unused dependencies
+cargo-udeps@0.1.53
+# cargo-machete: remove unused dependencies
+cargo-machete@0.7.0
+# starship: prompt and powerline
+starship@1.21.1
+# zoxide: autojump comand
+zoxide@0.9.6
+# rip2: a better rm
+rip2@0.9.1

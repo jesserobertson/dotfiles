@@ -1,0 +1,47 @@
+cask_args appdir: "/Applications"
+
+## TAPS
+tap "morantron/tmux-fingers"
+{{ if eq .chezmoi.os "darwin" }}
+tap "buo/cask-upgrade"
+## CASKS
+# Utilities
+cask "1password-cli"
+cask "claude-code"
+cask "raycast"
+
+# Fonts
+cask "font-fira-code"
+cask "font-fira-code-nerd-font"
+cask "font-fira-mono-nerd-font"
+cask "font-prompt"
+{{ end }}
+## BREWS
+brew "awscli"
+brew "bat-extras"
+brew "chezmoi"
+brew "coreutils"
+brew "direnv"
+brew "fish"
+brew "fisher"
+brew "fzf"
+brew "git"
+brew "gnupg"
+brew "golang"
+brew "htop"
+brew "jq"
+brew "juliaup"
+brew "llm"
+brew "llvm"
+brew "neovim"
+brew "nodejs"
+brew "openssl"
+brew "packer"
+brew "pixi"
+brew "readline"
+brew "rustup"
+brew "sesh"
+brew "terraform"
+brew "tig"
+brew "tmux"
+brew "tmux-fingers"

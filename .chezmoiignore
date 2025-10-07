@@ -1,0 +1,39 @@
+README.md
+LICENSE
+Brewfile
+Crates
+chezmoi.yaml
+chezmoi.toml
+*swp
+temp/**
+
+# Ignore all private configuration files
+configs_*
+
+# Ignore all run and test scripts
+run_*
+test*.sh
+tests/*
+
+# Ignore large user directories that shouldn't be managed by chezmoi
+Library/**
+Music/**
+Pictures/**
+Movies/**
+Documents/**
+Downloads/**
+Desktop/**
+Developer/**
+Applications/**
+Public/**
+
+# Ignore macOS system files
+.DS_Store
+.localized
+.Trash/**
+
+# Ignore application data
+.cache/**
+.npm/**
+.node_modules/**
+.bundle/**

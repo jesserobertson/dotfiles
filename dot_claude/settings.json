@@ -1,0 +1,26 @@
+{
+  "feedbackSurveyState": {
+    "lastShownTime": 1734858731502
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/scripts/status_line.py",
+    "padding": 0
+  },
+  "vimMode": true,
+  "defaultPermissionMode": "plan",
+  "allowedTools": [
+    "Read",
+    "Write",
+    "Edit",
+    "MultiEdit",
+    "Glob",
+    "Grep",
+    "Bash",
+    "TodoWrite",
+    "Task"
+  ],
+  "disallowedTools": [],
+  "outputFormat": "text",
+  "verboseMode": true
+}

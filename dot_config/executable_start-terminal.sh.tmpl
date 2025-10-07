@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Ensure homebrew and cargo binaries are in PATH
+export PATH="{{ .homebrew_prefix }}/bin:{{ .cargo_home }}/bin:$PATH"
+
+# Binary definitions
+sesh="{{ .homebrew_prefix }}/bin/sesh"
+fzf="{{ .homebrew_prefix }}/bin/fzf"
+tmux="{{ .homebrew_prefix }}/bin/tmux"
+fish="{{ .homebrew_prefix }}/bin/fish"
+zoxide="{{ .cargo_home }}/bin/zoxide"
+
+# Don't nest tmux sessions
+if [ -n "$TMUX" ]; then
+  if [ -x "${fish}" ]; then
+    exec "${fish}"
+  else
+    exec /usr/bin/env zsh
+  fi
+fi
+
+# Try sesh, then tmux, then fish, fallback to zsh
+if [ -x "${sesh}" ]; then
+  # Initialize zoxide for sesh to use
+  eval "$(${zoxide} init bash)"
+  # Ensure tmux server is running before sesh connects
+  ${tmux} start-server
+  echo "Running ${sesh} with ${fzf}"
+  selection=$(${sesh} list | ${fzf})
+  if [ -n "$selection" ]; then
+    exec ${sesh} connect "$selection"
+  else
+    # If no selection, fall back to plain tmux
+    exec "${tmux}"
+  fi
+elif [ -x "${tmux}" ]; then
+  echo "Running plain tmux"
+  exec "${tmux}"
+elif [ -x "${fish}" ]; then
+  echo "Falling back to plain Fish shell"
+  exec "${fish}"
+else
+  echo "Falling back to ZSH"
+  exec /usr/bin/env zsh
+fi

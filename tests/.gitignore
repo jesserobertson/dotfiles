@@ -1,0 +1,7 @@
+# Test artifacts
+*.log
+test-results/
+.test-cache/
+
+# Docker build cache
+.dockerignore

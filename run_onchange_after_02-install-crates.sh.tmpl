@@ -1,0 +1,64 @@
+#!/bin/sh
+# Crates list hash: {{ include "Crates" | sha256sum }}
+
+# Set environment variables
+export RUSTUP_HOME="{{ .rustup_home }}"
+export CARGO_HOME="{{ .cargo_home }}"
+
+echo "Installing Rust crates..."
+
+# Check if cargo is available
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "Error: cargo not found. Please ensure Rust is installed."
+    exit 1
+fi
+
+# Read crates from Crates file and install them
+CRATES_FILE="{{ .chezmoi.sourceDir }}/Crates"
+if [ ! -f "${CRATES_FILE}" ]; then
+    echo "Error: Crates file not found at ${CRATES_FILE}"
+    exit 1
+fi
+
+# Extract crate names (ignore comments and empty lines)
+CRATES=$(grep -v '^#' "${CRATES_FILE}" | grep -v '^$' | sed 's/#.*//' | tr '\n' ' ')
+
+if [ -z "${CRATES}" ]; then
+    echo "No crates to install"
+    exit 0
+fi
+
+echo "Crates to install: ${CRATES}"
+
+{{- if hasKey .chezmoi "force" }}
+{{- if .chezmoi.force }}
+# Force mode - reinstall all crates
+echo "Force mode enabled - reinstalling all crates..."
+for crate in ${CRATES}; do
+    echo "Reinstalling ${crate}..."
+    cargo install --force "${crate}"
+done
+{{- else }}
+# Install each crate if not already installed
+for crate in ${CRATES}; do
+    if ! cargo install --list | grep -q "^${crate} v"; then
+        echo "Installing ${crate}..."
+        cargo install "${crate}"
+    else
+        echo "${crate} already installed"
+    fi
+done
+{{- end }}
+{{- else }}
+# Install each crate if not already installed
+for crate in ${CRATES}; do
+    if ! cargo install --list | grep -q "^${crate} v"; then
+        echo "Installing ${crate}..."
+        cargo install "${crate}"
+    else
+        echo "${crate} already installed"
+    fi
+done
+{{- end }}
+
+echo "Rust crates installation complete!"

@@ -1,0 +1,20 @@
+[general]
+import = ["{{ .xdg_config_home }}/alacritty/themes/themes/nord.toml"]
+
+[font]
+size = 14.0
+
+[font.normal]
+family = "FiraCode Nerd Font Mono"
+
+[window]
+decorations = "none"
+dynamic_padding = true
+dynamic_title = true
+opacity = 0.75
+blur = true
+startup_mode = "Maximized"
+padding = { x = 7, y = 5 }
+
+[terminal.shell]
+program = "{{ .xdg_config_home }}/start-terminal.sh"

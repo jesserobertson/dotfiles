@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(cat:*)",
+      "Bash(chezmoi state get:*)",
+      "Bash(chmod:*)",
+      "Bash(chezmoi state:*)",
+      "Bash(chezmoi apply:*)",
+      "Bash(chezmoi status:*)",
+      "Bash(bash:*)",
+      "Bash(git mv:*)",
+      "Bash(mv:*)",
+      "Bash(chezmoi data:*)",
+      "Bash(echo $SHELL)",
+      "Bash(chezmoi:*)",
+      "Bash(alacritty:*)",
+      "Read(//Users/jess.robertson/.config/alacritty/**)",
+      "Bash(fc-list:*)",
+      "Bash(system_profiler:*)",
+      "Read(//Users/jess.robertson/Library/Fonts/**)",
+      "Read(//Users/jess.robertson/.config/nvim/lua/plugins/**)",
+      "Read(//Users/jess.robertson/.config/nvim/**)",
+      "Bash(~/.tmux/plugins/tpm/bin/install_plugins:*)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//Users/jess.robertson/.tmux/plugins/**)",
+      "Read(//Users/jess.robertson/.config/chezmoi/**)",
+      "Read(//Users/jess.robertson/.config/**)",
+      "Read(//Users/jess.robertson/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
