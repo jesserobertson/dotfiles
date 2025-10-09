@@ -2,7 +2,7 @@
 set -euo pipefail
 # Updated to trigger chezmoi
 
-TPM_DIR="$HOME/.tmux/plugins/tpm"
+TPM_DIR="$HOME/.config/tmux/plugins/tpm"
 
 # Check if force mode is enabled via environment variable
 if [ "${FORCE:-false}" = "true" ]; then
