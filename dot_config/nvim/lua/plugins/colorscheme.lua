@@ -1,23 +1,27 @@
 return {
-    -- -- add dracula
+    -- add dracula
     -- { "Mofiqul/dracula.nvim" },
+    { "maxmx03/dracula.nvim", name = "dracula" },
 
-    -- add nord-vim
-    -- { "arcticicestudio/nord-vim", name = "nord" }, -- offical one but it
+    -- installs NORD
+    { "arcticicestudio/nord-vim", name = "nord" }, -- offical one but it
     -- looks weird
-    { "dupeiran001/nord.nvim", name = "nord" },
-    -- {
-    --     "catppuccin/nvim",
-    --     name = "catppuccin",
-    --     priority = 1000,
-    --     opts = { flavour = "frappe" },
-    -- },
+
+    -- Installs catppuccin
+    {
+        "catppuccin/nvim",
+        name = "catppuccin",
+        priority = 1000,
+        opts = { flavour = "frappe" },
+    },
 
     -- Configure LazyVim to load nord
     {
         "LazyVim/LazyVim",
         opts = {
-            colorscheme = "nord",
+            colorscheme = "dracula",
+            -- colorscheme = "nord",
+            -- colorscheme = "catppucin"
         },
     },
 }
