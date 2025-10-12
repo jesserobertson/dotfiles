@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Crates list hash: {{ include "dot_config/cratefile" | sha256sum }}
 
-# Set environment variables
-export RUSTUP_HOME="{{ .rustup_home }}"
-export CARGO_HOME="{{ .cargo_home }}"
-export PATH="${CARGO_HOME}/bin:$PATH"
+# Source bashrc to get PATH and environment variables
+source "$HOME/.bashrc"
 
 echo "Installing Rust crates..."
 
