@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/jess.robertson/.local/share/chezmoi/**)",
+      "Bash(rm:*)",
+      "Bash(chezmoi data:*)",
+      "Bash(git log:*)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nMigrate tmux config from mooks to chezmoi-compatible setup\n\nRemove mooks-specific tooling that duplicates chezmoi functionality:\n- Removed tools/ directory (init.sh, plugins.sh auto-install scripts)\n- Removed tmux.conf.bak backup file\n- Renamed @mooks-* options to neutral @tmux-* names\n- Fixed TPM path in run_after script to use XDG config directory\n\nKeep modular structure with status.sh for powerline-style theming:\n- Moved status.sh to scripts/ directory with utility libraries\n- Added theme configuration files (nord.conf with full powerline support)\n- Created modular conf.d/ structure for options, bindings, hooks, plugins\n- Simplified tmux.conf to only source configuration files\n\nTPM installation and updates now handled by chezmoi run scripts.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

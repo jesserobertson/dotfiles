@@ -1,0 +1,3 @@
+# This file ensures that the ~/.config directory is created by chezmoi
+# even if it doesn't exist yet. This prevents errors when running
+# chezmoi apply after removing ~/.config
