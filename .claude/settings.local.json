@@ -35,7 +35,13 @@
       "Bash(git remote remove:*)",
       "Bash(gh repo view:*)",
       "Bash(curl:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(cargo search:*)",
+      "WebFetch(domain:crates.io)",
+      "Bash(cargo info:*)",
+      "Bash(gh auth:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": []
