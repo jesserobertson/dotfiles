@@ -1,17 +1,11 @@
-#!/bin/sh
+#!/usr/bin/env fish
 # Brewfile hash: {{ include "dot_config/brewfile.tmpl" | sha256sum }}
 
-# Set environment variables
-export RUSTUP_HOME="{{ .rustup_home }}"
-export CARGO_HOME="{{ .cargo_home }}"
+# Source fish config to get PATH and environment variables
+source ~/.config/fish/config.fish
 
 echo "Installing Homebrew packages..."
-
-# Get homebrew prefix from chezmoi data
-HOMEBREW_PREFIX="{{ .homebrew_prefix }}"
-PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:$PATH"
-
-echo "Using Homebrew prefix: ${HOMEBREW_PREFIX}"
+echo "Using Homebrew prefix: $HOMEBREW_PREFIX"
 
 # Install packages from Brewfile
 echo "Rendering and installing packages from Brewfile..."
@@ -30,52 +24,52 @@ echo "Homebrew installation and package setup complete!"
 
 # Initialize Rust toolchain
 echo "Checking Rust toolchain..."
-if command -v rustup >/dev/null 2>&1; then
+if type -q rustup
 {{- if hasKey .chezmoi "force" }}
 {{- if .chezmoi.force }}
     echo "Force mode enabled - reinstalling Rust toolchains..."
-    rustup toolchain uninstall stable 2>/dev/null || true
-    rustup toolchain uninstall nightly 2>/dev/null || true
+    rustup toolchain uninstall stable 2>/dev/null; or true
+    rustup toolchain uninstall nightly 2>/dev/null; or true
     echo "Installing stable toolchain..."
     rustup toolchain install stable
     echo "Installing nightly toolchain..."
     rustup toolchain install nightly
 {{- else }}
     # Check if stable is already installed
-    if ! rustup toolchain list | grep -q 'stable'; then
+    if not rustup toolchain list | grep -q 'stable'
         echo "Installing stable toolchain..."
         rustup toolchain install stable
     else
         echo "Stable toolchain already installed"
-    fi
+    end
 
     # Check if nightly is already installed
-    if ! rustup toolchain list | grep -q 'nightly'; then
+    if not rustup toolchain list | grep -q 'nightly'
         echo "Installing nightly toolchain..."
         rustup toolchain install nightly
     else
         echo "Nightly toolchain already installed"
-    fi
+    end
 {{- end }}
 {{- else }}
     # Check if stable is already installed
-    if ! rustup toolchain list | grep -q 'stable'; then
+    if not rustup toolchain list | grep -q 'stable'
         echo "Installing stable toolchain..."
         rustup toolchain install stable
     else
         echo "Stable toolchain already installed"
-    fi
+    end
 
     # Check if nightly is already installed
-    if ! rustup toolchain list | grep -q 'nightly'; then
+    if not rustup toolchain list | grep -q 'nightly'
         echo "Installing nightly toolchain..."
         rustup toolchain install nightly
     else
         echo "Nightly toolchain already installed"
-    fi
+    end
 {{- end }}
 
     echo "Rust toolchain check complete!"
 else
     echo "Warning: rustup not found, skipping Rust toolchain installation"
-fi
+end
