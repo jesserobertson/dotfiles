@@ -65,7 +65,6 @@ safe_add_path "$CARGO_HOME/bin" prepend
 safe_add_path "$LOCAL/bin" prepend
 safe_add_path "$HOMEBREW_PREFIX/bin" prepend
 safe_add_path "$HOMEBREW_PREFIX/sbin" prepend
-safe_add_path "/usr/sbin" prepend
 
 # Add ASDF to path (always prepend if shims directory exists)
 safe_add_path "${ASDF_DATA_DIR:-$HOME/.asdf}/shims" prepend
