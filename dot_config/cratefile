@@ -1,7 +1,7 @@
 # Rust crates to install via cargo
 # Format: crate-name@version (omit @version to use latest)
 # alacritty: a betterer terminal
-alacritty@0.15.1
+alacritty@0.16.0-rc1
 # bat: better cat
 bat@0.25.0
 # eza: better ls
