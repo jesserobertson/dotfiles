@@ -42,7 +42,9 @@
       "Bash(gh auth:*)",
       "Bash(git remote set-url:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(tree:*)",
+      "WebFetch(domain:www.nordtheme.com)"
     ],
     "deny": [],
     "ask": []
