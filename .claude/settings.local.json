@@ -46,7 +46,8 @@
       "Bash(tree:*)",
       "WebFetch(domain:www.nordtheme.com)",
       "Bash(find:*)",
-      "Bash(docker-compose config:*)"
+      "Bash(docker-compose config:*)",
+      "Bash(fish -c:*)"
     ],
     "deny": [],
     "ask": []
