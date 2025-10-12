@@ -1,5 +1,5 @@
 #!/bin/sh
-# Brewfile hash: {{ include "Brewfile.tmpl" | sha256sum }}
+# Brewfile hash: {{ include "dot_config/brewfile.tmpl" | sha256sum }}
 
 # Set environment variables
 export RUSTUP_HOME="{{ .rustup_home }}"
@@ -18,12 +18,12 @@ echo "Rendering and installing packages from Brewfile..."
 {{- if hasKey .chezmoi "force" }}
 {{- if .chezmoi.force }}
 echo "Force mode enabled - reinstalling all packages..."
-chezmoi cat "{{ .chezmoi.sourceDir }}/Brewfile.tmpl" | brew bundle install --force --file=/dev/stdin --verbose
+brew bundle install --force --file="{{ .xdg_config_home }}/brewfile" --verbose
 {{- else }}
-chezmoi cat "{{ .chezmoi.sourceDir }}/Brewfile.tmpl" | brew bundle install --file=/dev/stdin --verbose
+brew bundle install --file="{{ .xdg_config_home }}/brewfile" --verbose
 {{- end }}
 {{- else }}
-chezmoi cat "{{ .chezmoi.sourceDir }}/Brewfile.tmpl" | brew bundle install --file=/dev/stdin --verbose
+brew bundle install --file="{{ .xdg_config_home }}/brewfile" --verbose
 {{- end }}
 
 echo "Homebrew installation and package setup complete!"
