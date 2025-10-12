@@ -44,7 +44,9 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(tree:*)",
-      "WebFetch(domain:www.nordtheme.com)"
+      "WebFetch(domain:www.nordtheme.com)",
+      "Bash(find:*)",
+      "Bash(docker-compose config:*)"
     ],
     "deny": [],
     "ask": []
