@@ -60,7 +60,8 @@
       "Bash(awk:*)",
       "Bash(tmux display-message:*)",
       "Bash(tmux capture-pane:*)",
-      "Bash(tmux show-option:*)"
+      "Bash(tmux show-option:*)",
+      "WebFetch(domain:tidalcycles.org)"
     ],
     "deny": [],
     "ask": []
