@@ -48,7 +48,19 @@
       "Bash(find:*)",
       "Bash(docker-compose config:*)",
       "Bash(fish -c:*)",
-      "Bash(tmux show-options:*)"
+      "Bash(tmux show-options:*)",
+      "Bash(tmux source-file:*)",
+      "Bash(~/.config/tmux/plugins/tmux/scripts/cpu_info.sh:*)",
+      "Bash(~/.config/tmux/plugins/tmux/scripts/ram_info.sh:*)",
+      "Bash(~/.config/tmux/scripts/cpu_usage.sh:*)",
+      "Bash(~/.config/tmux/scripts/ram_usage.sh:*)",
+      "Bash(printf \" #[fg=#6272a4,bg=#44475a]\\xee\\x82\\xb0#[fg=#f8f8f2,bg=#6272a4] CPU #[fg=#44475a,bg=#6272a4]\\xee\\x82\\xb0#[bg=#44475a]  \")",
+      "Bash(tmux refresh-client:*)",
+      "Bash(ps:*)",
+      "Bash(awk:*)",
+      "Bash(tmux display-message:*)",
+      "Bash(tmux capture-pane:*)",
+      "Bash(tmux show-option:*)"
     ],
     "deny": [],
     "ask": []
