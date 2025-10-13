@@ -24,15 +24,19 @@ end
 {{- if .chezmoi.force }}
 echo "Force mode enabled - reinstalling SuperDirt..."
 # Uninstall and reinstall SuperDirt
-echo 'Quarks.uninstall("SuperDirt"); Quarks.install("SuperDirt"); 0.exit;' | "$SCLANG" -D
+timeout 60 sh -c "echo 'Quarks.uninstall(\"SuperDirt\"); Quarks.install(\"SuperDirt\"); 0.exit;' | '$SCLANG' -D" 2>&1 | tail -20
 {{- else }}
 # Check if SuperDirt is already installed
 echo "Checking if SuperDirt is already installed..."
-set SUPERDIRT_CHECK (echo 'if(Quarks.installed.any(_.name == "SuperDirt"), { "INSTALLED".postln }, { "NOT_INSTALLED".postln }); 0.exit;' | "$SCLANG" -D 2>&1 | grep -E "(INSTALLED|NOT_INSTALLED)")
+set SUPERDIRT_CHECK (timeout 30 sh -c "echo 'if(Quarks.installed.any(_.name == \"SuperDirt\"), { \"INSTALLED\".postln }, { \"NOT_INSTALLED\".postln }); 0.exit;' | '$SCLANG' -D 2>&1" | grep -E "(INSTALLED|NOT_INSTALLED)" | tail -1)
 
-if string match -q "*NOT_INSTALLED*" "$SUPERDIRT_CHECK"
+if test -z "$SUPERDIRT_CHECK"
+    echo "Warning: Could not determine SuperDirt status (timeout or error)"
+    echo "Attempting installation anyway..."
+    timeout 60 sh -c "echo 'Quarks.install(\"SuperDirt\"); 0.exit;' | '$SCLANG' -D" 2>&1 | tail -20
+else if string match -q "*NOT_INSTALLED*" "$SUPERDIRT_CHECK"
     echo "Installing SuperDirt quark..."
-    echo 'Quarks.install("SuperDirt"); 0.exit;' | "$SCLANG" -D
+    timeout 60 sh -c "echo 'Quarks.install(\"SuperDirt\"); 0.exit;' | '$SCLANG' -D" 2>&1 | tail -20
 else
     echo "SuperDirt is already installed"
 end
@@ -40,11 +44,15 @@ end
 {{- else }}
 # Check if SuperDirt is already installed
 echo "Checking if SuperDirt is already installed..."
-set SUPERDIRT_CHECK (echo 'if(Quarks.installed.any(_.name == "SuperDirt"), { "INSTALLED".postln }, { "NOT_INSTALLED".postln }); 0.exit;' | "$SCLANG" -D 2>&1 | grep -E "(INSTALLED|NOT_INSTALLED)")
+set SUPERDIRT_CHECK (timeout 30 sh -c "echo 'if(Quarks.installed.any(_.name == \"SuperDirt\"), { \"INSTALLED\".postln }, { \"NOT_INSTALLED\".postln }); 0.exit;' | '$SCLANG' -D 2>&1" | grep -E "(INSTALLED|NOT_INSTALLED)" | tail -1)
 
-if string match -q "*NOT_INSTALLED*" "$SUPERDIRT_CHECK"
+if test -z "$SUPERDIRT_CHECK"
+    echo "Warning: Could not determine SuperDirt status (timeout or error)"
+    echo "Attempting installation anyway..."
+    timeout 60 sh -c "echo 'Quarks.install(\"SuperDirt\"); 0.exit;' | '$SCLANG' -D" 2>&1 | tail -20
+else if string match -q "*NOT_INSTALLED*" "$SUPERDIRT_CHECK"
     echo "Installing SuperDirt quark..."
-    echo 'Quarks.install("SuperDirt"); 0.exit;' | "$SCLANG" -D
+    timeout 60 sh -c "echo 'Quarks.install(\"SuperDirt\"); 0.exit;' | '$SCLANG' -D" 2>&1 | tail -20
 else
     echo "SuperDirt is already installed"
 end

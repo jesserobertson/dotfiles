@@ -11,6 +11,10 @@ export LOCAL="{{ .local_dir }}"
 export RUSTUP_HOME="{{ .rustup_home }}"
 export CARGO_HOME="{{ .cargo_home }}"
 
+# Haskell/GHCup environment
+export GHCUP_INSTALL_BASE_PREFIX="{{ .ghcup_install_base_prefix }}"
+export GHCUP_HOME="{{ .ghcup_home }}"
+
 # Shell tools
 export EDITOR=nvim
 export PAGER=less
@@ -24,9 +28,9 @@ export CONFIG="$HOME/.config"
 export LOCAL_BIN="$LOCAL/bin"
 
 # Add brew to path
-export HOMEBREW_PREFIX=/opt/homebrew
-export HOMEBREW_CELLAR=/opt/homebrew/Cellar
-export HOMEBREW_REPOSITORY=/opt/homebrew
+export HOMEBREW_PREFIX="{{ .homebrew_prefix }}"
+export HOMEBREW_CELLAR="{{ .homebrew_cellar }}"
+export HOMEBREW_REPOSITORY="{{ .homebrew_repository }}"
 
 # Set up manuals and docs
 export MANPATH="$LOCAL/share/man:$HOMEBREW_PREFIX/share/man${MANPATH:+:$MANPATH}"
@@ -61,6 +65,7 @@ safe_add_path() {
 }
 
 # Set path using safe_add_path (in reverse order for prepending)
+safe_add_path "{{ .ghcup_bin }}" prepend
 safe_add_path "$CARGO_HOME/bin" prepend
 safe_add_path "$LOCAL/bin" prepend
 safe_add_path "$HOMEBREW_PREFIX/bin" prepend
