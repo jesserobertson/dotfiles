@@ -1,0 +1,56 @@
+#!/usr/bin/env fish
+# SuperDirt installation script
+# This script runs when the haskellfile changes (since SuperDirt is needed for TidalCycles)
+# Hash: {{ include "dot_config/haskellfile" | sha256sum }}
+
+echo "Checking SuperDirt installation..."
+
+# Check if SuperCollider is installed
+if not test -d "/Applications/SuperCollider.app"
+    echo "Error: SuperCollider not found. Please ensure SuperCollider is installed via Homebrew."
+    echo "Run: brew install --cask supercollider"
+    exit 1
+end
+
+# Path to sclang (SuperCollider language interpreter)
+set SCLANG "/Applications/SuperCollider.app/Contents/MacOS/sclang"
+
+if not test -x "$SCLANG"
+    echo "Error: sclang not found at expected path: $SCLANG"
+    exit 1
+end
+
+{{- if hasKey .chezmoi "force" }}
+{{- if .chezmoi.force }}
+echo "Force mode enabled - reinstalling SuperDirt..."
+# Uninstall and reinstall SuperDirt
+echo 'Quarks.uninstall("SuperDirt"); Quarks.install("SuperDirt"); 0.exit;' | "$SCLANG" -D
+{{- else }}
+# Check if SuperDirt is already installed
+echo "Checking if SuperDirt is already installed..."
+set SUPERDIRT_CHECK (echo 'if(Quarks.installed.any(_.name == "SuperDirt"), { "INSTALLED".postln }, { "NOT_INSTALLED".postln }); 0.exit;' | "$SCLANG" -D 2>&1 | grep -E "(INSTALLED|NOT_INSTALLED)")
+
+if string match -q "*NOT_INSTALLED*" "$SUPERDIRT_CHECK"
+    echo "Installing SuperDirt quark..."
+    echo 'Quarks.install("SuperDirt"); 0.exit;' | "$SCLANG" -D
+else
+    echo "SuperDirt is already installed"
+end
+{{- end }}
+{{- else }}
+# Check if SuperDirt is already installed
+echo "Checking if SuperDirt is already installed..."
+set SUPERDIRT_CHECK (echo 'if(Quarks.installed.any(_.name == "SuperDirt"), { "INSTALLED".postln }, { "NOT_INSTALLED".postln }); 0.exit;' | "$SCLANG" -D 2>&1 | grep -E "(INSTALLED|NOT_INSTALLED)")
+
+if string match -q "*NOT_INSTALLED*" "$SUPERDIRT_CHECK"
+    echo "Installing SuperDirt quark..."
+    echo 'Quarks.install("SuperDirt"); 0.exit;' | "$SCLANG" -D
+else
+    echo "SuperDirt is already installed"
+end
+{{- end }}
+
+echo "SuperDirt installation complete!"
+echo ""
+echo "To start SuperDirt in SuperCollider, run:"
+echo "  SuperDirt.start"

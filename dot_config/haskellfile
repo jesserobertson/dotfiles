@@ -1,0 +1,6 @@
+# Haskell packages to install via cabal
+# Format: package-name (one per line)
+# Comments start with #
+
+# TidalCycles: live coding pattern language for music
+tidal
