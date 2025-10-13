@@ -47,7 +47,8 @@
       "WebFetch(domain:www.nordtheme.com)",
       "Bash(find:*)",
       "Bash(docker-compose config:*)",
-      "Bash(fish -c:*)"
+      "Bash(fish -c:*)",
+      "Bash(tmux show-options:*)"
     ],
     "deny": [],
     "ask": []
