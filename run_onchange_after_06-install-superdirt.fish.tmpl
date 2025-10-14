@@ -3,6 +3,10 @@
 # This script runs when the haskellfile changes (since SuperDirt is needed for TidalCycles)
 # Hash: {{ include "dot_config/haskellfile" | sha256sum }}
 
+# Ensure system paths are included for timeout and sh commands
+fish_add_path "/bin"
+fish_add_path "/usr/bin"
+
 echo "Checking SuperDirt installation..."
 
 # Check if SuperCollider is installed

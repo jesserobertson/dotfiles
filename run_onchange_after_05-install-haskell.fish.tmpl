@@ -3,34 +3,27 @@
 
 echo "Setting up Haskell environment..."
 
-# Initialize ghcup environment from chezmoi data
-set -gx GHCUP_INSTALL_BASE_PREFIX "{{ .ghcup_install_base_prefix }}"
-set -gx GHCUP_BIN "{{ .ghcup_bin }}"
-fish_add_path "$GHCUP_BIN"
+# Ensure system paths are included for configure scripts
+fish_add_path "/bin"
+fish_add_path "/usr/bin"
 fish_add_path "{{ .homebrew_prefix }}/bin"
+fish_add_path "{{ .homebrew_prefix }}/opt/ghc@9.6/bin"
 
-# Check if ghcup is available
-if not type -q ghcup
-    echo "Error: ghcup not found. Please ensure ghcup is installed via Homebrew."
-    exit 1
+# Check if GHC is installed via Homebrew
+if not type -q ghc
+    echo "Installing GHC via Homebrew..."
+    brew install ghc@9.6
 end
 
-# Check if cabal is installed, install if not
-if not test -x "$GHCUP_BIN/cabal"
-    echo "Installing cabal..."
-    ghcup install cabal recommended
-    ghcup set cabal recommended
+# Check if cabal is installed via Homebrew
+if not type -q cabal
+    echo "Installing cabal via Homebrew..."
+    brew install cabal-install
 end
 
-# Check if GHC is installed, install if not
-if not test -x "$GHCUP_BIN/ghc"
-    echo "Installing GHC..."
-    ghcup install ghc recommended
-    ghcup set ghc recommended
-end
-
+# Update cabal package index
 echo "Updating cabal package index..."
-"$GHCUP_BIN/cabal" update
+cabal update
 
 # Read packages from haskellfile
 set HASKELL_FILE "{{ .xdg_config_home }}/haskellfile"
@@ -55,15 +48,15 @@ echo "Haskell packages to install: $PACKAGES"
 echo "Force mode enabled - reinstalling all Haskell packages..."
 for package in $PACKAGES
     echo "Reinstalling $package..."
-    "$GHCUP_BIN/cabal" install --lib --force-reinstalls --overwrite-policy=always "$package"
+    cabal install --lib --force-reinstalls --overwrite-policy=always "$package"
 end
 {{- else }}
 # Install each package if not already installed
 for package in $PACKAGES
     # Check if package is already installed by querying ghc-pkg
-    if not "$GHCUP_BIN/ghc-pkg" list "$package" 2>/dev/null | grep -q "$package"
+    if not ghc-pkg list "$package" 2>/dev/null | grep -q "$package"
         echo "Installing $package..."
-        "$GHCUP_BIN/cabal" install --lib --overwrite-policy=always "$package"
+        cabal install --lib --overwrite-policy=always "$package"
     else
         echo "$package already installed"
     end
@@ -73,9 +66,9 @@ end
 # Install each package if not already installed
 for package in $PACKAGES
     # Check if package is already installed by querying ghc-pkg
-    if not "$GHCUP_BIN/ghc-pkg" list "$package" 2>/dev/null | grep -q "$package"
+    if not ghc-pkg list "$package" 2>/dev/null | grep -q "$package"
         echo "Installing $package..."
-        "$GHCUP_BIN/cabal" install --lib --overwrite-policy=always "$package"
+        cabal install --lib --overwrite-policy=always "$package"
     else
         echo "$package already installed"
     end

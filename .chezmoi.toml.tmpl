@@ -46,10 +46,10 @@
   rustup_home = {{ joinPath $localDir "share" "rustup" | quote }}
   cargo_home = {{ joinPath $localDir "share" "cargo" | quote }}
 
-  # Haskell/GHCup environment
-  ghcup_install_base_prefix = {{ .chezmoi.homeDir | quote }}
-  ghcup_home = {{ joinPath .chezmoi.homeDir ".ghcup" | quote }}
-  ghcup_bin = {{ joinPath .chezmoi.homeDir ".ghcup" "bin" | quote }}
+  # Haskell environment (via Homebrew)
+  ghc_home = {{ joinPath $homebrewPrefix "opt" "ghc@9.6" | quote }}
+  ghc_bin = {{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" | quote }}
+  cabal_home = {{ joinPath .chezmoi.homeDir ".cabal" | quote }}
 
   # Homebrew paths (OS-aware)
   homebrew_prefix = {{ $homebrewPrefix | quote }}

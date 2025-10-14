@@ -61,7 +61,20 @@
       "Bash(tmux display-message:*)",
       "Bash(tmux capture-pane:*)",
       "Bash(tmux show-option:*)",
-      "WebFetch(domain:tidalcycles.org)"
+      "WebFetch(domain:tidalcycles.org)",
+      "Bash(test:*)",
+      "Bash(xargs ls:*)",
+      "Bash(brew list:*)",
+      "Bash(xcode-select:*)",
+      "Bash(ghcup list:*)",
+      "Bash(ghcup config set:*)",
+      "Bash(ghcup install:*)",
+      "Bash(~/.ghcup/bin/ghc:*)",
+      "Bash(brew search:*)",
+      "Bash(brew info:*)",
+      "Bash(export:*)",
+      "Bash(/opt/homebrew/bin/cabal install --lib tidal)",
+      "Bash(/opt/homebrew/bin/cabal:*)"
     ],
     "deny": [],
     "ask": []
