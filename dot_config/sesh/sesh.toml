@@ -1,8 +1,3 @@
-[default_session]
-disable_startup_command = true
-startup_command = "nvim -c ':FzfLua files'"
-preview_command = "eza --all --git --icons --color=always {}"
-
 [[session]]
 name = "Downloads 📥"
 path = "~/Downloads"
@@ -14,5 +9,19 @@ path = "~/.local/share/chezmoi/"
 startup_command = "nvim ."
 preview_command = "eza --all --git --icons --color=always {}"
 
+[[session]]
+name = "tidal"
 
+[[session.window]]
+name = "tidal"
+
+[[session.window.pane]]
+command = "sclang ~/.config/tidal/startup.scd"
+
+[[session.window.pane]]
+command = "sleep 3 && ghci -ghci-script ~/.config/tidal/BootTidal.hs"
+
+[[session.window.pane]]
+command = "sleep 4 && nvim"
+focus = true
 
