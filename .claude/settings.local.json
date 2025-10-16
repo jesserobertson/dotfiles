@@ -74,7 +74,17 @@
       "Bash(brew info:*)",
       "Bash(export:*)",
       "Bash(/opt/homebrew/bin/cabal install --lib tidal)",
-      "Bash(/opt/homebrew/bin/cabal:*)"
+      "Bash(/opt/homebrew/bin/cabal:*)",
+      "Read(//Applications/**)",
+      "Bash(/Applications/SuperCollider.app/Contents/MacOS/sclang:*)",
+      "Bash(ghci:*)",
+      "Bash(ghc-pkg list:*)",
+      "Bash(cabal install:*)",
+      "Bash(timeout 10 ghci:*)",
+      "Bash(sesh:*)",
+      "Bash(git clone:*)",
+      "Bash(timeout 30 /Applications/SuperCollider.app/Contents/MacOS/sclang:*)",
+      "Bash(timeout 45 /Applications/SuperCollider.app/Contents/MacOS/sclang:*)"
     ],
     "deny": [],
     "ask": []

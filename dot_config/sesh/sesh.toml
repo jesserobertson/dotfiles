@@ -11,17 +11,6 @@ preview_command = "eza --all --git --icons --color=always {}"
 
 [[session]]
 name = "tidal"
-
-[[session.window]]
-name = "tidal"
-
-[[session.window.pane]]
-command = "sclang ~/.config/tidal/startup.scd"
-
-[[session.window.pane]]
-command = "sleep 3 && ghci -ghci-script ~/.config/tidal/BootTidal.hs"
-
-[[session.window.pane]]
-command = "sleep 4 && nvim"
-focus = true
+path = "~/"
+startup_command = "~/.config/sesh/scripts/start-tidal.sh"
 

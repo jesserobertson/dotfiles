@@ -1,0 +1,67 @@
+#!/usr/bin/env fish
+# vim: set filetype=fish:
+# TidalCycles installation script - installs SuperDirt for SuperCollider
+# This script runs when the haskellfile changes
+# Hash: {{ include "dot_config/haskellfile" | sha256sum }}
+
+# Ensure system paths are included for timeout and sh commands
+fish_add_path "/bin"
+fish_add_path "/usr/bin"
+
+echo "Checking SuperDirt installation..."
+
+# Check if SuperCollider is installed
+if not test -d "/Applications/SuperCollider.app"
+    echo "Error: SuperCollider not found. Please ensure SuperCollider is installed via Homebrew."
+    echo "Run: brew install --cask supercollider"
+    exit 1
+end
+
+# SuperCollider directories
+set QUARKS_DIR "$HOME/.local/share/SuperCollider/downloaded-quarks"
+set EXTENSIONS_DIR "$HOME/.local/share/SuperCollider/Extensions"
+mkdir -p "$QUARKS_DIR"
+mkdir -p "$EXTENSIONS_DIR"
+
+{{- if hasKey .chezmoi "force" }}
+{{- if .chezmoi.force }}
+echo "Force mode enabled - reinstalling SuperDirt..."
+rm -rf "$QUARKS_DIR/SuperDirt" "$QUARKS_DIR/Vowel"
+rm -f "$EXTENSIONS_DIR/SuperDirt" "$EXTENSIONS_DIR/Vowel"
+{{- end }}
+{{- end }}
+
+# Install Vowel dependency
+if not test -d "$QUARKS_DIR/Vowel"
+    echo "Installing Vowel quark..."
+    git -C "$QUARKS_DIR" clone https://github.com/supercollider-quarks/Vowel.git
+else
+    echo "Vowel quark already installed"
+end
+
+# Install SuperDirt
+if not test -d "$QUARKS_DIR/SuperDirt"
+    echo "Installing SuperDirt quark..."
+    git -C "$QUARKS_DIR" clone https://github.com/musikinformatik/SuperDirt.git
+else
+    echo "SuperDirt quark already installed"
+end
+
+# Symlink quarks to Extensions directory so SuperCollider can find them
+if not test -e "$EXTENSIONS_DIR/Vowel"
+    echo "Linking Vowel to Extensions..."
+    ln -s "$QUARKS_DIR/Vowel" "$EXTENSIONS_DIR/Vowel"
+end
+
+if not test -e "$EXTENSIONS_DIR/SuperDirt"
+    echo "Linking SuperDirt to Extensions..."
+    ln -s "$QUARKS_DIR/SuperDirt" "$EXTENSIONS_DIR/SuperDirt"
+end
+
+echo "SuperDirt quarks installed and linked to Extensions."
+echo "Dirt-Samples will be downloaded automatically on first use."
+
+echo "SuperDirt installation complete!"
+echo ""
+echo "To start SuperDirt in SuperCollider, run:"
+echo "  SuperDirt.start"
