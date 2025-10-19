@@ -84,7 +84,11 @@
       "Bash(sesh:*)",
       "Bash(git clone:*)",
       "Bash(timeout 30 /Applications/SuperCollider.app/Contents/MacOS/sclang:*)",
-      "Bash(timeout 45 /Applications/SuperCollider.app/Contents/MacOS/sclang:*)"
+      "Bash(timeout 45 /Applications/SuperCollider.app/Contents/MacOS/sclang:*)",
+      "Bash(tmux new-session:*)",
+      "Bash(tmux list-panes:*)",
+      "Bash(tmux kill-session:*)",
+      "Bash(~/.config/tmux/scripts/test-dev-layout.sh:*)"
     ],
     "deny": [],
     "ask": []
