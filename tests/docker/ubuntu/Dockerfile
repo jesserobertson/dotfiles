@@ -25,7 +25,12 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 
 # Install chezmoi first (as required by bootstrap)
 RUN mkdir -p ${HOME}/.local/bin && \
-    BINDIR="${HOME}/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- v2.66.0
+    cd /tmp && \
+    curl -sL "https://github.com/twpayne/chezmoi/releases/download/v2.66.0/chezmoi_2.66.0_linux_amd64.tar.gz" -o chezmoi.tar.gz && \
+    tar -xzf chezmoi.tar.gz && \
+    mv chezmoi ${HOME}/.local/bin/ && \
+    chmod +x ${HOME}/.local/bin/chezmoi && \
+    rm chezmoi.tar.gz
 
 # Copy test scripts
 COPY --chown=testuser:testuser test-bootstrap.sh /home/testuser/

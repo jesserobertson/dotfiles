@@ -70,8 +70,13 @@ jobs:
       - name: Install chezmoi
         run: |
           if ! command -v chezmoi &> /dev/null; then
-            echo "Installing chezmoi..."
-            sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" v2.66.0
+            echo "Installing chezmoi v2.66.0..."
+            mkdir -p "$HOME/.local/bin"
+            cd /tmp
+            curl -sL "https://github.com/twpayne/chezmoi/releases/download/v2.66.0/chezmoi_2.66.0_darwin_arm64.tar.gz" -o chezmoi.tar.gz
+            tar -xzf chezmoi.tar.gz
+            mv chezmoi "$HOME/.local/bin/"
+            chmod +x "$HOME/.local/bin/chezmoi"
             echo "$HOME/.local/bin" >> $GITHUB_PATH
           else
             echo "Chezmoi already installed"
