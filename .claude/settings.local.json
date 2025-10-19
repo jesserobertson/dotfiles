@@ -99,7 +99,13 @@
       "Bash(brew tap:*)",
       "Bash(bats:*)",
       "Bash(CI=true chezmoi apply:*)",
-      "Bash(env CI=true chezmoi apply:*)"
+      "Bash(env CI=true chezmoi apply:*)",
+      "Bash(gh run list:*)",
+      "Bash(git remote get-url:*)",
+      "Bash(gh run view 18636278904)",
+      "Bash(gh run view 18636278904 --log-failed)",
+      "Bash(gh run view 18636278904 --log --job 53127879423)",
+      "Bash(gh run view 18636278904 --log --job 53127879418)"
     ],
     "deny": [],
     "ask": []

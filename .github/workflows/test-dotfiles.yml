@@ -78,17 +78,12 @@ jobs:
           fi
 
       - name: Initialize dotfiles with chezmoi
+        env:
+          CI: true
         run: |
           # Initialize chezmoi with the current checkout
-          chezmoi init --source="$GITHUB_WORKSPACE"
-
-      - name: Run chezmoi apply (dry-run first)
-        run: |
-          echo "=== Dry-run chezmoi apply ==="
-          chezmoi apply --dry-run --verbose || true
-          echo ""
-          echo "=== Actual chezmoi apply ==="
-          chezmoi apply --force
+          # The --apply flag will run chezmoi apply after init
+          chezmoi init --source="$GITHUB_WORKSPACE" --apply
 
       - name: Run installation verification
         run: |
@@ -119,18 +114,18 @@ jobs:
         working-directory: tests
         run: |
           echo "=== Running Ubuntu test ==="
-          docker-compose run --rm ubuntu
+          docker compose run --rm ubuntu
 
           echo ""
           echo "=== Running Ubuntu offline test ==="
-          docker-compose run --rm ubuntu-offline
+          docker compose run --rm ubuntu-offline
 
           echo ""
           echo "=== Running macOS simulation test ==="
-          docker-compose run --rm macos-sim
+          docker compose run --rm macos-sim
 
       - name: Cleanup Docker Compose
         if: always()
         working-directory: tests
         run: |
-          docker-compose down -v || true
+          docker compose down -v || true
