@@ -97,6 +97,46 @@ The `verify-installation.sh` script can be run on any system to verify an existi
 chmod +x ./tests/verify-installation.sh
 ```
 
+## Local Feature Tests
+
+In addition to bootstrap tests, the framework includes tests for specific dotfile features that run on your local machine:
+
+### Running Local Tests
+
+```bash
+# Run all local tests
+./tests/run-local-tests.sh
+
+# Run specific test suite
+./tests/run-local-tests.sh -t developer-layout
+
+# Run with verbose output
+./tests/run-local-tests.sh -v
+```
+
+### Available Local Tests
+
+**Developer Layout Test** (`test-developer-layout.sh`)
+- Tests the tmux+sesh automatic layout setup for Developer projects
+- Validates that sessions created in `~/Developer/*` get the correct 3-pane layout
+- Checks that nvim, terminal, and claude panes are configured correctly
+
+```bash
+# Test single project
+./tests/test-developer-layout.sh -p myproject
+
+# Test all projects (up to 5)
+./tests/test-developer-layout.sh -a
+
+# Verbose output
+./tests/test-developer-layout.sh -v
+```
+
+**Shell Environment Test** (`test-shell-env.sh`)
+- Validates shell configuration consistency
+- Checks environment variables and PATH setup
+- Verifies shell integrations
+
 ## CI/CD Integration
 
 ### GitHub Actions
