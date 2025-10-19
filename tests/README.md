@@ -184,15 +184,24 @@ bats --timing bats/*.bats
 
 ### Available Bats Tests
 
-**Developer Layout** (`bats/developer-layout.bats`)
+**Developer Layout** (`bats/developer-layout.bats`) - 15 tests
 - Tests automatic tmux layout for Developer projects
 - Validates 3-pane layout creation
 - Checks pane commands (nvim, claude) and paths
 - Tests layout across multiple projects
 - Negative tests (non-Developer directories)
+- Edge cases (additional splits, active pane, size ratios)
+
+**Tmux Scripts** (`bats/tmux-scripts.bats`) - 6 tests
+- Tests setup-dev-layout.sh script existence and execution
+- Validates tmux hooks configuration
+- Checks configuration file loading
+
+**Total: 21 tests**
 
 Example test output:
 ```
+bats/developer-layout.bats
  ✓ Developer directory exists
  ✓ Test project exists in Developer directory
  ✓ Developer project session creates exactly 3 panes
@@ -200,9 +209,35 @@ Example test output:
  ✓ Pane 0 runs neovim
  ✓ Pane 2 runs claude
  ✓ Session layout is split correctly
+ ✓ Additional splits can be added after hook runs
+ ✓ Active pane after setup is the neovim pane
+ ✓ Panes have expected size ratios
+ ... and 5 more
 
-7 tests, 0 failures
+bats/tmux-scripts.bats
+ ✓ setup-dev-layout.sh script exists and is executable
+ ✓ tmux hooks configuration contains developer layout hook
+ ... and 4 more
+
+21 tests, 0 failures in ~27s
 ```
+
+### Test Coverage
+
+**Well Covered:**
+- ✅ Developer project automatic layout (15 tests)
+- ✅ Tmux configuration and scripts (6 tests)
+- ✅ Edge cases and negative tests
+- ✅ Pane commands, paths, and dimensions
+- ✅ Multiple project support
+- ✅ Configuration file validation
+
+**Not Yet Covered:**
+- ⏸️ Sesh integration scripts
+- ⏸️ Shell environment tests
+- ⏸️ Other tmux utility scripts (cpu_usage, ram_usage, etc.)
+
+To add coverage for these areas, create new `.bats` files in the `bats/` directory following the existing patterns.
 
 ### Writing New Bats Tests
 

@@ -1,3 +1,4 @@
 *swp
 private_dot_ssh/config
 .DS_Store
+tests/bats/helpers/setup.bash

@@ -3,7 +3,7 @@
 
 # Homebrew prefix from chezmoi data (platform-independent)
 # Falls back to environment variable if not available at runtime
-HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
+HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-{{ .homebrew_prefix }}}"
 
 # Load bats helper libraries if available
 # These provide better assertions and file testing helpers

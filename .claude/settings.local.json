@@ -88,7 +88,16 @@
       "Bash(tmux new-session:*)",
       "Bash(tmux list-panes:*)",
       "Bash(tmux kill-session:*)",
-      "Bash(~/.config/tmux/scripts/test-dev-layout.sh:*)"
+      "Bash(~/.config/tmux/scripts/test-dev-layout.sh:*)",
+      "Bash(git rm:*)",
+      "Bash(./test-developer-layout.sh:*)",
+      "Bash(./run-local-tests.sh:*)",
+      "WebFetch(domain:shellspec.info)",
+      "WebFetch(domain:dev.to)",
+      "Bash(command -v:*)",
+      "Bash(brew install:*)",
+      "Bash(brew tap:*)",
+      "Bash(bats:*)"
     ],
     "deny": [],
     "ask": []

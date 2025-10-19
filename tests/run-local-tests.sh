@@ -79,10 +79,8 @@ run_bats_test() {
         bats_args+=("--verbose-run" "--show-output-of-passing-tests")
     fi
 
-    # Set up bats helper library paths
-    export BATS_SUPPORT_LOAD="${HOMEBREW_PREFIX:-/opt/homebrew}/lib/bats-support/load.bash"
-    export BATS_ASSERT_LOAD="${HOMEBREW_PREFIX:-/opt/homebrew}/lib/bats-assert/load.bash"
-    export BATS_FILE_LOAD="${HOMEBREW_PREFIX:-/opt/homebrew}/lib/bats-file/load.bash"
+    # Bats helper libraries are loaded automatically in helpers/setup.bash
+    # No need to set environment variables
 
     if bats "${bats_args[@]}" "$test_file"; then
         success "$test_name passed"
@@ -176,6 +174,24 @@ main() {
     echo -e "${BLUE}Local Dotfiles Tests${NC}"
     echo -e "${BLUE}================================${NC}"
     echo ""
+
+    # Generate setup.bash from template if needed (for bats tests)
+    if [ "$BATS_AVAILABLE" = true ] && [ "$USE_BATS" = true ]; then
+        local setup_template="$BATS_DIR/helpers/setup.bash.tmpl"
+        local setup_file="$BATS_DIR/helpers/setup.bash"
+
+        if [ -f "$setup_template" ]; then
+            # Generate if setup.bash doesn't exist or template is newer
+            if [ ! -f "$setup_file" ] || [ "$setup_template" -nt "$setup_file" ]; then
+                if command -v chezmoi >/dev/null 2>&1; then
+                    log "Generating setup.bash from template..."
+                    chezmoi execute-template < "$setup_template" > "$setup_file"
+                else
+                    warning "chezmoi not found, using existing setup.bash"
+                fi
+            fi
+        fi
+    fi
 
     # Show test framework being used
     if [ "$BATS_AVAILABLE" = true ] && [ "$USE_BATS" = true ]; then

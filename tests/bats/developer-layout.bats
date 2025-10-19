@@ -145,3 +145,54 @@ teardown() {
     # Cleanup
     kill_test_session "$temp_session"
 }
+
+# Edge case: manually created split after hook still results in more panes
+@test "Additional splits can be added after hook runs" {
+    temp_session=$(generate_test_session_name)
+    create_test_session "$temp_session" "$TEST_PATH"
+    sleep 2
+
+    # Hook should have created 3 panes
+    pane_count=$(get_pane_count "$temp_session")
+    [ "$pane_count" -eq 3 ]
+
+    # Manually add another split
+    tmux split-window -t "$temp_session:0.0" -v
+    sleep 0.5
+
+    # Should now have 4 panes
+    pane_count=$(get_pane_count "$temp_session")
+    [ "$pane_count" -eq 4 ]
+
+    # Cleanup
+    kill_test_session "$temp_session"
+}
+
+# Test that default pane is neovim pane
+@test "Active pane after setup is the neovim pane" {
+    create_test_session "$TEST_SESSION" "$TEST_PATH"
+    sleep 2
+
+    # Get active pane index
+    active_pane=$(tmux display-message -t "$TEST_SESSION" -p '#{pane_index}')
+    [ "$active_pane" -eq 0 ]
+
+    # Verify it's running nvim
+    cmd=$(get_pane_command "$TEST_SESSION" "$active_pane")
+    [ "$cmd" = "nvim" ]
+}
+
+# Test pane dimensions (approximate)
+@test "Panes have expected size ratios" {
+    create_test_session "$TEST_SESSION" "$TEST_PATH"
+    sleep 2
+
+    # Get pane widths
+    pane0_width=$(tmux list-panes -t "$TEST_SESSION" -F '#{pane_width}' | sed -n '1p')
+    pane1_width=$(tmux list-panes -t "$TEST_SESSION" -F '#{pane_width}' | sed -n '2p')
+
+    # Left pane and right panes should be approximately equal (50/50 split)
+    # Allow some variance
+    diff=$((pane0_width - pane1_width))
+    [ ${diff#-} -lt 5 ]  # Absolute difference less than 5 columns
+}
