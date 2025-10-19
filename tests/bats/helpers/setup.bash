@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# Shared helper functions for bats tests
+
+# Load bats helper libraries if available
+# These provide better assertions and file testing helpers
+if [ -n "${BATS_SUPPORT_LOAD:-}" ]; then
+    load "${BATS_SUPPORT_LOAD}"
+fi
+if [ -n "${BATS_ASSERT_LOAD:-}" ]; then
+    load "${BATS_ASSERT_LOAD}"
+fi
+if [ -n "${BATS_FILE_LOAD:-}" ]; then
+    load "${BATS_FILE_LOAD}"
+fi
+
+# Test session name prefix to avoid conflicts
+export TEST_SESSION_PREFIX="bats-test"
+
+# Generate a unique test session name
+generate_test_session_name() {
+    echo "${TEST_SESSION_PREFIX}-$$-${RANDOM}"
+}
+
+# Check if tmux is available
+is_tmux_available() {
+    command -v tmux >/dev/null 2>&1
+}
+
+# Ensure tmux server is running
+ensure_tmux_server() {
+    if ! tmux list-sessions &>/dev/null; then
+        tmux start-server || true
+    fi
+}
+
+# Create a test tmux session in a specific directory
+# Usage: create_test_session <session_name> <path>
+create_test_session() {
+    local session_name="$1"
+    local path="$2"
+
+    ensure_tmux_server
+    tmux new-session -d -s "$session_name" -c "$path" 2>/dev/null
+}
+
+# Kill a test session
+# Usage: kill_test_session <session_name>
+kill_test_session() {
+    local session_name="$1"
+    tmux kill-session -t "$session_name" 2>/dev/null || true
+}
+
+# Get pane count for a session
+# Usage: get_pane_count <session_name>
+get_pane_count() {
+    local session_name="$1"
+    tmux list-panes -t "$session_name" 2>/dev/null | wc -l | tr -d ' '
+}
+
+# Get current path of a specific pane
+# Usage: get_pane_path <session_name> <pane_index>
+get_pane_path() {
+    local session_name="$1"
+    local pane_index="${2:-0}"
+    tmux list-panes -t "$session_name" -F '#{pane_current_path}' 2>/dev/null | sed -n "$((pane_index + 1))p"
+}
+
+# Get current command of a specific pane
+# Usage: get_pane_command <session_name> <pane_index>
+get_pane_command() {
+    local session_name="$1"
+    local pane_index="${2:-0}"
+    tmux list-panes -t "$session_name" -F '#{pane_current_command}' 2>/dev/null | sed -n "$((pane_index + 1))p"
+}
+
+# Check if all panes are in the expected directory
+# Usage: all_panes_in_directory <session_name> <expected_path>
+all_panes_in_directory() {
+    local session_name="$1"
+    local expected_path="$2"
+    local paths
+
+    paths=$(tmux list-panes -t "$session_name" -F '#{pane_current_path}' 2>/dev/null)
+
+    while IFS= read -r path; do
+        if [ "$path" != "$expected_path" ]; then
+            return 1
+        fi
+    done <<< "$paths"
+
+    return 0
+}
+
+# Wait for a command to be running in a pane
+# Usage: wait_for_command <session_name> <pane_index> <command_name> [timeout_seconds]
+wait_for_command() {
+    local session_name="$1"
+    local pane_index="$2"
+    local command_name="$3"
+    local timeout="${4:-5}"
+    local elapsed=0
+
+    while [ $elapsed -lt $timeout ]; do
+        local current_cmd
+        current_cmd=$(get_pane_command "$session_name" "$pane_index")
+        if [ "$current_cmd" = "$command_name" ]; then
+            return 0
+        fi
+        sleep 0.5
+        elapsed=$((elapsed + 1))
+    done
+
+    return 1
+}
+
+# Clean up all test sessions (useful in teardown)
+cleanup_all_test_sessions() {
+    local sessions
+    sessions=$(tmux list-sessions -F '#{session_name}' 2>/dev/null | grep "^${TEST_SESSION_PREFIX}-" || true)
+
+    if [ -n "$sessions" ]; then
+        while IFS= read -r session; do
+            kill_test_session "$session"
+        done <<< "$sessions"
+    fi
+}
+
+# Check if Developer directory exists
+has_developer_directory() {
+    [ -d "$HOME/Developer" ]
+}
+
+# Get first available project in Developer directory
+get_first_developer_project() {
+    find "$HOME/Developer" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | grep -v '^\.' | head -1
+}
+
+# Check if a specific project exists in Developer directory
+has_developer_project() {
+    local project="$1"
+    [ -d "$HOME/Developer/$project" ]
+}

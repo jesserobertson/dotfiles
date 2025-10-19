@@ -14,24 +14,41 @@ NC='\033[0m' # No Color
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BATS_DIR="$SCRIPT_DIR/bats"
 
 # Default values
 VERBOSE=false
 TEST_SUITE=""
+USE_BATS=true
+
+# Check if bats is available
+BATS_AVAILABLE=false
+if command -v bats >/dev/null 2>&1; then
+    BATS_AVAILABLE=true
+fi
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
     echo "  -t, --test SUITE      Run specific test suite (default: all)"
-    echo "                        Available: developer-layout, shell-env"
+    if [ "$BATS_AVAILABLE" = true ]; then
+        echo "                        Available (bats): developer-layout, shell-env"
+    else
+        echo "                        Available (legacy): developer-layout, shell-env"
+        echo "                        Note: Install bats-core for improved test experience"
+    fi
     echo "  -v, --verbose         Verbose output"
+    echo "  --no-bats             Use legacy shell scripts instead of bats"
     echo "  -h, --help            Show this help message"
     echo ""
     echo "Examples:"
     echo "  $0                              # Run all local tests"
     echo "  $0 -t developer-layout         # Test Developer project layout only"
     echo "  $0 -v                          # Run all tests with verbose output"
+    if [ "$BATS_AVAILABLE" = true ]; then
+        echo "  $0 --no-bats                   # Use legacy test scripts"
+    fi
 }
 
 log() {
@@ -46,6 +63,182 @@ success() {
     echo -e "${GREEN}[SUCCESS] $*${NC}"
 }
 
+warning() {
+    echo -e "${YELLOW}[WARNING] $*${NC}"
+}
+
+# Run a bats test file
+run_bats_test() {
+    local test_name="$1"
+    local test_file="$2"
+
+    log "Running bats test: $test_name"
+
+    local bats_args=()
+    if [ "$VERBOSE" = true ]; then
+        bats_args+=("--verbose-run" "--show-output-of-passing-tests")
+    fi
+
+    # Set up bats helper library paths
+    export BATS_SUPPORT_LOAD="${HOMEBREW_PREFIX:-/opt/homebrew}/lib/bats-support/load.bash"
+    export BATS_ASSERT_LOAD="${HOMEBREW_PREFIX:-/opt/homebrew}/lib/bats-assert/load.bash"
+    export BATS_FILE_LOAD="${HOMEBREW_PREFIX:-/opt/homebrew}/lib/bats-file/load.bash"
+
+    if bats "${bats_args[@]}" "$test_file"; then
+        success "$test_name passed"
+        return 0
+    else
+        error "$test_name failed"
+        return 1
+    fi
+}
+
+# Run a legacy shell test script
+run_legacy_test() {
+    local test_name="$1"
+    local test_script="$2"
+
+    log "Running legacy test: $test_name"
+
+    if [ ! -x "$test_script" ]; then
+        error "Test script not found or not executable: $test_script"
+        return 1
+    fi
+
+    local verbose_flag=""
+    if [ "$VERBOSE" = true ]; then
+        verbose_flag="-v"
+    fi
+
+    if "$test_script" $verbose_flag; then
+        success "$test_name passed"
+        return 0
+    else
+        error "$test_name failed"
+        return 1
+    fi
+}
+
+# Run all bats tests
+run_all_bats_tests() {
+    local failed=0
+
+    # Find all .bats files
+    local bats_files
+    bats_files=$(find "$BATS_DIR" -maxdepth 1 -name "*.bats" -type f 2>/dev/null | sort)
+
+    if [ -z "$bats_files" ]; then
+        warning "No bats test files found in $BATS_DIR"
+        return 0
+    fi
+
+    while IFS= read -r bats_file; do
+        local test_name
+        test_name=$(basename "$bats_file" .bats)
+        test_name="${test_name//-/ }"  # Replace hyphens with spaces
+        test_name="$(tr '[:lower:]' '[:upper:]' <<< ${test_name:0:1})${test_name:1}"  # Capitalize
+
+        if ! run_bats_test "$test_name" "$bats_file"; then
+            failed=1
+        fi
+        echo ""
+    done <<< "$bats_files"
+
+    return $failed
+}
+
+# Run all legacy tests
+run_all_legacy_tests() {
+    local failed=0
+
+    # Developer layout test
+    if [ -x "$SCRIPT_DIR/test-developer-layout.sh" ]; then
+        if ! run_legacy_test "Developer Layout" "$SCRIPT_DIR/test-developer-layout.sh"; then
+            failed=1
+        fi
+        echo ""
+    fi
+
+    # Shell environment test
+    if [ -x "$SCRIPT_DIR/test-shell-env.sh" ]; then
+        if ! run_legacy_test "Shell Environment" "$SCRIPT_DIR/test-shell-env.sh"; then
+            failed=1
+        fi
+        echo ""
+    fi
+
+    return $failed
+}
+
+main() {
+    echo ""
+    echo -e "${BLUE}================================${NC}"
+    echo -e "${BLUE}Local Dotfiles Tests${NC}"
+    echo -e "${BLUE}================================${NC}"
+    echo ""
+
+    # Show test framework being used
+    if [ "$BATS_AVAILABLE" = true ] && [ "$USE_BATS" = true ]; then
+        log "Using bats-core test framework"
+        echo ""
+    elif [ "$BATS_AVAILABLE" = false ]; then
+        warning "bats-core not found. Install with: brew install bats-core"
+        log "Using legacy test scripts"
+        echo ""
+    else
+        log "Using legacy test scripts (--no-bats specified)"
+        echo ""
+    fi
+
+    local exit_code=0
+
+    # Run tests based on suite selection
+    if [ -n "$TEST_SUITE" ]; then
+        # Run specific test suite
+        if [ "$BATS_AVAILABLE" = true ] && [ "$USE_BATS" = true ]; then
+            # Check for bats test file
+            local bats_file="$BATS_DIR/${TEST_SUITE}.bats"
+            if [ -f "$bats_file" ]; then
+                run_bats_test "$TEST_SUITE" "$bats_file" || exit_code=1
+            else
+                error "Bats test file not found: $bats_file"
+                exit_code=1
+            fi
+        else
+            # Use legacy script
+            local legacy_script="$SCRIPT_DIR/test-${TEST_SUITE}.sh"
+            if [ -x "$legacy_script" ]; then
+                run_legacy_test "$TEST_SUITE" "$legacy_script" || exit_code=1
+            else
+                error "Legacy test script not found: $legacy_script"
+                exit_code=1
+            fi
+        fi
+    else
+        # Run all tests
+        if [ "$BATS_AVAILABLE" = true ] && [ "$USE_BATS" = true ]; then
+            run_all_bats_tests || exit_code=1
+        else
+            run_all_legacy_tests || exit_code=1
+        fi
+    fi
+
+    # Summary
+    echo ""
+    echo -e "${BLUE}================================${NC}"
+    echo -e "${BLUE}Test Summary${NC}"
+    echo -e "${BLUE}================================${NC}"
+
+    if [ $exit_code -eq 0 ]; then
+        success "All tests passed!"
+    else
+        error "Some tests failed"
+    fi
+    echo ""
+
+    exit $exit_code
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -55,6 +248,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -v|--verbose)
             VERBOSE=true
+            shift
+            ;;
+        --no-bats)
+            USE_BATS=false
             shift
             ;;
         -h|--help)
@@ -68,98 +265,5 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
-
-# Track results
-TOTAL_TESTS=0
-PASSED_TESTS=0
-FAILED_TESTS=0
-
-run_test() {
-    local test_name="$1"
-    local test_script="$2"
-    shift 2
-    local test_args=("$@")
-
-    log "Running test: $test_name"
-    ((TOTAL_TESTS++))
-
-    if [ ! -x "$test_script" ]; then
-        error "Test script not found or not executable: $test_script"
-        ((FAILED_TESTS++))
-        return 1
-    fi
-
-    local verbose_flag=""
-    if [ "$VERBOSE" = true ]; then
-        verbose_flag="-v"
-    fi
-
-    if "$test_script" $verbose_flag "${test_args[@]}"; then
-        success "$test_name passed"
-        ((PASSED_TESTS++))
-        return 0
-    else
-        error "$test_name failed"
-        ((FAILED_TESTS++))
-        return 1
-    fi
-}
-
-main() {
-    echo ""
-    echo -e "${BLUE}================================${NC}"
-    echo -e "${BLUE}Local Dotfiles Tests${NC}"
-    echo -e "${BLUE}================================${NC}"
-    echo ""
-
-    # Run tests based on suite selection
-    case "$TEST_SUITE" in
-        "developer-layout")
-            run_test "Developer Layout" "$SCRIPT_DIR/test-developer-layout.sh"
-            ;;
-        "shell-env")
-            run_test "Shell Environment" "$SCRIPT_DIR/test-shell-env.sh"
-            ;;
-        "")
-            # Run all tests
-            log "Running all local tests..."
-            echo ""
-
-            # Developer layout test
-            if [ -x "$SCRIPT_DIR/test-developer-layout.sh" ]; then
-                run_test "Developer Layout" "$SCRIPT_DIR/test-developer-layout.sh" || true
-                echo ""
-            fi
-
-            # Shell environment test
-            if [ -x "$SCRIPT_DIR/test-shell-env.sh" ]; then
-                run_test "Shell Environment" "$SCRIPT_DIR/test-shell-env.sh" || true
-                echo ""
-            fi
-            ;;
-        *)
-            error "Unknown test suite: $TEST_SUITE"
-            usage
-            exit 1
-            ;;
-    esac
-
-    # Summary
-    echo -e "${BLUE}================================${NC}"
-    echo -e "${BLUE}Test Summary${NC}"
-    echo -e "${BLUE}================================${NC}"
-    echo -e "Total:  $TOTAL_TESTS"
-    echo -e "Passed: ${GREEN}$PASSED_TESTS${NC}"
-    echo -e "Failed: ${RED}$FAILED_TESTS${NC}"
-    echo ""
-
-    if [ $FAILED_TESTS -eq 0 ]; then
-        success "All tests passed!"
-        exit 0
-    else
-        error "$FAILED_TESTS test(s) failed"
-        exit 1
-    fi
-}
 
 main

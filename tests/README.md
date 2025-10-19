@@ -1,43 +1,98 @@
 # Dotfiles Testing Framework
 
-This directory contains comprehensive testing infrastructure for validating dotfiles installation across different platforms using Docker, docker-compose, and CI/CD.
+This directory contains comprehensive testing infrastructure for validating dotfiles installation and functionality using a hybrid approach: **bats-core for fast feature tests** and **Docker for end-to-end bootstrap validation**.
+
+## Testing Philosophy
+
+This framework follows a **test pyramid** approach with different types of tests serving complementary purposes:
+
+```
+                /\
+               /  \
+              / E2E \          ← Docker Tests (Integration)
+             /  Tests \          Full bootstrap from scratch
+            /----------\         5-10 minutes, comprehensive
+           /            \
+          /   Feature    \     ← Bats Tests (Unit/Feature)
+         /     Tests      \      Specific dotfile features
+        /------------------\     Seconds, fast feedback
+       /                    \
+```
+
+### Test Types Quick Reference
+
+| Test Type | Tool | Speed | Scope | When to Run |
+|-----------|------|-------|-------|-------------|
+| **Feature Tests** | bats-core | ⚡ Fast (seconds) | Specific features (tmux, shell, etc.) | Every commit, local dev |
+| **E2E Bootstrap** | Docker | 🐌 Slow (5-10 min) | Full installation from scratch | PR merges, releases |
 
 ## Overview
 
-The testing framework validates that:
+**Feature Tests (bats-core)** validate:
+- Tmux automatic layouts and configurations
+- Shell environment setup and integrations
+- Individual dotfile features and scripts
+- Configuration file correctness
+
+**E2E Tests (Docker)** validate:
 - The chezmoi bootstrap process works correctly
-- Homebrew is installed and configured properly
-- All packages from the Brewfile are installed
-- Dotfiles are applied correctly
-- Core tools and applications are available and functional
-- Shell configurations work across environments
+- Homebrew installation and package management
+- All packages from the Brewfile install successfully
+- Dotfiles are applied correctly across platforms
+- Core tools and applications are available
+- Shell configurations work in fresh environments
 
 ## Structure
 
 ```
 tests/
 ├── README.md                       # This file
-├── docker-compose.yml              # Multi-platform orchestration
-├── run-tests.sh                    # Main test runner with options
-├── verify-installation.sh          # Comprehensive verification script
+├── run-local-tests.sh             # Runner for bats/legacy feature tests
+├── run-tests.sh                    # Runner for Docker bootstrap tests
+├── verify-installation.sh          # Post-install verification script
 ├── test-shell-env.sh              # Shell environment consistency tests
-└── docker/
-    ├── ubuntu/
-    │   ├── Dockerfile              # Ubuntu 22.04 container
-    │   ├── test-bootstrap.sh       # Ubuntu bootstrap tests
-    │   └── test-bootstrap-offline.sh # Offline mode tests
-    └── macos/
-        ├── Dockerfile              # macOS-like environment
-        ├── test-bootstrap-macos.sh # macOS bootstrap tests
-        └── test-bootstrap-offline.sh # macOS offline tests
+├── bats/                           # Bats feature tests
+│   ├── developer-layout.bats      # Developer project tmux layout
+│   └── helpers/
+│       └── setup.bash             # Shared test helpers
+├── docker/                         # Docker E2E tests
+│   ├── ubuntu/
+│   │   ├── Dockerfile
+│   │   ├── test-bootstrap.sh
+│   │   └── test-bootstrap-offline.sh
+│   └── macos/
+│       ├── Dockerfile
+│       ├── test-bootstrap-macos.sh
+│       └── test-bootstrap-offline.sh
+└── docker-compose.yml              # Multi-platform orchestration
 ```
 
 ## Quick Start
 
-### Using Docker Compose (Recommended)
+### Feature Tests (Fast - For Development)
 
 ```bash
-# Test all platforms
+# Install bats-core first (if not already installed)
+brew install bats-core bats-support bats-assert bats-file
+
+# Run all feature tests
+cd tests
+./run-local-tests.sh
+
+# Run specific test suite
+./run-local-tests.sh -t developer-layout
+
+# Run with verbose output
+./run-local-tests.sh -v
+
+# Run bats directly for more control
+bats bats/developer-layout.bats
+```
+
+### E2E Bootstrap Tests (Slow - For CI/CD)
+
+```bash
+# Test all platforms with Docker Compose
 cd tests
 docker-compose up --abort-on-container-exit
 
@@ -45,16 +100,10 @@ docker-compose up --abort-on-container-exit
 docker-compose run --rm ubuntu          # Ubuntu with verification
 docker-compose run --rm ubuntu-offline  # Ubuntu offline mode
 docker-compose run --rm macos-sim       # macOS simulation
-```
 
-### Using the Test Runner
-
-```bash
-# Run default Ubuntu test
-./tests/run-tests.sh
-
-# Test with options
-./tests/run-tests.sh -p ubuntu,macos -t 900 -v
+# Using the test runner script
+./run-tests.sh                          # Default Ubuntu test
+./run-tests.sh -p ubuntu,macos -t 900 -v # Multiple platforms with timeout
 ```
 
 ### Advanced Test Runner Options
@@ -97,66 +146,171 @@ The `verify-installation.sh` script can be run on any system to verify an existi
 chmod +x ./tests/verify-installation.sh
 ```
 
-## Local Feature Tests
+## Feature Tests with Bats
 
-In addition to bootstrap tests, the framework includes tests for specific dotfile features that run on your local machine:
+The framework uses [bats-core](https://github.com/bats-core/bats-core) for fast, focused testing of dotfile features.
 
-### Running Local Tests
+### Installation
 
 ```bash
-# Run all local tests
-./tests/run-local-tests.sh
+# Install via Homebrew (included in Brewfile)
+brew install bats-core bats-support bats-assert bats-file
 
-# Run specific test suite
-./tests/run-local-tests.sh -t developer-layout
+# Or add to your existing setup
+# (already included in this repo's Brewfile)
+```
+
+### Running Bats Tests
+
+```bash
+# Run all bats tests
+./run-local-tests.sh
+
+# Run specific test file
+./run-local-tests.sh -t developer-layout
 
 # Run with verbose output
-./tests/run-local-tests.sh -v
+./run-local-tests.sh -v
+
+# Run bats directly (for more control)
+bats bats/developer-layout.bats
+
+# Run bats with TAP output (for CI)
+bats --tap bats/developer-layout.bats
+
+# Run bats with timing info
+bats --timing bats/*.bats
 ```
 
-### Available Local Tests
+### Available Bats Tests
 
-**Developer Layout Test** (`test-developer-layout.sh`)
-- Tests the tmux+sesh automatic layout setup for Developer projects
-- Validates that sessions created in `~/Developer/*` get the correct 3-pane layout
-- Checks that nvim, terminal, and claude panes are configured correctly
+**Developer Layout** (`bats/developer-layout.bats`)
+- Tests automatic tmux layout for Developer projects
+- Validates 3-pane layout creation
+- Checks pane commands (nvim, claude) and paths
+- Tests layout across multiple projects
+- Negative tests (non-Developer directories)
+
+Example test output:
+```
+ ✓ Developer directory exists
+ ✓ Test project exists in Developer directory
+ ✓ Developer project session creates exactly 3 panes
+ ✓ All panes are in the correct project directory
+ ✓ Pane 0 runs neovim
+ ✓ Pane 2 runs claude
+ ✓ Session layout is split correctly
+
+7 tests, 0 failures
+```
+
+### Writing New Bats Tests
+
+Create a new `.bats` file in the `bats/` directory:
 
 ```bash
-# Test single project
-./tests/test-developer-layout.sh -p myproject
+#!/usr/bin/env bats
 
-# Test all projects (up to 5)
-./tests/test-developer-layout.sh -a
+# Load shared helpers
+load helpers/setup
 
-# Verbose output
-./tests/test-developer-layout.sh -v
+setup() {
+    # Run before each test
+}
+
+teardown() {
+    # Run after each test
+}
+
+@test "descriptive test name" {
+    run some_command
+    [ "$status" -eq 0 ]
+    [ "$output" = "expected output" ]
+}
 ```
 
-**Shell Environment Test** (`test-shell-env.sh`)
-- Validates shell configuration consistency
-- Checks environment variables and PATH setup
-- Verifies shell integrations
+**Available Helper Functions** (from `helpers/setup.bash`):
+- `is_tmux_available` - Check if tmux is installed
+- `create_test_session <name> <path>` - Create tmux test session
+- `kill_test_session <name>` - Clean up test session
+- `get_pane_count <session>` - Get number of panes
+- `get_pane_command <session> <index>` - Get command in pane
+- `all_panes_in_directory <session> <path>` - Verify all panes are in correct dir
+- And more... (see `bats/helpers/setup.bash`)
+
+### Bats Best Practices
+
+1. **Use setup/teardown** for common initialization and cleanup
+2. **Load helpers** for reusable test functions
+3. **Test one thing per test** - keep tests focused
+4. **Use descriptive test names** - they serve as documentation
+5. **Clean up resources** - always cleanup in teardown
+6. **Skip when appropriate** - use `skip` for missing dependencies
+
+Example:
+```bash
+setup() {
+    if ! command -v tmux >/dev/null; then
+        skip "tmux not installed"
+    fi
+}
+```
 
 ## CI/CD Integration
+
+Both test types (bats and Docker) can be integrated into CI/CD pipelines.
 
 ### GitHub Actions
 
 Automated tests run on every push and pull request via `.github/workflows/test-dotfiles.yml`:
 
-- **Ubuntu tests**: Run in Docker containers (fast, consistent)
-- **macOS tests**: Run on GitHub's native macOS runners (true macOS environment)
-- **Docker Compose tests**: Full test suite validation
+**Feature Tests (Bats):**
+- Run on every commit for fast feedback
+- Test specific features without full bootstrap
+- TAP output for CI integration
+- Can run in parallel for speed
+
+**E2E Bootstrap Tests (Docker):**
+- Run on PR merges and releases
+- Full installation validation
+- Cross-platform testing (Ubuntu, macOS)
+
+Example GitHub Actions workflow:
+```yaml
+jobs:
+  feature-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install bats
+        run: |
+          brew install bats-core bats-support bats-assert bats-file
+      - name: Run feature tests
+        run: ./tests/run-local-tests.sh
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Docker tests
+        run: |
+          cd tests
+          docker-compose up --abort-on-container-exit
+```
 
 View test results at: `https://github.com/[user]/[repo]/actions`
 
-The workflow includes:
-- `test-ubuntu`: Docker-based Ubuntu testing
-- `test-macos`: Native macOS runner with full installation
-- `test-docker-compose`: Comprehensive docker-compose test suite
+### Bats TAP Output for CI
 
-### Manual GitHub Actions Trigger
+Bats produces TAP (Test Anything Protocol) output, which integrates well with CI systems:
 
-You can manually trigger the workflow from the Actions tab in GitHub.
+```bash
+# Generate TAP output
+bats --tap bats/*.bats
+
+# With formatting for CI
+bats --formatter junit bats/*.bats > test-results.xml
+```
 
 ## Platform Support
 
