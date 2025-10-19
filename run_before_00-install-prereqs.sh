@@ -56,13 +56,19 @@ else
   PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:$PATH"
 fi
 
-## INSTALL 1PASSWORD (needed for templates)
-echo "Checking for 1Password CLI (op)"
-OP_BIN=$(which op 2>/dev/null || true)
-
-if [ -n "${OP_BIN}" ] && [ -x "${OP_BIN}" ]; then 
-  echo "1Password (op) already installed at ${OP_BIN}"
+## INSTALL 1PASSWORD (needed for templates, optional in CI)
+# Detect if we're in CI environment
+if [ -n "${CI:-}" ] || [ -n "${GITHUB_ACTIONS:-}" ] || [ -n "${GITLAB_CI:-}" ]; then
+  echo "CI environment detected, skipping 1Password CLI installation"
+  echo "Note: Templates requiring 1Password will be ignored via .chezmoiignore"
 else
-  echo "1Password not found. Installing..."
-  brew install 1password-cli
+  echo "Checking for 1Password CLI (op)"
+  OP_BIN=$(which op 2>/dev/null || true)
+
+  if [ -n "${OP_BIN}" ] && [ -x "${OP_BIN}" ]; then
+    echo "1Password (op) already installed at ${OP_BIN}"
+  else
+    echo "1Password not found. Installing..."
+    brew install 1password-cli
+  fi
 fi

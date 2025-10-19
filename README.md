@@ -23,7 +23,7 @@ $ BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh -
 1. **Phase 0: Pre-installation** (`run_before_00-install-prereqs.sh`)
    - Detects OS (macOS/Linux) and architecture
    - Installs Homebrew if not present
-   - Installs 1Password CLI for secrets management
+   - Installs 1Password CLI for secrets management (skipped in CI)
 
 2. **Phase 1: Apply Dotfiles**
    - Chezmoi processes all templates using data from `chezmoi.toml`
@@ -457,6 +457,35 @@ Sensitive configurations are stored in 1Password and fetched during template pro
 ```
 
 This keeps secrets out of version control while maintaining reproducibility.
+
+## Testing
+
+Comprehensive testing is provided via a hybrid approach with both fast unit tests and slow end-to-end integration tests. See `tests/README.md` for complete documentation.
+
+### Quick Test
+
+```bash
+# Run all local feature tests (fast - ~30 seconds)
+./tests/run-local-tests.sh
+
+# Or run specific test suites
+./tests/run-local-tests.sh -t developer-layout  # Tmux layout tests
+```
+
+### CI/CD Testing
+
+The repository includes GitHub Actions workflows that test installation across platforms:
+- **Ubuntu**: Docker-based testing (fast, consistent)
+- **macOS**: Native macOS runner testing (comprehensive)
+
+**Note:** 1Password-dependent templates (`.gitconfig`, `.aws/config`) are automatically skipped in CI environments. See `CI-TESTING.md` for details on how secrets are handled in CI.
+
+### Test Coverage
+
+- ✅ **21 bats tests** - Fast feature validation (tmux layouts, configurations)
+- ✅ **Docker E2E tests** - Full bootstrap from scratch
+- ✅ **Platform tests** - Ubuntu and macOS compatibility
+- ✅ **Configuration validation** - Tmux, shell, and tool configs
 
 ## Troubleshooting
 

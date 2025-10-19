@@ -97,7 +97,9 @@
       "Bash(command -v:*)",
       "Bash(brew install:*)",
       "Bash(brew tap:*)",
-      "Bash(bats:*)"
+      "Bash(bats:*)",
+      "Bash(CI=true chezmoi apply:*)",
+      "Bash(env CI=true chezmoi apply:*)"
     ],
     "deny": [],
     "ask": []

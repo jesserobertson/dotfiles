@@ -1,0 +1,6 @@
+# Ignore files that require 1Password in CI environments
+{{- if or (env "CI") (env "GITHUB_ACTIONS") (env "GITLAB_CI") }}
+# Skip 1Password-dependent templates in CI
+.aws/config
+.gitconfig
+{{ end -}}
