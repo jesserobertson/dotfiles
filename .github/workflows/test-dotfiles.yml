@@ -71,7 +71,7 @@ jobs:
         run: |
           if ! command -v chezmoi &> /dev/null; then
             echo "Installing chezmoi..."
-            sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+            sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin" v2.66.0
             echo "$HOME/.local/bin" >> $GITHUB_PATH
           else
             echo "Chezmoi already installed"

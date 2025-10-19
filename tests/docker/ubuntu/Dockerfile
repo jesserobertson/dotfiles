@@ -25,7 +25,7 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 
 # Install chezmoi first (as required by bootstrap)
 RUN mkdir -p ${HOME}/.local/bin && \
-    BINDIR="${HOME}/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
+    BINDIR="${HOME}/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- v2.66.0
 
 # Copy test scripts
 COPY --chown=testuser:testuser test-bootstrap.sh /home/testuser/
