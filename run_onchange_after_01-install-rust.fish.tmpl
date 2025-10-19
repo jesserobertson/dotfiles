@@ -1,26 +1,8 @@
 #!/usr/bin/env fish
-# Brewfile hash: {{ include "dot_config/brewfile.tmpl" | sha256sum }}
+# Rust toolchain check
 
 # Source fish config to get PATH and environment variables
 source ~/.config/fish/config.fish
-
-echo "Installing Homebrew packages..."
-echo "Using Homebrew prefix: $HOMEBREW_PREFIX"
-
-# Install packages from Brewfile
-echo "Rendering and installing packages from Brewfile..."
-{{- if hasKey .chezmoi "force" }}
-{{- if .chezmoi.force }}
-echo "Force mode enabled - reinstalling all packages..."
-brew bundle install --force --file="{{ .xdg_config_home }}/brewfile" --verbose
-{{- else }}
-brew bundle install --file="{{ .xdg_config_home }}/brewfile" --verbose
-{{- end }}
-{{- else }}
-brew bundle install --file="{{ .xdg_config_home }}/brewfile" --verbose
-{{- end }}
-
-echo "Homebrew installation and package setup complete!"
 
 # Initialize Rust toolchain
 echo "Checking Rust toolchain..."
