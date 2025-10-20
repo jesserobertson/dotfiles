@@ -57,10 +57,13 @@ else
 fi
 
 ## INSTALL 1PASSWORD (needed for templates, optional in CI)
-# Detect if we're in CI environment
+# Detect if we're in CI environment or on Linux
 if [ -n "${CI:-}" ] || [ -n "${GITHUB_ACTIONS:-}" ] || [ -n "${GITLAB_CI:-}" ]; then
   echo "CI environment detected, skipping 1Password CLI installation"
   echo "Note: Templates requiring 1Password will be ignored via .chezmoiignore"
+elif [ "${OS}" = "linux" ]; then
+  echo "Linux detected - 1Password CLI installation skipped (cask not available)"
+  echo "To install manually, see: https://developer.1password.com/docs/cli/get-started/"
 else
   echo "Checking for 1Password CLI (op)"
   OP_BIN=$(which op 2>/dev/null || true)
@@ -69,6 +72,6 @@ else
     echo "1Password (op) already installed at ${OP_BIN}"
   else
     echo "1Password not found. Installing..."
-    brew install 1password-cli
+    brew install --cask 1password-cli
   fi
 fi
