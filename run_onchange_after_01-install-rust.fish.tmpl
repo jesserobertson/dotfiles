@@ -1,8 +1,13 @@
 #!/usr/bin/env fish
 # Rust toolchain check
 
-# Source env to get PATH and environment variables
-source ~/.config/fish/env.fish
+# Add rustup/cargo to PATH directly (in case env.fish doesn't exist yet on first run)
+set -gx PATH "{{ .cargo_home }}/bin" $PATH
+
+# Also source env.fish if it exists to get other environment variables
+if test -f ~/.config/fish/env.fish
+    source ~/.config/fish/env.fish
+end
 
 # Initialize Rust toolchain
 echo "Checking Rust toolchain..."
