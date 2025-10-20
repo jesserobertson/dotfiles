@@ -55,10 +55,24 @@ echo "=== Running chezmoi bootstrap ==="
 # Check if we're in docker with the source mounted, otherwise use GitHub
 if [ -d "/dotfiles-source" ]; then
     echo "Using local dotfiles source from /dotfiles-source"
-    # Copy to a writable location since /dotfiles-source is mounted read-only
+    # Copy to a writable location and initialize as git repo since /dotfiles-source is mounted read-only
     echo "Copying source to writable location..."
     cp -r /dotfiles-source /tmp/dotfiles-source-copy
-    timeout 300 chezmoi init --source /tmp/dotfiles-source-copy --apply || {
+
+    # Make it a git repo if it isn't already (chezmoi needs a git repo)
+    if [ ! -d "/tmp/dotfiles-source-copy/.git" ]; then
+        echo "Initializing as git repository..."
+        cd /tmp/dotfiles-source-copy
+        git init
+        git config user.email "test@example.com"
+        git config user.name "Test User"
+        git add .
+        git commit -m "Initial commit" || true
+        cd -
+    fi
+
+    # Use file:// URL to initialize from local git repo
+    timeout 300 chezmoi init --apply file:///tmp/dotfiles-source-copy || {
         echo "Bootstrap failed"
         exit 1
     }
