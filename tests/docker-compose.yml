@@ -8,6 +8,7 @@ services:
     container_name: dotfiles-test-ubuntu
     environment:
       - TEST_ENV=docker
+      - CI=true
     volumes:
       # Mount the parent directory (dotfiles repo) for testing
       - ../..:/dotfiles-source:ro
@@ -35,6 +36,7 @@ services:
     container_name: dotfiles-test-ubuntu-offline
     environment:
       - TEST_ENV=docker
+      - CI=true
       - OFFLINE_MODE=true
     network_mode: none
     command: /home/testuser/test-bootstrap-offline.sh
@@ -50,6 +52,7 @@ services:
     container_name: dotfiles-test-macos
     environment:
       - TEST_ENV=docker
+      - CI=true
       - SIMULATE_MACOS=true
     volumes:
       - ../..:/dotfiles-source:ro
