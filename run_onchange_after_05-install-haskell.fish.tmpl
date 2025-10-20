@@ -1,6 +1,12 @@
 #!/usr/bin/env fish
 # Haskell packages hash: {{ include "dot_config/haskellfile" | sha256sum }}
 
+# Skip Haskell installation in CI environments to save time
+if set -q CI
+    echo "CI environment detected - skipping Haskell installation"
+    exit 0
+end
+
 echo "Setting up Haskell environment..."
 
 # Ensure system paths are included for configure scripts

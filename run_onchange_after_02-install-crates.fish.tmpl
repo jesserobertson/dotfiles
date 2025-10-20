@@ -1,6 +1,12 @@
 #!/usr/bin/env fish
 # Crates list hash: {{ include "dot_config/cratefile" | sha256sum }}
 
+# Skip crate installation in CI environments to save time
+if set -q CI
+    echo "CI environment detected - skipping Rust crate installation"
+    exit 0
+end
+
 # Set Rust environment variables (cargo needs these)
 set -gx RUSTUP_HOME "{{ .rustup_home }}"
 set -gx CARGO_HOME "{{ .cargo_home }}"

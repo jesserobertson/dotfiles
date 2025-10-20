@@ -1,6 +1,12 @@
 #!/usr/bin/env fish
 # Rust toolchain check
 
+# Skip Rust installation in CI environments to save time
+if set -q CI
+    echo "CI environment detected - skipping Rust installation"
+    exit 0
+end
+
 # Set Rust environment variables (rustup needs these to know where to install)
 set -gx RUSTUP_HOME "{{ .rustup_home }}"
 set -gx CARGO_HOME "{{ .cargo_home }}"

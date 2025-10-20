@@ -4,6 +4,12 @@
 # This script runs when the haskellfile changes
 # Hash: {{ include "dot_config/haskellfile" | sha256sum }}
 
+# Skip TidalCycles installation in CI environments to save time
+if set -q CI
+    echo "CI environment detected - skipping TidalCycles installation"
+    exit 0
+end
+
 # Ensure system paths are included for timeout and sh commands
 fish_add_path "/bin"
 fish_add_path "/usr/bin"
