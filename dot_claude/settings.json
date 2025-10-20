@@ -1,10 +1,10 @@
 {
-  "feedbackSurveyState": {
-    "lastShownTime": 1734858731502
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
   },
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/scripts/status_line.py",
+    "command": "bash ~/.claude/scripts/statusline.sh",
     "padding": 0
   },
   "vimMode": true,
@@ -17,6 +17,17 @@
     "Glob",
     "Grep",
     "Bash",
+    "Bash(gh pr diff:*)",
+    "Bash(gh pr list:*)",
+    "Bash(gh pr review-comment list:*)",
+    "Bash(gh pr view:*)",
+    "Bash(gh run list:*)",
+    "Bash(gh run view:*)",
+    "Bash(rg:*)",
+    "Bash(ls:*)",
+    "Bash(fd:*)",
+    "Bash(find:*)",
+    "Bash(command -v:*)",
     "TodoWrite",
     "Task"
   ],
