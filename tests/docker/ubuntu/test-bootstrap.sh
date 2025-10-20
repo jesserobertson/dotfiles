@@ -51,12 +51,21 @@ test_command_output() {
 }
 
 echo "=== Running chezmoi bootstrap ==="
-# Run the bootstrap process using the already-installed chezmoi binary
-# Note: Using HTTPS instead of SSH since we don't have SSH keys in CI
-timeout 300 chezmoi init https://github.com/jesserobertson/dotfiles.git --apply || {
-    echo "Bootstrap failed"
-    exit 1
-}
+# Run the bootstrap process using the local source (mounted in docker-compose)
+# Check if we're in docker with the source mounted, otherwise use GitHub
+if [ -d "/dotfiles-source" ]; then
+    echo "Using local dotfiles source from /dotfiles-source"
+    timeout 300 chezmoi init --source /dotfiles-source --apply || {
+        echo "Bootstrap failed"
+        exit 1
+    }
+else
+    echo "Using GitHub repository"
+    timeout 300 chezmoi init https://github.com/jesserobertson/dotfiles.git --apply || {
+        echo "Bootstrap failed"
+        exit 1
+    }
+fi
 
 echo "=== Verifying installation ==="
 
