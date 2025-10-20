@@ -55,7 +55,10 @@ echo "=== Running chezmoi bootstrap ==="
 # Check if we're in docker with the source mounted, otherwise use GitHub
 if [ -d "/dotfiles-source" ]; then
     echo "Using local dotfiles source from /dotfiles-source"
-    timeout 300 chezmoi init --source /dotfiles-source --apply || {
+    # Copy to a writable location since /dotfiles-source is mounted read-only
+    echo "Copying source to writable location..."
+    cp -r /dotfiles-source /tmp/dotfiles-source-copy
+    timeout 300 chezmoi init --source /tmp/dotfiles-source-copy --apply || {
         echo "Bootstrap failed"
         exit 1
     }
