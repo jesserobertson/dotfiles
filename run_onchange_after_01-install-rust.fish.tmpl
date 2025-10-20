@@ -11,9 +11,20 @@ if test -f ~/.config/fish/env.fish
     source ~/.config/fish/env.fish
 end
 
-# Install rustup if not already installed
-if not type -q rustup
-    echo "rustup not found, installing..."
+# Check if rustup is installed in the correct location
+# If cargo bin directory doesn't exist, we need to reinstall rustup with correct paths
+if not test -d "{{ .cargo_home }}/bin"
+    if type -q rustup
+        echo "rustup found but not in correct location, removing old installation..."
+        # Uninstall any existing rustup (from Homebrew or elsewhere)
+        rustup self uninstall -y 2>/dev/null; or true
+        # Remove Homebrew's rustup if present
+        brew uninstall rustup 2>/dev/null; or true
+        # Clean up default locations
+        rm -rf ~/.cargo ~/.rustup 2>/dev/null; or true
+    end
+
+    echo "Installing rustup to custom location..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
     # Reload PATH to pick up rustup
     set -gx PATH "{{ .cargo_home }}/bin" $PATH
