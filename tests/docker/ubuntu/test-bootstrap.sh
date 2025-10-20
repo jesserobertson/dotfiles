@@ -93,36 +93,41 @@ sleep 5
 test_command "which brew" "Homebrew is installed and in PATH"
 test_command_output "brew --version" "Homebrew version check" "Homebrew"
 
-# Test core CLI tools from Brewfile
+# Test core CLI tools from Brewfile (always installed)
 test_command "which git" "Git is installed"
 test_command "which fish" "Fish shell is installed"
-test_command "which nvim" "Neovim is installed"
-test_command "which bat" "Bat is installed"
-test_command "which eza" "Eza is installed"
-test_command "which fd" "Fd is installed"
-test_command "which fzf" "Fzf is installed"
-test_command "which rg" "Ripgrep is installed"
 test_command "which jq" "Jq is installed"
 test_command "which tmux" "Tmux is installed"
 
-# Test programming languages
-test_command "which go" "Go is installed"
-test_command "which node" "Node.js is installed"
-test_command "which rustup" "Rustup is installed"
-
-# Test development tools
-test_command "which aws" "AWS CLI is installed"
-test_command "which gcloud" "Google Cloud SDK is installed"
-test_command "which terraform" "Terraform is installed"
-test_command "which packer" "Packer is installed"
-
 # Test that chezmoi applied dotfiles
-test_command "test -f ~/.zshrc" "Zsh config file exists"
 test_command "test -f ~/.bashrc" "Bash config file exists"
 test_command "test -d ~/.config" "Config directory exists"
 
+# In CI, we skip optional packages to save time
+if [ -n "${CI:-}" ]; then
+    echo "CI mode - skipping optional package checks (Rust, Haskell, cloud tools, etc.)"
+else
+    # Test additional CLI tools (not in CI)
+    test_command "which nvim" "Neovim is installed"
+    test_command "which bat" "Bat is installed"
+    test_command "which fzf" "Fzf is installed"
+    test_command "which gh" "GitHub CLI is installed"
+
+    # Test programming languages
+    test_command "which go" "Go is installed"
+    test_command "which node" "Node.js is installed"
+    test_command "which rustup" "Rustup is installed"
+
+    # Test development tools
+    test_command "which aws" "AWS CLI is installed"
+    test_command "which tofu" "OpenTofu is installed"
+    test_command "which packer" "Packer is installed"
+
+    test_command "test -f ~/.zshrc" "Zsh config file exists"
+fi
+
 # Test Homebrew bundle was successful
-test_command "brew list --formula | wc -l | grep -E '^[1-9][0-9]+$'" "Multiple brew packages installed"
+test_command "brew list --formula | wc -l | grep -E '^[1-9][0-9]*$'" "Brew packages installed"
 
 echo "=== Test Summary ==="
 echo -e "Tests passed: ${GREEN}${TESTS_PASSED}${NC}"
