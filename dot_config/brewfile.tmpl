@@ -2,7 +2,7 @@ cask_args appdir: "/Applications"
 
 ## TAPS
 tap "bats-core/bats-core"
-tap "morantron/tmux-fingers"
+# tap "morantron/tmux-fingers"  # Not available in Homebrew
 {{ if eq .chezmoi.os "darwin" }}
 tap "buo/cask-upgrade"
 ## CASKS
@@ -22,9 +22,10 @@ cask "font-prompt"
 brew "awscli"
 brew "bat-extras"
 brew "bats-core"
-brew "bats-assert"
-brew "bats-file"
-brew "bats-support"
+# The following bats extensions are not available as separate formulas
+# brew "bats-assert"
+# brew "bats-file"
+# brew "bats-support"
 brew "chezmoi"
 brew "cmake"
 brew "coreutils"
@@ -49,7 +50,8 @@ brew "packer"
 brew "pixi"
 brew "readline"
 brew "sesh"
-brew "terraform"
+# brew "terraform"  # Deprecated due to license change - use opentofu instead
+brew "opentofu"  # Open source Terraform alternative
 brew "tig"
 brew "tmux"
-brew "tmux-fingers"
+# brew "tmux-fingers"  # Not available as Homebrew formula
