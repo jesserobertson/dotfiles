@@ -1,7 +1,9 @@
 #!/usr/bin/env fish
 # Crates list hash: {{ include "dot_config/cratefile" | sha256sum }}
 
-# Add cargo to PATH directly (in case env.fish doesn't exist yet on first run)
+# Set Rust environment variables (cargo needs these)
+set -gx RUSTUP_HOME "{{ .rustup_home }}"
+set -gx CARGO_HOME "{{ .cargo_home }}"
 set -gx PATH "{{ .cargo_home }}/bin" $PATH
 
 # Also source env.fish if it exists to get other environment variables
@@ -14,8 +16,12 @@ echo "Installing Rust crates..."
 # Check if cargo is available
 if not type -q cargo
     echo "Error: cargo not found. Please ensure Rust is installed."
-    echo "Cargo home: {{ .cargo_home }}"
+    echo "RUSTUP_HOME: {{ .rustup_home }}"
+    echo "CARGO_HOME: {{ .cargo_home }}"
     echo "Current PATH: $PATH"
+    # List what's actually in the cargo bin directory
+    echo "Contents of {{ .cargo_home }}/bin:"
+    ls -la "{{ .cargo_home }}/bin" 2>/dev/null; or echo "Directory does not exist"
     exit 1
 end
 

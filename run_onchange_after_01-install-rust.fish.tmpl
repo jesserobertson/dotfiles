@@ -1,7 +1,9 @@
 #!/usr/bin/env fish
 # Rust toolchain check
 
-# Add rustup/cargo to PATH directly (in case env.fish doesn't exist yet on first run)
+# Set Rust environment variables (rustup needs these to know where to install)
+set -gx RUSTUP_HOME "{{ .rustup_home }}"
+set -gx CARGO_HOME "{{ .cargo_home }}"
 set -gx PATH "{{ .cargo_home }}/bin" $PATH
 
 # Also source env.fish if it exists to get other environment variables
