@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+# Note: Not using 'set -e' here because test functions return 1 on failure
+# and we want to continue testing even if some tests fail
 
 echo "=== Starting Ubuntu Bootstrap Test ==="
 

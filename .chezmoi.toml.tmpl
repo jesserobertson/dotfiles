@@ -72,5 +72,11 @@
   autoPush = true
 
 [scriptEnv]
-    PATH = "/opt/homebrew/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/usr/sbin:$PATH"
+{{- if eq .chezmoi.os "darwin" }}
+    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+{{- else if eq .chezmoi.os "linux" }}
+    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+{{- else }}
+    PATH = "$HOME/.local/share/cargo/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+{{- end }}
 
