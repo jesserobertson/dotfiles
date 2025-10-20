@@ -4,6 +4,11 @@
 # Source fish config to get PATH and environment variables
 source ~/.config/fish/config.fish
 
+# Add cargo bin to PATH if it exists
+if test -d ~/.cargo/bin
+    set -gx PATH ~/.cargo/bin $PATH
+end
+
 # Initialize Rust toolchain
 echo "Checking Rust toolchain..."
 if type -q rustup
