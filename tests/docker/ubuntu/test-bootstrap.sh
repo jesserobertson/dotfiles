@@ -51,15 +51,11 @@ test_command_output() {
 }
 
 echo "=== Running chezmoi bootstrap ==="
-# Run the bootstrap process
-export BINDIR="$HOME/.local/bin"
-timeout 300 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply jesserobertson || {
-    echo "Bootstrap failed or timed out, trying HTTPS instead..."
-    # Fallback to HTTPS if SSH fails
-    timeout 300 chezmoi init https://github.com/jesserobertson/dotfiles.git --apply || {
-        echo "Bootstrap failed with both SSH and HTTPS"
-        exit 1
-    }
+# Run the bootstrap process using the already-installed chezmoi binary
+# Note: Using HTTPS instead of SSH since we don't have SSH keys in CI
+timeout 300 chezmoi init https://github.com/jesserobertson/dotfiles.git --apply || {
+    echo "Bootstrap failed"
+    exit 1
 }
 
 echo "=== Verifying installation ==="
