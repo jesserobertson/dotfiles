@@ -1,13 +1,8 @@
 #!/usr/bin/env fish
 # Crates list hash: {{ include "dot_config/cratefile" | sha256sum }}
 
-# Source fish config to get PATH and environment variables
-source ~/.config/fish/config.fish
-
-# Add cargo bin to PATH if it exists
-if test -d ~/.cargo/bin
-    set -gx PATH ~/.cargo/bin $PATH
-end
+# Source env to get PATH (cargo was just installed, so re-source to pick it up)
+source ~/.config/fish/env.fish
 
 echo "Installing Rust crates..."
 
