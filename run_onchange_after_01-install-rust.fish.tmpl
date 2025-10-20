@@ -11,6 +11,14 @@ if test -f ~/.config/fish/env.fish
     source ~/.config/fish/env.fish
 end
 
+# Install rustup if not already installed
+if not type -q rustup
+    echo "rustup not found, installing..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+    # Reload PATH to pick up rustup
+    set -gx PATH "{{ .cargo_home }}/bin" $PATH
+end
+
 # Initialize Rust toolchain
 echo "Checking Rust toolchain..."
 if type -q rustup
