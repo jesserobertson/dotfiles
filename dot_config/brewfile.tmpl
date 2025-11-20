@@ -2,7 +2,6 @@ cask_args appdir: "/Applications"
 
 ## TAPS
 tap "bats-core/bats-core"
-# tap "morantron/tmux-fingers"  # Not available in Homebrew
 {{ if eq .chezmoi.os "darwin" }}
 tap "buo/cask-upgrade"
 ## CASKS
@@ -41,6 +40,9 @@ brew "golang"
 brew "htop"
 brew "jq"
 brew "juliaup"
+{{ if eq .chezmoi.os "darwin" }}
+brew "lima"
+{{ end }}
 brew "llm"
 brew "llvm"
 brew "neovim"
