@@ -1,13 +1,5 @@
-# Add some keybindings for git
-alias ga "git add"
-alias gaa "git add --all"
-alias msg magic_diff # use magic_diff to create a commit message
-alias gac "git add --all && magic_diff && git commit"
-alias gc "git commit"
-alias gs "git status"
-alias gd "git diff"
-alias push "git push"
-alias pull "git pull"
+# Git abbreviations (now in conf.d/git-abbrs.fish)
+# Kept here for reference - these are now abbreviations not aliases
 
 # Add bat and batextras
 alias cat bat
