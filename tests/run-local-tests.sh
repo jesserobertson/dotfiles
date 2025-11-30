@@ -20,6 +20,7 @@ BATS_DIR="$SCRIPT_DIR/bats"
 VERBOSE=false
 TEST_SUITE=""
 USE_BATS=true
+QUICK_MODE=false
 
 # Check if bats is available
 BATS_AVAILABLE=false
@@ -31,6 +32,7 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
+    echo "  -q, --quick           Run quick validation tests (fastest, ~5 seconds)"
     echo "  -t, --test SUITE      Run specific test suite (default: all)"
     if [ "$BATS_AVAILABLE" = true ]; then
         echo "                        Available (bats): developer-layout, shell-env"
@@ -42,8 +44,14 @@ usage() {
     echo "  --no-bats             Use legacy shell scripts instead of bats"
     echo "  -h, --help            Show this help message"
     echo ""
+    echo "Test Types:"
+    echo "  Quick Tests:         Fast syntax and template validation (~5 seconds)"
+    echo "  Feature Tests:       Bats tests for specific features (~30 seconds)"
+    echo "  Bootstrap Tests:     Full Docker integration tests (see docker-compose.yml)"
+    echo ""
     echo "Examples:"
-    echo "  $0                              # Run all local tests"
+    echo "  $0 --quick                     # Quick validation (fastest)"
+    echo "  $0                              # Run all feature tests"
     echo "  $0 -t developer-layout         # Test Developer project layout only"
     echo "  $0 -v                          # Run all tests with verbose output"
     if [ "$BATS_AVAILABLE" = true ]; then
@@ -169,6 +177,17 @@ run_all_legacy_tests() {
 }
 
 main() {
+    # Run quick tests if requested
+    if [ "$QUICK_MODE" = true ]; then
+        local quick_test="$SCRIPT_DIR/quick-test.sh"
+        if [ -x "$quick_test" ]; then
+            exec "$quick_test"
+        else
+            error "Quick test script not found or not executable: $quick_test"
+            exit 1
+        fi
+    fi
+
     echo ""
     echo -e "${BLUE}================================${NC}"
     echo -e "${BLUE}Local Dotfiles Tests${NC}"
@@ -258,6 +277,10 @@ main() {
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        -q|--quick)
+            QUICK_MODE=true
+            shift
+            ;;
         -t|--test)
             TEST_SUITE="$2"
             shift 2

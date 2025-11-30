@@ -15,18 +15,29 @@ This framework follows a **test pyramid** approach with different types of tests
            /            \
           /   Feature    \     ← Bats Tests (Unit/Feature)
          /     Tests      \      Specific dotfile features
-        /------------------\     Seconds, fast feedback
+        /------------------\     30 seconds, targeted
        /                    \
+      /    Quick/Unit        \  ← Quick Tests (Validation)
+     /       Tests            \   Syntax & template checks
+    /------------------------  \  5 seconds, instant feedback
 ```
 
 ### Test Types Quick Reference
 
 | Test Type | Tool | Speed | Scope | When to Run |
 |-----------|------|-------|-------|-------------|
-| **Feature Tests** | bats-core | ⚡ Fast (seconds) | Specific features (tmux, shell, etc.) | Every commit, local dev |
+| **Quick Tests** | Shell | ⚡⚡⚡ Instant (~5s) | Syntax, templates, basic validation | Every save, pre-commit |
+| **Feature Tests** | bats-core | ⚡⚡ Fast (~30s) | Specific features (tmux, shell, etc.) | Every commit, local dev |
 | **E2E Bootstrap** | Docker | 🐌 Slow (5-10 min) | Full installation from scratch | PR merges, releases |
 
 ## Overview
+
+**Quick Tests (Shell)** validate:
+- Fish shell syntax for all config files
+- Chezmoi template processing without errors
+- Critical files exist
+- JSON configuration validity
+- No common mistakes (hardcoded paths, etc.)
 
 **Feature Tests (bats-core)** validate:
 - Tmux automatic layouts and configurations
@@ -47,12 +58,14 @@ This framework follows a **test pyramid** approach with different types of tests
 ```
 tests/
 ├── README.md                       # This file
-├── run-local-tests.sh             # Runner for bats/legacy feature tests
+├── quick-test.sh                   # Fast validation tests (~5 seconds)
+├── run-local-tests.sh             # Runner for quick/bats/legacy tests
 ├── run-tests.sh                    # Runner for Docker bootstrap tests
 ├── verify-installation.sh          # Post-install verification script
 ├── test-shell-env.sh              # Shell environment consistency tests
 ├── bats/                           # Bats feature tests
 │   ├── developer-layout.bats      # Developer project tmux layout
+│   ├── tmux-scripts.bats          # Tmux helper scripts
 │   └── helpers/
 │       └── setup.bash             # Shared test helpers
 ├── docker/                         # Docker E2E tests
@@ -68,6 +81,23 @@ tests/
 ```
 
 ## Quick Start
+
+### Quick Tests (Instant - For Rapid Feedback)
+
+```bash
+# Run quick validation tests (syntax, templates, basic checks)
+cd tests
+./run-local-tests.sh --quick
+
+# Or run directly
+./quick-test.sh
+```
+
+**Use quick tests for:**
+- Pre-commit hooks
+- Rapid iteration during development
+- CI fast-fail checks
+- Validating syntax before full tests
 
 ### Feature Tests (Fast - For Development)
 
