@@ -1,0 +1,35 @@
+#!/usr/bin/env fish
+# Pixi global manifest hash: {{ include "private_dot_pixi/manifests/pixi-global.toml.tmpl" | sha256sum }}
+
+# Skip in CI environments to save time
+if set -q CI
+    echo "CI environment detected - skipping pixi global sync"
+    exit 0
+end
+
+echo "Syncing pixi global environments..."
+
+# Check if pixi is available
+if not type -q pixi
+    echo "Error: pixi not found. Please ensure pixi is installed via Homebrew."
+    echo "Run: brew install pixi"
+    exit 1
+end
+
+# Sync the global manifest with installed environments
+pixi global sync
+
+echo "Pixi global sync complete!"
+echo ""
+echo "Python tools have been installed globally via pixi"
+echo "Available commands:"
+echo "  - python / python3"
+echo "  - ipython"
+echo "  - jupyter / jupyter-lab"
+echo "  - marimo"
+echo "  - ruff"
+echo "  - pyright"
+echo "  - mypy"
+echo ""
+echo "To add more packages, edit: ~/.pixi/manifests/pixi-global.toml"
+echo "Then run: pixi global sync"

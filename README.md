@@ -35,10 +35,10 @@ $ BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh -
    - Installs Rust toolchains (stable + nightly)
    - Only re-runs when Brewfile content changes
 
-4. **Phase 3: Install Rust Crates** (`run_onchange_after_02-install-crates.sh.tmpl`)
-   - Installs Rust CLI tools from `cratefile`
-   - Skips already installed crates
-   - Only re-runs when Cratefile content changes
+4. **Phase 3: Install Python Tools** (`run_onchange_after_03-install-python.fish.tmpl`)
+   - Syncs pixi global environment from manifest
+   - Installs Python development tools (ipython, jupyter, ruff, etc.)
+   - Only re-runs when manifest content changes
 
 5. **Phase 4: Update Fish Plugins** (`run_onchange_after_03-update-fisher.fish`)
    - Updates Fisher plugins (z, gitnow, puffer-fish)
@@ -99,6 +99,7 @@ Chezmoi uses special prefixes to control how files are processed:
 ├── run_before_00-install-prereqs.sh                # Homebrew + 1Password CLI
 ├── run_onchange_after_01-install-brews.sh.tmpl     # Homebrew packages
 ├── run_onchange_after_02-install-crates.sh.tmpl    # Rust crates
+├── run_onchange_after_03-install-python.fish.tmpl  # Python tools via pixi
 ├── run_onchange_after_03-update-fisher.fish        # Fish plugins
 ├── run_after_04-update-tmux.bash                   # Tmux plugin manager
 │
@@ -108,6 +109,7 @@ Chezmoi uses special prefixes to control how files are processed:
 │   ├── bat/                          # Syntax highlighter configuration
 │   ├── brewfile.tmpl                 # Homebrew package definitions
 │   ├── cratefile                     # Rust crate definitions
+│   ├── haskellfile                   # Haskell package definitions
 │   ├── executable_start-terminal.sh.tmpl  # Terminal startup script
 │   ├── fish/                         # Fish shell (119 functions, 9 completions)
 │   ├── nvim/                         # Neovim LazyVim configuration
@@ -119,6 +121,11 @@ Chezmoi uses special prefixes to control how files are processed:
 │       ├── conf.d/                   # Modular config files
 │       ├── scripts/                  # Utility scripts
 │       └── themes/                   # Theme files
+│
+├── Python environment
+├── private_dot_pixi/
+│   └── manifests/
+│       └── pixi-global.toml.tmpl     # Pixi global manifest
 │
 ├── Private configurations
 ├── private_dot_aws/                  # AWS CLI configuration (private)
@@ -161,6 +168,8 @@ pager = "less"
 git_pager = "delta"
 cargo_home = "~/.local/share/cargo"
 rustup_home = "~/.local/share/rustup"
+cabal_home = "~/.cabal"
+pixi_home = "~/.pixi"
 ```
 
 ### Template Usage
@@ -216,6 +225,26 @@ Installs Rust-based CLI tools with pinned versions:
 - **Development**: tokei, cargo-watch, cargo-edit
 
 **Managed via**: `dot_config/cratefile` (21 crates)
+
+### Pixi (Python Global Packages)
+
+Manages global Python tools via conda-forge in isolated environments:
+
+- **Development tools**: ipython, jupyter, jupyterlab, marimo
+- **Linters/formatters**: ruff, mypy
+- **Language servers**: pyright
+
+**Managed via**: `private_dot_pixi/manifests/pixi-global.toml.tmpl` (8 packages in python environment)
+
+All packages are installed in `~/.pixi/bin` and automatically added to PATH. The manifest is native pixi format and synced automatically when changes are detected.
+
+### Cabal (Haskell Packages)
+
+Installs Haskell libraries globally:
+
+- **Live coding**: tidal (TidalCycles for music)
+
+**Managed via**: `dot_config/haskellfile` (1 package)
 
 ### Fisher (Fish Shell Plugins)
 
@@ -329,6 +358,18 @@ $ chezmoi apply  # This will trigger re-installation due to content change
 
 **Rust crates:**
 Edit `dot_config/cratefile` and run:
+```sh
+$ chezmoi apply  # This will trigger re-installation due to content change
+```
+
+**Python packages (via pixi):**
+Edit `~/.pixi/manifests/pixi-global.toml` and run:
+```sh
+$ pixi global sync  # Or let chezmoi apply trigger it automatically
+```
+
+**Haskell packages:**
+Edit `dot_config/haskellfile` and run:
 ```sh
 $ chezmoi apply  # This will trigger re-installation due to content change
 ```

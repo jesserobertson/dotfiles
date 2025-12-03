@@ -51,6 +51,9 @@
   ghc_bin = {{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" | quote }}
   cabal_home = {{ joinPath .chezmoi.homeDir ".cabal" | quote }}
 
+  # Python environment (via pixi)
+  pixi_home = {{ joinPath .chezmoi.homeDir ".pixi" | quote }}
+
   # Homebrew paths (OS-aware)
   homebrew_prefix = {{ $homebrewPrefix | quote }}
   homebrew_cellar = {{ joinPath $homebrewPrefix "Cellar" | quote }}
@@ -73,10 +76,10 @@
 
 [scriptEnv]
 {{- if eq .chezmoi.os "darwin" }}
-    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- else if eq .chezmoi.os "linux" }}
-    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- else }}
-    PATH = "$HOME/.local/share/cargo/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    PATH = "$HOME/.pixi/bin:$HOME/.local/share/cargo/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- end }}
 
