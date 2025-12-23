@@ -168,7 +168,9 @@
       "Bash(pixi global list:*)",
       "Bash(pixi global:*)",
       "Bash(echo:*)",
-      "Bash(ipython:*)"
+      "Bash(ipython:*)",
+      "Bash(for f in ~/.local/share/chezmoi/dot_config/fish/conf.d/*.fish)",
+      "Bash(do echo \"Checking $f\")"
     ],
     "deny": [],
     "ask": []
