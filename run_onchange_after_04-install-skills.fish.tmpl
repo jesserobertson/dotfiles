@@ -1,0 +1,87 @@
+#!/usr/bin/env fish
+# Claude Code skills list hash: {{ include "dot_claude/skillfile" | sha256sum }}
+
+# Skip skill installation in CI environments
+if set -q CI
+    echo "CI environment detected - skipping Claude Code skill installation"
+    exit 0
+end
+
+echo "Installing Claude Code skills..."
+
+# Check if git is available
+if not type -q git
+    echo "Error: git not found. Please ensure git is installed."
+    exit 1
+end
+
+# Define skills directory
+set SKILLS_DIR "{{ .chezmoi.homeDir }}/.claude/skills"
+set SKILLFILE "{{ .chezmoi.homeDir }}/.claude/skillfile"
+
+# Create skills directory if it doesn't exist
+if not test -d "$SKILLS_DIR"
+    echo "Creating skills directory at $SKILLS_DIR..."
+    mkdir -p "$SKILLS_DIR"
+end
+
+# Check if skillfile exists
+if not test -f "$SKILLFILE"
+    echo "No skillfile found at $SKILLFILE - skipping skill installation"
+    exit 0
+end
+
+# Extract URLs (ignore comments and empty lines)
+set SKILL_URLS (grep -v '^#' "$SKILLFILE" | grep -v '^$' | sed 's/#.*//')
+
+if test -z "$SKILL_URLS"
+    echo "No skills to install"
+    exit 0
+end
+
+echo "Skills to process: "(count $SKILL_URLS)
+
+# Process each skill
+for url in $SKILL_URLS
+    # Extract repository name from URL
+    set repo_name (basename "$url" .git)
+    set skill_path "$SKILLS_DIR/$repo_name"
+
+    if test -d "$skill_path"
+        # Skill already exists - update it
+        echo "Updating skill: $repo_name..."
+        cd "$skill_path"
+
+        # Check if it's a git repository
+        if test -d .git
+            # Fetch latest changes
+            git fetch origin
+
+            # Get current branch
+            set current_branch (git rev-parse --abbrev-ref HEAD)
+
+            # Pull latest changes if on a tracking branch
+            if git rev-parse --abbrev-ref --symbolic-full-name @{u} >/dev/null 2>&1
+                git pull --ff-only
+                echo "  Updated $repo_name"
+            else
+                echo "  $repo_name is not tracking a remote branch - skipping update"
+            end
+        else
+            echo "  Warning: $skill_path exists but is not a git repository"
+        end
+    else
+        # Skill doesn't exist - clone it
+        echo "Installing skill: $repo_name..."
+        if git clone "$url" "$skill_path"
+            echo "  Installed $repo_name successfully"
+        else
+            echo "  Error: Failed to clone $repo_name from $url"
+        end
+    end
+end
+
+echo ""
+echo "Claude Code skills installation complete!"
+echo ""
+echo "Installed skills are located at: $SKILLS_DIR"

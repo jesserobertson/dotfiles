@@ -8,6 +8,7 @@ tap "buo/cask-upgrade"
 # Utilities
 cask "1password-cli"
 cask "claude-code"
+cask "chromium"
 cask "raycast"
 cask "anki"
 
@@ -21,10 +22,7 @@ cask "font-prompt"
 brew "awscli"
 brew "bat-extras"
 brew "bats-core"
-# The following bats extensions are not available as separate formulas
-# brew "bats-assert"
-# brew "bats-file"
-# brew "bats-support"
+brew "steveyegge/beads/bd"
 brew "chezmoi"
 brew "cmake"
 brew "coreutils"
@@ -40,6 +38,7 @@ brew "golang"
 brew "htop"
 brew "jq"
 brew "juliaup"
+brew "just"
 {{ if eq .chezmoi.os "darwin" }}
 brew "lima"
 {{ end }}

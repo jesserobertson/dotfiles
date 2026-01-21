@@ -2,13 +2,35 @@
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
   },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/scripts/statusline.sh",
     "padding": 0
   },
-  "vimMode": true,
-  "defaultPermissionMode": "plan",
   "allowedTools": [
     "Read",
     "Write",
@@ -31,7 +53,16 @@
     "TodoWrite",
     "Task"
   ],
+  "defaultPermissionMode": "plan",
   "disallowedTools": [],
   "outputFormat": "text",
-  "verboseMode": true
+  "verboseMode": true,
+  "vimMode": true,
+  "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash(bd:*)",
+      "Bash(pixi:*)"
+    ]
+  }
 }
