@@ -67,6 +67,7 @@ safe_add_path() {
 safe_add_path "{{ .ghc_bin }}" prepend
 safe_add_path "$CABAL_DIR/bin" prepend
 safe_add_path "$CARGO_HOME/bin" prepend
+safe_add_path "$HOMEBREW_PREFIX/opt/java/bin" prepend
 safe_add_path "$LOCAL/bin" prepend
 safe_add_path "$HOMEBREW_PREFIX/bin" prepend
 safe_add_path "$HOMEBREW_PREFIX/sbin" prepend
