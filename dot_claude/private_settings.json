@@ -2,6 +2,13 @@
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
   },
+  "permissions": {
+    "allow": [
+      "Bash(bd:*)",
+      "Bash(pixi:*)"
+    ]
+  },
+  "model": "sonnet",
   "hooks": {
     "PreCompact": [
       {
@@ -58,11 +65,7 @@
   "outputFormat": "text",
   "verboseMode": true,
   "vimMode": true,
-  "model": "sonnet",
-  "permissions": {
-    "allow": [
-      "Bash(bd:*)",
-      "Bash(pixi:*)"
-    ]
+  "enabledPlugins": {
+    "beads@beads-marketplace": true
   }
 }
