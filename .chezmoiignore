@@ -13,7 +13,9 @@ configs_*
 # Ignore all run and test scripts
 run_*
 test*.sh
-tests/*
+tests/
+CI-TESTING.md
+.github/
 
 # Ignore large user directories that shouldn't be managed by chezmoi
 Library/**

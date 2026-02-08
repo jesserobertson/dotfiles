@@ -173,7 +173,8 @@
       "Bash(do echo \"Checking $f\")",
       "Bash(ls:*)",
       "Bash(claude-code:*)",
-      "Bash(yes:*)"
+      "Bash(yes:*)",
+      "WebFetch(domain:medium.com)"
     ],
     "deny": [],
     "ask": []
