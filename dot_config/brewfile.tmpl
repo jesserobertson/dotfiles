@@ -4,6 +4,8 @@ cask_args appdir: "/Applications"
 tap "bats-core/bats-core"
 {{ if eq .chezmoi.os "darwin" }}
 tap "buo/cask-upgrade"
+tap "FelixKratz/formulae"
+
 ## CASKS
 # Utilities
 cask "1password-cli"
@@ -13,6 +15,7 @@ cask "claude-code"
 cask "gcloud-cli"
 cask "ghostty"
 cask "raycast"
+cask "nikitabobko/tap/aerospace"
 
 # Fonts
 cask "font-fira-code"
@@ -24,6 +27,7 @@ cask "font-prompt"
 brew "awscli"
 brew "bat-extras"
 brew "bats-core"
+brew "borders"
 brew "steveyegge/beads/bd"
 brew "chezmoi"
 brew "cmake"
@@ -49,6 +53,9 @@ brew "llm"
 brew "llvm"
 brew "neovim"
 brew "nodejs"
+{{ if eq .chezmoi.os "darwin" }}
+brew "mactop"
+{{ end }}
 brew "openjdk"
 brew "openssl"
 brew "pandoc"
