@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Install pixi global environments
+# Managed by chezmoi - edit this file to add/remove tools.
+# pixi owns ~/.pixi/manifests/pixi-global.toml directly.
+
+set -euo pipefail
+
+# Python development environment
+pixi global install --environment python \
+    python ipython jupyter jupyterlab marimo ruff pyright mypy pyzmq tornado
+
+# HTTP utilities (library env, no exposed binaries)
+pixi global install --environment requests \
+    requests
