@@ -6,9 +6,8 @@
 set -euo pipefail
 
 # Python development environment
-pixi global install --environment python \
-    python ipython jupyter jupyterlab marimo ruff pyright mypy pyzmq tornado
+pixi global install --environment python python uv ruff mypy
 
 # HTTP utilities (library env, no exposed binaries)
 pixi global install --environment requests \
-    requests
+  requests
