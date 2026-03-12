@@ -1,5 +1,5 @@
 return {
-    "nvim-mini/mini.files",
+    "echasnovski/mini.files",
     keys = {
         {
             "<leader>e",

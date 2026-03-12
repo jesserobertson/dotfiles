@@ -39,6 +39,20 @@
     "command": "bash ~/.claude/scripts/statusline.sh",
     "padding": 0
   },
+  "enabledPlugins": {
+    "beads@beads-marketplace": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "serena@claude-plugins-official": true
+  },
   "allowedTools": [
     "Read",
     "Write",
@@ -59,22 +73,49 @@
     "Bash(find:*)",
     "Bash(command -v:*)",
     "TodoWrite",
-    "Task"
+    "Task",
+    "mcp__plugin_serena_serena__find_symbol",
+    "mcp__plugin_serena_serena__get_symbols_overview",
+    "mcp__plugin_serena_serena__find_referencing_symbols",
+    "mcp__plugin_serena_serena__replace_symbol_body",
+    "mcp__plugin_serena_serena__insert_after_symbol",
+    "mcp__plugin_serena_serena__insert_before_symbol",
+    "mcp__plugin_serena_serena__search_for_pattern",
+    "mcp__plugin_serena_serena__list_dir",
+    "mcp__plugin_serena_serena__find_file",
+    "mcp__plugin_serena_serena__read_file",
+    "mcp__plugin_serena_serena__replace_content",
+    "mcp__plugin_serena_serena__rename_symbol",
+    "mcp__serena__find_symbol",
+    "mcp__serena__get_symbols_overview",
+    "mcp__serena__find_referencing_symbols",
+    "mcp__serena__replace_symbol_body",
+    "mcp__serena__insert_after_symbol",
+    "mcp__serena__insert_before_symbol",
+    "mcp__serena__search_for_pattern",
+    "mcp__serena__rename_symbol"
   ],
   "defaultPermissionMode": "plan",
   "disallowedTools": [],
   "outputFormat": "text",
   "verboseMode": true,
-  "vimMode": true,
-  "enabledPlugins": {
-    "beads@beads-marketplace": true
-  }{{- if eq .chezmoi.os "darwin" }},
+  "vimMode": true{{- if eq .chezmoi.os "darwin" }},
   "mcpServers": {
-    "things": {
-      "command": "npx",
+    "serena": {
+      "command": "uvx",
       "args": [
-        "-y",
-        "@hald/things-mcp"
+        "--from git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project-from-cwd",
+        "--transport",
+        "streamable-https",
+        "--port",
+        "9121",
+        "--enable-web-dashboard",
+        "false"
       ]
     }
   }
