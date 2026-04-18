@@ -30,6 +30,7 @@ Add first-class Windows support to the dotfiles repo, making this machine (Windo
 Reconcile the file with what is actually Scoop-managed on this machine. Remove packages that are managed by winget or cargo instead; add packages that are installed but missing.
 
 **Keep (already in scoop):** `neovim`, `git` (keep as cross-reference even though winget has it too)
+- `fzf`, `ripgrep`, `fd`, `bat`, `delta`, `jq`, `yq` → keep (good CLI tools for scoop)
 
 **Add (in scoop, missing from file):**
 - Build tools: `7zip`, `cmake`, `dark`, `llvm`
@@ -42,9 +43,8 @@ Reconcile the file with what is actually Scoop-managed on this machine. Remove p
 - `1password-cli` → winget (`AgileBits.1Password.CLI`)
 - `windows-terminal` → winget (`Microsoft.WindowsTerminal`)
 - `go` → winget (`GoLang.Go`)
-- `nodejs` → not installed
+- `nodejs` → winget 
 - `starship` → cargo
-- `fzf`, `ripgrep`, `fd`, `bat`, `delta`, `jq`, `yq` → keep (good CLI tools for scoop)
 
 ### `run_onchange_after_07-install-scoop-packages.ps1.tmpl.tmpl` (new)
 
@@ -97,6 +97,21 @@ Add a **Windows** subsection under "Quick Start":
    - Phase 3: wire profile (`run_onchange_after_06`)
 3. **Winget helper** — run `scripts/install-winget-packages.ps1` manually for GUI apps and build tools
 4. **Updating packages** — edit scoopfile/wingetfile, run `chezmoi apply`
+
+## OS Guard Clauses
+
+All install scripts must have an internal OS guard as defense-in-depth alongside `.chezmoiignore.tmpl`.
+
+**Shell scripts** (`run_before_00-install-prereqs.sh`, `run_after_00-install-brews.sh.tmpl`) already guard via `case "$(uname -s)"` — no change needed.
+
+**PowerShell scripts** — add at the top of each `.ps1` / `.ps1.tmpl`:
+```powershell
+if ($env:OS -ne "Windows_NT") { Write-Host "Not Windows, skipping."; exit 0 }
+```
+Applies to:
+- `run_before_00-install-prereqs.ps1` (existing, untracked)
+- `run_onchange_after_06-setup-powershell.ps1` (existing, untracked)
+- `run_onchange_after_07-install-scoop-packages.ps1.tmpl` (new)
 
 ## Chezmoi Integration Notes
 
