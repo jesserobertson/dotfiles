@@ -11,7 +11,7 @@ Add first-class Windows support to the dotfiles repo, making this machine (Windo
 
 1. Commit existing untracked Windows files
 2. Update `scoopfile` to match what is actually installed via Scoop
-3. Add `run_onchange_after_07-install-scoop-packages.ps1` — auto-run Scoop installer
+3. Add `run_onchange_after_07-install-scoop-packages.ps1.tmpl.tmpl` — auto-run Scoop installer
 4. Add `dot_config/wingetfile` — declarative list of winget packages
 5. Add `scripts/install-winget-packages.ps1` — manual winget bootstrap helper
 6. Update `.chezmoiignore.tmpl` — exclude Windows-only files on non-Windows
@@ -46,11 +46,11 @@ Reconcile the file with what is actually Scoop-managed on this machine. Remove p
 - `starship` → cargo
 - `fzf`, `ripgrep`, `fd`, `bat`, `delta`, `jq`, `yq` → keep (good CLI tools for scoop)
 
-### `run_onchange_after_07-install-scoop-packages.ps1` (new)
+### `run_onchange_after_07-install-scoop-packages.ps1.tmpl.tmpl` (new)
 
 Auto-run script triggered by chezmoi when `scoopfile` content changes. Pattern mirrors `run_after_00-install-brews.sh.tmpl`.
 
-- Header comment contains `sha256sum` of scoopfile so chezmoi detects changes
+- Has `.tmpl` suffix so chezmoi processes it as a template; header comment embeds `{{ include "dot_config/scoopfile" | sha256sum }}` so chezmoi re-runs on scoopfile changes
 - Reads `~/.config/scoopfile`, skips blank lines and `#` comments
 - Parses optional `bucket/package` format; collects unique bucket names and adds any missing ones via `scoop bucket add`
 - Calls `scoop install <package>` for each entry (idempotent — scoop no-ops if already installed)
@@ -80,7 +80,7 @@ Not wired into chezmoi's run system — invoke manually when setting up a new ma
 
 Add to the non-Windows block (alongside existing `run_before_00-install-prereqs.ps1`):
 ```
-run_onchange_after_07-install-scoop-packages.ps1
+run_onchange_after_07-install-scoop-packages.ps1.tmpl
 scripts/install-winget-packages.ps1
 .config/wingetfile
 ```
