@@ -11,7 +11,7 @@ Add first-class Windows support to the dotfiles repo, making this machine (Windo
 
 1. Commit existing untracked Windows files
 2. Update `scoopfile` to match what is actually installed via Scoop
-3. Add `run_onchange_after_07-install-scoop-packages.ps1.tmpl.tmpl` — auto-run Scoop installer
+3. Add `run_onchange_after_07-install-scoop-packages.ps1.tmpl` — auto-run Scoop installer
 4. Add `dot_config/wingetfile` — declarative list of winget packages
 5. Add `scripts/install-winget-packages.ps1` — manual winget bootstrap helper
 6. Update `.chezmoiignore.tmpl` — exclude Windows-only files on non-Windows
@@ -46,7 +46,7 @@ Reconcile the file with what is actually Scoop-managed on this machine. Remove p
 - `nodejs` → winget 
 - `starship` → cargo
 
-### `run_onchange_after_07-install-scoop-packages.ps1.tmpl.tmpl` (new)
+### `run_onchange_after_07-install-scoop-packages.ps1.tmpl` (new)
 
 Auto-run script triggered by chezmoi when `scoopfile` content changes. Pattern mirrors `run_after_00-install-brews.sh.tmpl`.
 
