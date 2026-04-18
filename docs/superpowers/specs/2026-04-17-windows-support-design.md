@@ -106,7 +106,7 @@ All install scripts must have an internal OS guard as defense-in-depth alongside
 
 **PowerShell scripts** — add at the top of each `.ps1` / `.ps1.tmpl`:
 ```powershell
-if ($env:OS -ne "Windows_NT") { Write-Host "Not Windows, skipping."; exit 0 }
+if (-not $IsWindows) { Write-Host "Not Windows, skipping."; exit 0 }
 ```
 Applies to:
 - `run_before_00-install-prereqs.ps1` (existing, untracked)
