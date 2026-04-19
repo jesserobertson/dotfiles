@@ -22,7 +22,7 @@ Get-Content $scoopfile | ForEach-Object {
     $line = $_.Trim()
     if ($line -eq "" -or $line.StartsWith("#")) { return }
     $packages += $line
-    if ($line -contains "/") {
+    if ($line.Contains("/")) {
         $bucket = $line.Split("/")[0]
         $bucketsNeeded += $bucket
     }
@@ -40,7 +40,7 @@ $bucketsNeeded | Select-Object -Unique | ForEach-Object {
 
 # Install packages (scoop no-ops if already installed)
 foreach ($pkg in $packages) {
-    $name = if ($pkg -contains "/") { $pkg.Split("/")[1] } else { $pkg }
+    $name = if ($pkg.Contains("/")) { $pkg.Split("/")[1] } else { $pkg }
     Write-Host "Installing $name..."
     scoop install $pkg
 }
