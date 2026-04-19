@@ -1,0 +1,48 @@
+# Scoopfile hash: {{ include "dot_config/scoopfile" | sha256sum }}
+# Re-runs automatically when scoopfile content changes.
+
+if (-not $IsWindows) { Write-Host "Not Windows, skipping."; exit 0 }
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$scoopfile = Join-Path $HOME ".config\scoopfile"
+if (-not (Test-Path $scoopfile)) {
+    Write-Host "No scoopfile found at $scoopfile, skipping."
+    exit 0
+}
+
+Write-Host "Installing Scoop packages from $scoopfile..."
+
+# Collect packages and bucket names
+$packages = @()
+$bucketsNeeded = @()
+
+Get-Content $scoopfile | ForEach-Object {
+    $line = $_.Trim()
+    if ($line -eq "" -or $line.StartsWith("#")) { return }
+    $packages += $line
+    if ($line -contains "/") {
+        $bucket = $line.Split("/")[0]
+        $bucketsNeeded += $bucket
+    }
+}
+
+# Ensure required buckets are present
+$bucketsNeeded | Select-Object -Unique | ForEach-Object {
+    $bucket = $_
+    $existing = scoop bucket list | Select-String $bucket -Quiet
+    if (-not $existing) {
+        Write-Host "Adding scoop bucket: $bucket"
+        scoop bucket add $bucket
+    }
+}
+
+# Install packages (scoop no-ops if already installed)
+foreach ($pkg in $packages) {
+    $name = if ($pkg -contains "/") { $pkg.Split("/")[1] } else { $pkg }
+    Write-Host "Installing $name..."
+    scoop install $pkg
+}
+
+Write-Host "Scoop package installation complete!"
