@@ -1,0 +1,34 @@
+# Scoop packages (Windows equivalent of Brewfile)
+# Format: [bucket/]package
+# Install with: chezmoi apply  (triggers run_onchange_after_07)
+
+# Buckets needed: extras, main (default)
+# Add with: scoop bucket add extras
+
+# --- Shell & editor ---
+main/neovim
+main/git
+
+# --- Search & file tools ---
+main/fzf
+main/ripgrep
+main/fd
+main/bat
+main/delta
+main/jq
+main/yq
+
+# --- Build tools ---
+main/cmake
+main/llvm
+main/dark
+
+# --- Archive ---
+main/7zip
+
+# --- Python tooling ---
+main/pixi
+main/uv
+
+# --- GUI ---
+extras/powertoys
