@@ -1,0 +1,34 @@
+# Winget packages — manual install reference
+# Run: scripts/install-winget-packages.ps1
+# Install a single package: winget install --id <Id> --accept-source-agreements --accept-package-agreements
+
+# --- Shell & prompt ---
+JanDeDobbeleer.OhMyPosh
+Microsoft.PowerShell
+Microsoft.WindowsTerminal
+
+# --- Dev tools ---
+Git.Git
+GitHub.cli
+GoLang.Go
+Rustlang.Rustup
+Microsoft.VisualStudioCode
+
+# --- Cloud & infra ---
+Amazon.AWSCLI
+Docker.DockerDesktop
+
+# --- Security ---
+AgileBits.1Password
+AgileBits.1Password.CLI
+
+# --- Build tools ---
+Microsoft.VisualStudio.2022.Community
+
+# --- Python ---
+CondaForge.Miniforge3
+
+# --- Apps ---
+Anthropic.Claude
+Microsoft.WSL
+KYDronePilot.SpaceEye
