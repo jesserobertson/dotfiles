@@ -1,6 +1,36 @@
-# Ignore files that require 1Password in CI environments
-{{- if or (env "CI") (env "GITHUB_ACTIONS") (env "GITLAB_CI") }}
-# Skip 1Password-dependent templates in CI
+# Skip 1Password-dependent files when op CLI is not available (CI or no 1Password installed)
+{{- if or (not .has1password) (env "CI") (env "GITHUB_ACTIONS") (env "GITLAB_CI") }}
 .aws/config
 .gitconfig
+{{ end -}}
+
+# Skip non-Windows files on Windows
+{{- if eq .chezmoi.os "windows" }}
+.config/fish
+.config/tmux
+.config/alacritty
+.config/bash
+.config/zsh
+.config/shell
+.bashrc
+.zshrc
+run_before_00-install-prereqs.sh
+run_after_00-install-brews.sh.tmpl
+run_after_04-update-tmux.bash
+run_onchange_after_01-install-rust.fish.tmpl
+run_onchange_after_02-install-crates.fish.tmpl
+run_onchange_after_03-install-python.fish.tmpl
+run_onchange_after_04-install-skills.fish.tmpl
+run_onchange_after_05-install-mcp-servers.fish.tmpl
+run_onchange_install-pixi-global.sh
+{{ end -}}
+
+# Skip Windows-only files on non-Windows
+{{- if ne .chezmoi.os "windows" }}
+.config/powershell
+.config/wingetfile
+run_before_00-install-prereqs.ps1
+run_onchange_after_06-setup-powershell.ps1
+run_onchange_after_07-install-scoop-packages.ps1.tmpl
+scripts/install-winget-packages.ps1
 {{ end -}}
