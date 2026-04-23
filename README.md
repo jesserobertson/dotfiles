@@ -24,15 +24,6 @@ $ BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh -
 
 ```powershell
 # From an elevated PowerShell 7 prompt:
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-chezmoi init --ssh --apply jesserobertson
-# If chezmoi is not yet installed, install it via scoop first:
-# scoop install main/chezmoi
-```
-
-Or run the prereqs script standalone before bootstrapping chezmoi:
-
-```powershell
 Invoke-RestMethod https://raw.githubusercontent.com/jesserobertson/dotfiles/master/run_before_00-install-prereqs.ps1 | Invoke-Expression
 ```
 
@@ -53,19 +44,19 @@ chezmoi init --ssh --apply jesserobertson
    - Chezmoi deploys `~/.config/powershell/profile.ps1` (oh-my-posh, PSReadLine, PATH)
    - Non-Windows configs (fish, tmux, alacritty) are skipped via `.chezmoiignore`
 
-3. **Phase 2: Install Scoop Packages** (`run_onchange_after_07-install-scoop-packages.ps1.tmpl`)
+3. **Phase 2: Wire PowerShell Profile** (`run_onchange_after_06-setup-powershell.ps1`)
+   - Adds a dot-source line to `$PROFILE` pointing at the chezmoi-managed profile
+
+4. **Phase 3: Install Scoop Packages** (`run_onchange_after_07-install-scoop-packages.ps1.tmpl`)
    - Installs all packages from `~/.config/scoopfile`
    - Only re-runs when scoopfile content changes
-
-4. **Phase 3: Wire PowerShell Profile** (`run_onchange_after_06-setup-powershell.ps1`)
-   - Adds a dot-source line to `$PROFILE` pointing at the chezmoi-managed profile
 
 #### Installing GUI apps and build tools (winget)
 
 After bootstrap, run the winget helper manually to install heavier applications:
 
 ```powershell
-~\scripts\install-winget-packages.ps1
+& "$HOME\scripts\install-winget-packages.ps1"
 ```
 
 This installs packages from `~/.config/wingetfile` (1Password, Docker, VS Code, Visual Studio, etc.).
@@ -77,7 +68,7 @@ This installs packages from `~/.config/wingetfile` (1Password, Docker, VS Code, 
 chezmoi apply   # triggers re-run of scoop installer
 
 # Add a winget package: edit ~/.config/wingetfile, then run manually:
-~\scripts\install-winget-packages.ps1
+& "$HOME\scripts\install-winget-packages.ps1"
 ```
 
 ---
