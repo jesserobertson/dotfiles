@@ -1,6 +1,6 @@
 # dotfiles
 
-Managing my dotfiles using chezmoi and homebrew. This repository provides a complete, reproducible development environment that works across macOS (Intel/ARM) and Linux platforms.
+Managing my dotfiles using chezmoi and homebrew. This repository provides a complete, reproducible development environment that works across macOS (Intel/ARM), Linux, and Windows platforms.
 
 ## Quick Start
 
@@ -17,6 +17,70 @@ Then bootstrap chezmoi using the following command. This will clone the dotfiles
 ```sh
 $ BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson
 ```
+
+### Windows
+
+**Step 1: Run the prerequisites script** (installs Scoop, oh-my-posh, 1Password CLI):
+
+```powershell
+# From an elevated PowerShell 7 prompt:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+chezmoi init --ssh --apply jesserobertson
+# If chezmoi is not yet installed, install it via scoop first:
+# scoop install main/chezmoi
+```
+
+Or run the prereqs script standalone before bootstrapping chezmoi:
+
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/jesserobertson/dotfiles/master/run_before_00-install-prereqs.ps1 | Invoke-Expression
+```
+
+**Step 2: Bootstrap chezmoi:**
+
+```powershell
+chezmoi init --ssh --apply jesserobertson
+```
+
+#### What happens during Windows bootstrap:
+
+1. **Phase 0: Pre-installation** (`run_before_00-install-prereqs.ps1`)
+   - Installs Scoop if not present
+   - Adds `extras` and `versions` Scoop buckets
+   - Installs 1Password CLI and oh-my-posh via Scoop
+
+2. **Phase 1: Apply Dotfiles**
+   - Chezmoi deploys `~/.config/powershell/profile.ps1` (oh-my-posh, PSReadLine, PATH)
+   - Non-Windows configs (fish, tmux, alacritty) are skipped via `.chezmoiignore`
+
+3. **Phase 2: Install Scoop Packages** (`run_onchange_after_07-install-scoop-packages.ps1.tmpl`)
+   - Installs all packages from `~/.config/scoopfile`
+   - Only re-runs when scoopfile content changes
+
+4. **Phase 3: Wire PowerShell Profile** (`run_onchange_after_06-setup-powershell.ps1`)
+   - Adds a dot-source line to `$PROFILE` pointing at the chezmoi-managed profile
+
+#### Installing GUI apps and build tools (winget)
+
+After bootstrap, run the winget helper manually to install heavier applications:
+
+```powershell
+~\scripts\install-winget-packages.ps1
+```
+
+This installs packages from `~/.config/wingetfile` (1Password, Docker, VS Code, Visual Studio, etc.).
+
+#### Updating packages
+
+```powershell
+# Add a scoop package: edit ~/.config/scoopfile, then:
+chezmoi apply   # triggers re-run of scoop installer
+
+# Add a winget package: edit ~/.config/wingetfile, then run manually:
+~\scripts\install-winget-packages.ps1
+```
+
+---
 
 ### What happens during bootstrap:
 
