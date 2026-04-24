@@ -23,7 +23,7 @@ $ BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh -
 **Step 1: Run the prerequisites script** (installs Scoop, oh-my-posh, 1Password CLI):
 
 ```powershell
-# From an elevated PowerShell 7 prompt:
+# From a PowerShell 7 prompt (do NOT run elevated — Scoop installs to user scope):
 Invoke-RestMethod https://raw.githubusercontent.com/jesserobertson/dotfiles/master/run_before_00-install-prereqs.ps1 | Invoke-Expression
 ```
 
