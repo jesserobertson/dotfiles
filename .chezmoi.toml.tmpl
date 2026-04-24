@@ -4,6 +4,12 @@
 {{-   $osid = printf "%s-%s" .chezmoi.os .chezmoi.osRelease.id -}}
 {{- end -}}
 
+# Detect 1Password CLI availability
+{{- $has1password := false -}}
+{{- if lookPath "op" -}}
+{{-   $has1password = true -}}
+{{- end -}}
+
 # Determine number of CPU cores and threads
 {{- $cpuCores := 1 }}
 {{- $cpuThreads := 1 }}
@@ -64,8 +70,17 @@
   pager = "less"
   git_pager = "delta"
 
-  # 1Password SSH agent
+  # 1Password availability
+  has1password = {{ $has1password }}
+
+  # 1Password SSH agent (OS-specific path)
+  {{- if eq .chezmoi.os "darwin" }}
   ssh_auth_sock = {{ joinPath .chezmoi.homeDir "Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" | quote }}
+  {{- else if eq .chezmoi.os "windows" }}
+  ssh_auth_sock = "\\\\.\\pipe\\openssh-ssh-agent"
+  {{- else }}
+  ssh_auth_sock = ""
+  {{- end }}
 
 [data.cpu]
   cores = {{ $cpuCores }}
@@ -79,7 +94,7 @@
     PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- else if eq .chezmoi.os "linux" }}
     PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-{{- else }}
-    PATH = "$HOME/.pixi/bin:$HOME/.local/share/cargo/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+{{- else if eq .chezmoi.os "windows" }}
+    PATH = "{{ joinPath .chezmoi.homeDir "scoop" "shims" }};{{ joinPath .chezmoi.homeDir ".pixi" "bin" }};{{ joinPath $localDir "share" "cargo" "bin" }};{{ joinPath $localDir "bin" }};C:\\Windows\\System32;C:\\Windows"
 {{- end }}
 
