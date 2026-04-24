@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/usr/bin/env bash
 # Install pixi global environments
 # Managed by chezmoi - edit this file to add/remove tools.
@@ -11,3 +12,4 @@ pixi global install --environment python python uv ruff mypy
 # HTTP utilities (library env, no exposed binaries)
 pixi global install --environment requests \
   requests
+{{- end -}}

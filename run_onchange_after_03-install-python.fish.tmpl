@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/usr/bin/env fish
 
 # Skip in CI environments to save time
@@ -32,3 +33,4 @@ echo "  - mypy"
 echo ""
 echo "To add more packages, edit: ~/.pixi/manifests/pixi-global.toml"
 echo "Then run: pixi global sync"
+{{- end -}}

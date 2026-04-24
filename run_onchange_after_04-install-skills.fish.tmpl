@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/usr/bin/env fish
 # Claude Code skills list hash: {{ include "dot_claude/skillfile" | sha256sum }}
 
@@ -85,3 +86,4 @@ echo ""
 echo "Claude Code skills installation complete!"
 echo ""
 echo "Installed skills are located at: $SKILLS_DIR"
+{{- end -}}
