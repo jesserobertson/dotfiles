@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/bin/bash
 # Brewfile hash: {{ include "dot_config/brewfile.tmpl" | sha256sum }}
 
@@ -50,3 +51,4 @@ brew bundle install --file="${BREWFILE}" --verbose
 {{- end }}
 
 echo "Homebrew package installation complete!"
+{{- end -}}

@@ -1,3 +1,4 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/usr/bin/env fish
 # Crates list hash: {{ include "dot_config/cratefile" | sha256sum }}
 
@@ -80,3 +81,4 @@ end
 {{- end }}
 
 echo "Rust crates installation complete!"
+{{- end -}}

@@ -1,8 +1,9 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/bin/bash
 
 set -eu
 
-## INSTALL HOMEBREW 
+## INSTALL HOMEBREW
 echo "Installing Homebrew..."
 
 # Detect OS and set up homebrew paths
@@ -75,3 +76,4 @@ else
     brew install --cask 1password-cli
   fi
 fi
+{{- end -}}

@@ -1,6 +1,6 @@
+{{- if ne .chezmoi.os "windows" -}}
 #!/usr/bin/env bash
 set -euo pipefail
-# Updated to trigger chezmoi
 
 TPM_DIR="$HOME/.config/tmux/plugins/tpm"
 
@@ -20,3 +20,4 @@ fi
 echo "Installing tmux plugin manager..."
 git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
 echo "TPM installed successfully"
+{{- end -}}
