@@ -1,0 +1,40 @@
+# Use XDG base dirs so tools like Neovim find config in ~/.config rather than AppData
+$env:XDG_CONFIG_HOME = "$HOME\.config"
+$env:XDG_DATA_HOME = "$HOME\.local\share"
+$env:XDG_STATE_HOME = "$HOME\.local\state"
+$env:XDG_CACHE_HOME = "$HOME\.cache"
+
+# Load prompt
+oh-my-posh init pwsh --config "bubbles" | Invoke-Expression
+
+# Enable PSReadLine
+Import-Module PSReadLine
+Set-PSReadLineOption -PredictionSource History
+Set-PSReadLineOption -PredictionViewStyle ListView
+Set-PSReadLineOption -EditMode Windows
+
+# Prepend a directory to PATH only if not already present (case-insensitive)
+function Prepend-Path {
+    param([string]$Path)
+    $current = $env:PATH -split ';'
+    if (-not ($current | Where-Object { $_ -ieq $Path })) {
+        $env:PATH = "$Path;" + $env:PATH
+    }
+}
+
+# Add paths — first item in the list ends up first in PATH
+$paths = @(
+    "$HOME\.local\bin",
+    "$HOME\scoop\shims",
+    "$HOME\.pixi\bin",
+    "$HOME\.local\share\cargo\bin"
+)
+[array]::Reverse($paths)
+foreach ($p in $paths) {
+    Prepend-Path $p
+}
+{{- if .has1password }}
+
+# 1Password SSH agent
+$env:SSH_AUTH_SOCK = "\\.\pipe\openssh-ssh-agent"
+{{- end }}
