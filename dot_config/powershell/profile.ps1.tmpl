@@ -38,3 +38,11 @@ foreach ($p in $paths) {
 # 1Password SSH agent
 $env:SSH_AUTH_SOCK = "\\.\pipe\openssh-ssh-agent"
 {{- end }}
+
+# Enable zoxide (smart cd)
+if (Get-Command zoxide -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& { (zoxide init powershell | Out-String) })
+}
+
+# Allow Claude Code to use the PowerShell tool
+$env:CLAUDE_CODE_USER_POWERSHELL_TOOL = "1"
