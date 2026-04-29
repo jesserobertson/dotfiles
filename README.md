@@ -4,49 +4,52 @@ Managing my dotfiles using chezmoi and homebrew. This repository provides a comp
 
 ## Quick Start
 
-### Bootstrap Process
+### New machine (full setup)
 
-Bootstrap a new install - first install xcode-select tools to get the basics (macOS only):
-
-```sh
-$ xcode-select --install
-```
-
-Then bootstrap chezmoi using the following command. This will clone the dotfiles repository and automatically run the installation scripts:
+On macOS, install Xcode command line tools first:
 
 ```sh
-$ BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson
+xcode-select --install
 ```
 
-### What happens during bootstrap:
+Then bootstrap chezmoi (this clones the repo and applies dotfiles only):
 
-1. **Phase 0: Pre-installation** (`run_before_00-install-prereqs.sh`)
-   - Detects OS (macOS/Linux) and architecture
-   - Installs Homebrew if not present
-   - Installs 1Password CLI for secrets management (skipped in CI)
+```sh
+BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson
+```
 
-2. **Phase 1: Apply Dotfiles**
-   - Chezmoi processes all templates using data from `chezmoi.toml`
-   - Creates directory structure with appropriate permissions
-   - Copies configuration files to home directory
+Then run installs:
 
-3. **Phase 2: Install Packages** (`run_onchange_after_01-install-brews.sh.tmpl`)
-   - Installs all Homebrew packages from `brewfile.tmpl`
-   - Installs Rust toolchains (stable + nightly)
-   - Only re-runs when Brewfile content changes
+```sh
+make bootstrap   # installs prereqs + all tools
+```
 
-4. **Phase 3: Install Python Tools** (`run_onchange_after_03-install-python.fish.tmpl`)
-   - Syncs pixi global environment from manifest
-   - Installs Python development tools (ipython, jupyter, ruff, etc.)
-   - Only re-runs when manifest content changes
+Or selectively:
 
-5. **Phase 4: Update Fish Plugins** (`run_onchange_after_03-update-fisher.fish`)
-   - Updates Fisher plugins (z, gitnow, puffer-fish)
-   - Only re-runs when script changes
+```sh
+make prereqs     # Homebrew (macOS/Linux) or Scoop (Windows)
+make brew        # Homebrew packages from Brewfile
+make rust        # Rust toolchain (stable + nightly)
+make crates      # Rust crates from cratefile
+make python      # Python tools via pixi
+make skills      # Claude Code skills
+make mcp         # MCP servers (macOS only)
+make pixi        # pixi global packages
+make tmux        # tmux plugin manager
+make powershell  # PowerShell $PROFILE wrapper (Windows)
+```
 
-6. **Phase 5: Setup Tmux** (`run_after_04-update-tmux.bash`)
-   - Installs Tmux Plugin Manager (TPM)
-   - Always runs to ensure tmux is configured
+### Dotfiles only
+
+```sh
+chezmoi apply
+```
+
+### Day-to-day updates
+
+```sh
+chezmoi apply    # re-applies any changed templates
+```
 
 ## Repository Structure
 
@@ -64,16 +67,6 @@ Chezmoi uses special prefixes to control how files are processed:
 
 - **`executable_`** - Makes file executable
   - `executable_start-terminal.sh.tmpl` → `start-terminal.sh` (with +x)
-
-- **`run_before_`** - Runs before chezmoi applies files
-  - `run_before_00-install-prereqs.sh` - Installs prerequisites
-
-- **`run_after_`** - Runs after chezmoi applies files
-  - `run_after_04-update-tmux.bash` - Sets up tmux plugins
-
-- **`run_onchange_after_`** - Runs only when file content changes
-  - `run_onchange_after_01-install-brews.sh.tmpl` - Installs Homebrew packages
-  - Uses content hashing to detect changes
 
 - **`.tmpl`** - Template file (processed with Go templates)
   - Supports variables from `chezmoi.toml`
@@ -95,13 +88,19 @@ Chezmoi uses special prefixes to control how files are processed:
 ├── dot_editorconfig                  # EditorConfig settings
 ├── dot_gitconfig.tmpl                # Git config (1Password integrated)
 │
-├── Installation scripts (numbered for execution order)
-├── run_before_00-install-prereqs.sh                # Homebrew + 1Password CLI
-├── run_onchange_after_01-install-brews.sh.tmpl     # Homebrew packages
-├── run_onchange_after_02-install-crates.sh.tmpl    # Rust crates
-├── run_onchange_after_03-install-python.fish.tmpl  # Python tools via pixi
-├── run_onchange_after_03-update-fisher.fish        # Fish plugins
-├── run_after_04-update-tmux.bash                   # Tmux plugin manager
+├── Makefile                          # Optional install targets
+├── scripts/                          # Install scripts (run manually via make)
+│   ├── install-prereqs.sh            # Homebrew + 1Password (macOS/Linux)
+│   ├── install-prereqs.ps1           # Scoop + tools (Windows)
+│   ├── install-brew.sh               # brew bundle install
+│   ├── install-rust.fish             # rustup + toolchains
+│   ├── install-crates.fish           # cargo install from cratefile
+│   ├── install-python.fish           # pixi global sync
+│   ├── install-skills.fish           # Claude Code skills
+│   ├── install-mcp-servers.fish      # MCP servers (macOS)
+│   ├── install-pixi.sh               # pixi global install
+│   ├── update-tmux.sh                # TPM install
+│   └── setup-powershell.ps1          # $PROFILE wrapper (Windows)
 │
 ├── Application configurations
 ├── dot_config/
@@ -353,19 +352,19 @@ $ chezmoi diff
 **Homebrew packages:**
 Edit `dot_config/brewfile.tmpl` and run:
 ```sh
-$ chezmoi apply  # This will trigger re-installation due to content change
+make brew
 ```
 
 **Rust crates:**
 Edit `dot_config/cratefile` and run:
 ```sh
-$ chezmoi apply  # This will trigger re-installation due to content change
+make crates
 ```
 
 **Python packages (via pixi):**
 Edit `~/.pixi/manifests/pixi-global.toml` and run:
 ```sh
-$ pixi global sync  # Or let chezmoi apply trigger it automatically
+make python
 ```
 
 **Haskell packages:**
