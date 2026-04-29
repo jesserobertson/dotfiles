@@ -1,7 +1,6 @@
 .PHONY: bootstrap dotfiles prereqs brew rust crates python skills mcp pixi tmux powershell
 
 bootstrap: dotfiles prereqs brew rust crates python skills mcp pixi  ## Full new-machine setup
-	chezmoi apply
 
 dotfiles:  ## Apply dotfiles (chezmoi apply)
 	chezmoi apply
