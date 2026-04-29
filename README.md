@@ -15,7 +15,7 @@ xcode-select --install
 Then bootstrap chezmoi (this clones the repo and applies dotfiles only):
 
 ```sh
-BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson
+BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson  # replace with your GitHub username if forked
 ```
 
 Then run installs:
@@ -186,12 +186,6 @@ cask "claude-code"
 {{ end }}
 ```
 
-**Content Hashing:**
-```bash
-# Brewfile hash: {{ include "dot_config/brewfile.tmpl" | sha256sum }}
-```
-This causes scripts to re-run only when dependencies change.
-
 **1Password Integration:**
 ```gitconfig
 {{- onepasswordDocument "document-id" -}}
@@ -302,7 +296,6 @@ Automatically detects ARM vs x86_64 and adjusts paths accordingly.
 
 - **Homebrew-centric**: Use Homebrew for all package management to simplify dependencies
 - **Template-driven**: Single source of truth (`chezmoi.toml`) drives all configurations
-- **Change-detection**: Scripts only re-run when dependencies change (via content hashing)
 - **Cross-platform**: Same repository works on macOS (Intel/ARM) and Linux
 - **Security-focused**: Private files, 1Password integration, proper permissions
 - **Modular**: Configurations split into logical, maintainable pieces
@@ -452,16 +445,6 @@ See `tests/README.md` for detailed usage instructions and troubleshooting.
 
 ## Advanced Features
 
-### Change-Based Execution
-
-Scripts use content hashing to determine when to re-run:
-
-```bash
-# Brewfile hash: {{ include "dot_config/brewfile.tmpl" | sha256sum }}
-```
-
-When you modify `brewfile.tmpl`, the hash changes, triggering re-execution of the installation script.
-
 ### Safe PATH Management
 
 Bash/Zsh configurations use `safe_add_path()` to avoid PATH pollution:
@@ -497,35 +480,6 @@ Sensitive configurations are stored in 1Password and fetched during template pro
 ```
 
 This keeps secrets out of version control while maintaining reproducibility.
-
-## Testing
-
-Comprehensive testing is provided via a hybrid approach with both fast unit tests and slow end-to-end integration tests. See `tests/README.md` for complete documentation.
-
-### Quick Test
-
-```bash
-# Run all local feature tests (fast - ~30 seconds)
-./tests/run-local-tests.sh
-
-# Or run specific test suites
-./tests/run-local-tests.sh -t developer-layout  # Tmux layout tests
-```
-
-### CI/CD Testing
-
-The repository includes GitHub Actions workflows that test installation across platforms:
-- **Ubuntu**: Docker-based testing (fast, consistent)
-- **macOS**: Native macOS runner testing (comprehensive)
-
-**Note:** 1Password-dependent templates (`.gitconfig`, `.aws/config`) are automatically skipped in CI environments. See `CI-TESTING.md` for details on how secrets are handled in CI.
-
-### Test Coverage
-
-- ✅ **21 bats tests** - Fast feature validation (tmux layouts, configurations)
-- ✅ **Docker E2E tests** - Full bootstrap from scratch
-- ✅ **Platform tests** - Ubuntu and macOS compatibility
-- ✅ **Configuration validation** - Tmux, shell, and tool configs
 
 ## Troubleshooting
 
