@@ -1,6 +1,22 @@
-# Ignore files that require 1Password in CI environments
-{{- if or (env "CI") (env "GITHUB_ACTIONS") (env "GITLAB_CI") }}
-# Skip 1Password-dependent templates in CI
+# Skip 1Password-dependent files when op CLI is not available (CI or no 1Password installed)
+{{- if or (not .has1password) (env "CI") (env "GITHUB_ACTIONS") (env "GITLAB_CI") }}
 .aws/config
 .gitconfig
+{{ end -}}
+
+# Skip non-Windows files on Windows
+{{- if eq .chezmoi.os "windows" }}
+.config/fish
+.config/tmux
+.config/alacritty
+.config/bash
+.config/zsh
+.config/shell
+.bashrc
+.zshrc
+{{ end -}}
+
+# Skip Windows-only files on non-Windows
+{{- if ne .chezmoi.os "windows" }}
+.config/powershell
 {{ end -}}

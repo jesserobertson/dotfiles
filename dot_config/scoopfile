@@ -1,0 +1,35 @@
+# Scoop packages (Windows equivalent of Brewfile)
+# Format: [bucket/]package
+# Install with: scoop install $(grep -v '^#' scoopfile | grep -v '^$')
+
+# Buckets needed: extras, versions
+# Add with: scoop bucket add extras && scoop bucket add versions
+
+# --- Shell & prompt ---
+main/oh-my-posh
+main/starship
+
+# --- Dev tools ---
+main/git
+main/neovim
+main/fzf
+main/ripgrep
+main/fd
+main/bat
+main/delta
+main/jq
+main/yq
+main/chezmoi
+
+# --- Languages & runtimes ---
+main/nodejs
+main/go
+
+# --- Cloud & infra ---
+main/awscli
+
+# --- Security ---
+extras/1password-cli
+
+# --- Terminal ---
+extras/windows-terminal
