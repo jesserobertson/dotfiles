@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 
 ## INSTALL HOMEBREW
 echo "Installing Homebrew..."
