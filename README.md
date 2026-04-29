@@ -370,13 +370,13 @@ make python
 **Haskell packages:**
 Edit `dot_config/haskellfile` and run:
 ```sh
-$ chezmoi apply  # This will trigger re-installation due to content change
+$ chezmoi apply
 ```
 
 **Fish plugins:**
 Edit `dot_config/fish/fish_plugins` and run:
 ```sh
-$ chezmoi apply  # This will trigger Fisher update
+$ chezmoi apply
 ```
 
 ## Testing
