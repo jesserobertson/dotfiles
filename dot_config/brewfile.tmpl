@@ -1,10 +1,15 @@
+{{- $is_container := false -}}
+{{- if stat "/.dockerenv" -}}
+{{-   $is_container = true -}}
+{{- end -}}
+
+{{ if eq .chezmoi.os "darwin" }}
 cask_args appdir: "/Applications"
 
 ## TAPS
-tap "bats-core/bats-core"
-{{ if eq .chezmoi.os "darwin" }}
 tap "buo/cask-upgrade"
 tap "FelixKratz/formulae"
+tap "bats-core/bats-core"
 
 ## CASKS
 # Utilities
@@ -23,42 +28,56 @@ cask "font-fira-code-nerd-font"
 cask "font-fira-mono-nerd-font"
 cask "font-prompt"
 {{ end }}
-## BREWS
-brew "awscli"
+
+## BREWS - cross-platform shell and dev essentials
+brew "bat"
 brew "bat-extras"
-brew "bats-core"
-brew "chezmoi" 
-brew "cmake" 
-brew "coreutils"
+brew "chezmoi"
 brew "direnv"
+brew "eza"
+brew "fd"
 brew "fish"
 brew "fisher"
 brew "fzf"
 brew "git"
+brew "git-delta"
 brew "gh"
+brew "jq"
+brew "just"
+brew "neovim"
+brew "openssl"
+brew "readline"
+brew "ripgrep"
+brew "starship"
+brew "tig"
+brew "zoxide"
+
+## BREWS - not suitable for containers (heavy or host-only)
+{{ if not $is_container }}
+brew "awscli"
+brew "bats-core"
+brew "cmake"
+brew "coreutils"
 brew "ghcup"
 brew "git-flow"
 brew "gnupg"
 brew "golang"
 brew "htop"
-brew "jq"
 brew "juliaup"
-brew "just"
 brew "llm"
 brew "llvm"
-brew "neovim"
 brew "nodejs"
 brew "openjdk"
-brew "openssl"
 brew "pandoc"
 brew "pixi"
-brew "readline"
 brew "roborev-dev/tap/roborev"
-brew "tig"
+{{ end }}
+
+## BREWS - macOS only
 {{ if eq .chezmoi.os "darwin" }}
 brew "borders"
 brew "steveyegge/beads/bd"
 brew "dolt"
 brew "lima"
 brew "mactop"
-{{ end }} 
+{{ end }}
