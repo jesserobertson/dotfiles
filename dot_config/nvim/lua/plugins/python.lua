@@ -7,26 +7,18 @@ return {
 			{ "<leader>c", vim.lsp.buf.code_action, desc = "Code Action" },
 			{ "<C-f>", vim.lsp.buf.format, desc = "Format File" },
 		},
-		init = function()
-			-- this snippet enables auto-completion
+		opts = function(_, opts)
 			local lspCapabilities = vim.lsp.protocol.make_client_capabilities()
 			lspCapabilities.textDocument.completion.completionItem.snippetSupport = true
-
-			-- setup pyright with completion capabilities
-			require("lspconfig").pyright.setup({
+			opts.servers = opts.servers or {}
+			opts.servers.pyright = vim.tbl_deep_extend("force", opts.servers.pyright or {}, {
 				capabilities = lspCapabilities,
 			})
-
-			-- setup taplo with completion capabilities
-			require("lspconfig").taplo.setup({
+			opts.servers.taplo = vim.tbl_deep_extend("force", opts.servers.taplo or {}, {
 				capabilities = lspCapabilities,
 			})
-
-			-- ruff uses an LSP proxy, therefore it needs to be enabled as if it
-			-- were a LSP. In practice, ruff only provides linter-like diagnostics
-			-- and some code actions, and is not a full LSP yet.
-			require("lspconfig").ruff.setup({
-				-- disable ruff as hover provider to avoid conflicts with pyright
+			-- ruff uses an LSP proxy; disable hover to avoid conflicts with pyright
+			opts.servers.ruff = vim.tbl_deep_extend("force", opts.servers.ruff or {}, {
 				on_attach = function(client)
 					client.server_capabilities.hoverProvider = false
 				end,
