@@ -68,12 +68,12 @@ function Get-MessageOfTheDay
 
     if (Get-Command scoop -ErrorAction SilentlyContinue)
     {
-        $outdatedPackages = (scoop status 2>$null) -join "`n"
-        if (-not [string]::IsNullOrEmpty($outdatedPackages))
+        $outdatedPackages = scoop status 2>$null | Where-Object { $_.Name }
+        if ($outdatedPackages)
         {
             [void]$output.AppendLine($dash)
             [void]$output.AppendLine("Scoop Packages To Update")
-            [void]$output.AppendLine($outdatedPackages)
+            [void]$output.AppendLine(($outdatedPackages | ForEach-Object { "  $($_.Name): $($_.InstalledVersion) -> $($_.LatestVersion)" }) -join "`n")
         }
     }
 
