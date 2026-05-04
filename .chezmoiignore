@@ -10,6 +10,9 @@ temp/**
 # Ignore all private configuration files
 configs_*
 
+# Ignore superpowers docs
+docs/
+Makefile
 test*.sh
 tests/
 CI-TESTING.md
