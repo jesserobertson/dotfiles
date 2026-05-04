@@ -4,3 +4,30 @@
 
 # --- Security ---
 AgileBits.1Password.CLI
+AgileBits.1Password
+
+# --- Dev tools ---
+Git.Git
+GoLang.Go
+GitHub.cli
+Amazon.AWSCLI
+Microsoft.PowerShell
+Rustlang.Rustup
+RedHat.Podman
+LoftLabs.DevPod
+Nvidia.CUDA
+CondaForge.Miniforge3
+BrechtSanders.WinLibs.POSIX.UCRT
+
+# --- Editors ---
+Microsoft.VisualStudioCode
+ZedIndustries.Zed.Preview
+
+# --- Terminal ---
+Microsoft.WindowsTerminal
+
+# --- Apps ---
+Anthropic.Claude
+Microsoft.WSL
+KYDronePilot.SpaceEye
+FilesCommunity.FilesPreview

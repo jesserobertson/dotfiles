@@ -35,11 +35,3 @@ if (-not (Get-Command op -ErrorAction SilentlyContinue)) {
 } else {
     Write-Host "1Password CLI (op) already installed, skipping."
 }
-
-# --- oh-my-posh ---
-if (-not (Get-Command oh-my-posh -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing oh-my-posh..."
-    scoop install main/oh-my-posh
-} else {
-    Write-Host "oh-my-posh already installed, skipping."
-}

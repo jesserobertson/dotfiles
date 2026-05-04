@@ -6,7 +6,6 @@
 # Add with: scoop bucket add extras && scoop bucket add versions
 
 # --- Shell & prompt ---
-main/oh-my-posh
 main/starship
 
 # --- Dev tools ---
@@ -31,5 +30,3 @@ main/awscli
 # --- Security ---
 extras/1password-cli
 
-# --- Terminal ---
-extras/windows-terminal
