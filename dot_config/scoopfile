@@ -22,6 +22,3 @@ main/chezmoi
 # --- Languages & runtimes ---
 main/nodejs
 
-# --- Security ---
-extras/1password-cli
-

@@ -28,10 +28,3 @@ foreach ($bucket in $buckets) {
     }
 }
 
-# --- 1Password CLI ---
-if (-not (Get-Command op -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing 1Password CLI..."
-    scoop install extras/1password-cli
-} else {
-    Write-Host "1Password CLI (op) already installed, skipping."
-}
