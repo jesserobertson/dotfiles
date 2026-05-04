@@ -56,25 +56,6 @@ $global:Prompts = @{
     OldPrompt = { . (Convert-Path "$DataHome/powershell/scripts/OldPrompt") }
 }
 
-$Interactive = "$DataHome/powershell/scripts/Init-Profile.ps1"
-if ($Host.UI.RawUI.KeyAvailable)
-{
-    $Controlled = $false
-    while ($Host.Ui.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp")))
-    {
-        if (!$Controlled -and $key.ControlKeyState -match "LeftCtrlPressed")
-        {
-            $Controlled = $true
-        }
-    }
-    if ($controlled)
-    {
-        Write-Host "Skipping interactive config. To complete, run:`n. $Interactive"
-        $function:prompt = $global:Prompts.Simple
-        return
-    }
-}
-
 # Only load interactive profile for interactive shells
 if ([System.Environment]::UserInteractive)
 {
