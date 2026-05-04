@@ -77,6 +77,17 @@ function Get-MessageOfTheDay
         }
     }
 
+    if (Get-Command winget -ErrorAction SilentlyContinue)
+    {
+        $wingetUpdates = (winget upgrade 2>$null) | Where-Object { $_ -match '^\S' -and $_ -notmatch '^Name|^-|upgrades available\.|No installed' }
+        if ($wingetUpdates)
+        {
+            [void]$output.AppendLine($dash)
+            [void]$output.AppendLine("WinGet Packages To Update")
+            [void]$output.AppendLine(($wingetUpdates -join "`n"))
+        }
+    }
+
     if (Get-Command chezmoi -ErrorAction SilentlyContinue)
     {
         $chezmoiStatus = (chezmoi status) -join "`n"

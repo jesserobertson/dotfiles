@@ -5,9 +5,9 @@ $global:profile_initialized = $false
 
 # Use XDG base dirs so tools like Neovim find config in ~/.config rather than AppData
 $DataHome = Set-EnvDefault XDG_DATA_HOME   @($HOME, ".local", "share")
-Set-EnvDefault XDG_CONFIG_HOME @($HOME, ".config")
-Set-EnvDefault XDG_STATE_HOME  @($HOME, ".local", "state")
-Set-EnvDefault XDG_CACHE_HOME  @($HOME, ".cache")
+[void](Set-EnvDefault XDG_CONFIG_HOME @($HOME, ".config"))
+[void](Set-EnvDefault XDG_STATE_HOME  @($HOME, ".local", "state"))
+[void](Set-EnvDefault XDG_CACHE_HOME  @($HOME, ".cache"))
 
 # Add custom module path to avoid OneDrive Documents redirection
 $ModuleHome = [IO.Path]::Combine($DataHome, "powershell", "modules")
