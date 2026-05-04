@@ -1,0 +1,6 @@
+# WinGet packages (Windows package manager)
+# Format: Publisher.PackageName (winget package ID)
+# Install with: winget install --id <id> --silent --accept-package-agreements
+
+# --- Security ---
+AgileBits.1Password.CLI
