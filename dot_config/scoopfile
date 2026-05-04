@@ -9,7 +9,6 @@
 main/starship
 
 # --- Dev tools ---
-main/git
 main/neovim
 main/fzf
 main/ripgrep
@@ -22,10 +21,6 @@ main/chezmoi
 
 # --- Languages & runtimes ---
 main/nodejs
-main/go
-
-# --- Cloud & infra ---
-main/awscli
 
 # --- Security ---
 extras/1password-cli
