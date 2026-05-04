@@ -22,7 +22,8 @@ $paths = @(
     [IO.Path]::Combine($HOME, ".local", "bin"),
     [IO.Path]::Combine($HOME, "scoop", "shims"),
     [IO.Path]::Combine($HOME, ".pixi", "bin"),
-    [IO.Path]::Combine($HOME, ".local", "share", "cargo", "bin")
+    [IO.Path]::Combine($HOME, ".local", "share", "cargo", "bin"),
+    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links")
 )
 [array]::Reverse($paths)
 foreach ($p in $paths)
