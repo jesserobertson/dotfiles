@@ -1,9 +1,5 @@
 # Scoop packages (Windows equivalent of Brewfile)
-# Format: [bucket/]package
-# Install with: scoop install $(grep -v '^#' scoopfile | grep -v '^$')
-
-# Buckets needed: extras, versions
-# Add with: scoop bucket add extras && scoop bucket add versions
+# Format: [bucket/]package — all from the default 'main' bucket
 
 # --- Shell & prompt ---
 main/starship

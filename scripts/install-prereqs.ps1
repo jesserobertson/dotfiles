@@ -19,12 +19,4 @@ if ($env:PATH -notlike "*$scoopShims*") {
     $env:PATH = "$scoopShims;$env:PATH"
 }
 
-# --- Core scoop buckets ---
-$buckets = @("extras", "versions")
-foreach ($bucket in $buckets) {
-    if (-not (scoop bucket list | Select-String $bucket -Quiet)) {
-        Write-Host "Adding scoop bucket: $bucket"
-        scoop bucket add $bucket
-    }
-}
 
