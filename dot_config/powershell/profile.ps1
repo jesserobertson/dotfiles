@@ -60,7 +60,7 @@ $Interactive = "$DataHome/powershell/scripts/Init-Profile.ps1"
 if ($Host.UI.RawUI.KeyAvailable)
 {
     $Controlled = $false
-    while ($Host.Ui.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,Intercept,IncludeKeyDown,IncludeKeyUp")))
+    while ($Host.Ui.RawUI.KeyAvailable -and ($key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown,IncludeKeyUp")))
     {
         if (!$Controlled -and $key.ControlKeyState -match "LeftCtrlPressed")
         {

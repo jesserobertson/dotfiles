@@ -73,13 +73,18 @@ function Get-MessageOfTheDay
         {
             [void]$output.AppendLine($dash)
             [void]$output.AppendLine("Scoop updates (run: scoop update *)")
-            [void]$output.AppendLine(($outdatedPackages | ForEach-Object { "  $($_.Name): $($_.InstalledVersion) -> $($_.LatestVersion)" }) -join "`n")
+            [void]$output.AppendLine(($outdatedPackages | ForEach-Object { "  $($_.Name): $($_.'Installed Version') -> $($_.'Latest Version')" }) -join "`n")
         }
     }
 
     if (Get-Command winget -ErrorAction SilentlyContinue)
     {
-        $wingetUpdates = (winget upgrade 2>$null) | Where-Object { $_ -match '^\S' -and $_ -notmatch '^Name|^-|upgrades available\.|No installed' }
+        $wingetUpdates = winget upgrade 2>$null |
+            Where-Object { $_ -match '\s+winget\s*$' } |
+            ForEach-Object {
+                $parts = $_ -split '\s{2,}'
+                if ($parts.Count -ge 4) { "  $($parts[0].Trim()): $($parts[2].Trim()) -> $($parts[3].Trim())" }
+            }
         if ($wingetUpdates)
         {
             [void]$output.AppendLine($dash)
