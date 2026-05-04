@@ -86,6 +86,13 @@
   cores = {{ $cpuCores }}
   threads = {{ $cpuThreads }}
 
+[cd]
+{{- if eq .chezmoi.os "windows" }}
+  command = "pwsh"
+{{- else }}
+  command = "fish"
+{{- end }}
+
 [git]
   autoPush = true
 
