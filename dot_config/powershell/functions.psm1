@@ -158,8 +158,7 @@ function Set-LocationButBetter
     }
 }
 
-Remove-Item alias:cd
-Set-Alias -Name cd -Value Set-LocationButBetter
+Set-Alias -Name cd -Value Set-LocationButBetter -Option AllScope -Scope Global -Force
 Set-Alias -Name .. -Value Set-LocationButBetter
 Set-Alias -Name ... -Value Set-LocationButBetter
 
@@ -211,7 +210,7 @@ function Switch-Prompt
         [switch]
         $NoShellIntegration
     )
-    $ $global=ts.Current
+    $current = $global:Prompts.Current
     if ([string]::IsNullOrEmpty($Prompt))
     {
         [array]$keys = $global:Prompts.Keys | Where-Object { $_ -ne 'Current' }
