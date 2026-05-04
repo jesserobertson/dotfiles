@@ -3,6 +3,8 @@ function Import-Completion
     <#
     .SYNOPSIS
         Loads shell completions for a command if it exists on PATH.
+        Completions are cached per tool version in XDG_CACHE_HOME and only
+        regenerated when the tool is upgraded.
     .PARAMETER Command
         The command name to check for (e.g. 'gh').
     .PARAMETER Script
@@ -11,10 +13,32 @@ function Import-Completion
         Import-Completion gh { gh completion -s powershell }
     #>
     param([string]$Command, [scriptblock]$Script)
-    if (Get-Command $Command -ErrorAction SilentlyContinue)
+    $cmd = Get-Command $Command -ErrorAction SilentlyContinue
+    if (-not $cmd) { return }
+
+    $cacheHome = if ($env:XDG_CACHE_HOME) { $env:XDG_CACHE_HOME } else { [IO.Path]::Combine($HOME, '.cache') }
+    $cacheDir  = [IO.Path]::Combine($cacheHome, 'powershell', 'completions')
+
+    # Use the binary's last-write time as cache key — no process spawn needed
+    $mtime     = (Get-Item $cmd.Source -ErrorAction SilentlyContinue)?.LastWriteTimeUtc.Ticks
+    $cacheFile = if ($mtime) { [IO.Path]::Combine($cacheDir, "${Command}_${mtime}.ps1") } else { $null }
+
+    if ($cacheFile -and (Test-Path $cacheFile))
     {
-        & $Script | Out-String | Invoke-Expression
+        . $cacheFile
+        return
     }
+
+    $content = (& $Script) | Out-String
+
+    if ($cacheFile)
+    {
+        if (-not (Test-Path $cacheDir)) { [void](New-Item -ItemType Directory -Path $cacheDir -Force) }
+        Get-ChildItem $cacheDir -Filter "${Command}_*.ps1" | Remove-Item -Force
+        Set-Content -Path $cacheFile -Value $content
+    }
+
+    Invoke-Expression $content
 }
 
 # Load completions for installed tools

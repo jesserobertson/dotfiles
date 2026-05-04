@@ -3,6 +3,7 @@
 
 # --- Shell & prompt ---
 main/starship
+main/fastfetch
 
 # --- Dev tools ---
 main/neovim

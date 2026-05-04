@@ -68,10 +68,21 @@ if ([System.Environment]::UserInteractive)
     # Load completions
     . "$PSScriptRoot/completions.ps1"
 
-    # Start starship prompt
-    if (get-command 'starship' -ErrorAction SilentlyContinue)
+    # Start starship prompt (init output cached by binary mtime — only reruns after upgrades)
+    $starshipCmd = Get-Command 'starship' -ErrorAction SilentlyContinue
+    if ($starshipCmd)
     {
-        Invoke-Expression (&starship init powershell)
+        $starshipMtime = (Get-Item $starshipCmd.Source).LastWriteTimeUtc.Ticks
+        $starshipCache = [IO.Path]::Combine($env:XDG_CACHE_HOME, 'powershell', "starship_init_$starshipMtime.ps1")
+        if (-not (Test-Path $starshipCache))
+        {
+            $initScript = & starship init powershell
+            $cacheDir = Split-Path $starshipCache
+            if (-not (Test-Path $cacheDir)) { [void](New-Item -ItemType Directory -Path $cacheDir -Force) }
+            Get-ChildItem $cacheDir -Filter 'starship_init_*.ps1' | Remove-Item -Force
+            Set-Content -Path $starshipCache -Value $initScript
+        }
+        . $starshipCache
         $global:Prompts.Starship = $function:prompt
         $global:Prompts.StarshipShort = { &starship prompt --profile short }
         Switch-Prompt -prompt Starship

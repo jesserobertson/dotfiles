@@ -54,57 +54,53 @@ function Get-MessageOfTheDay
 {
     <#
     .SYNOPSIS
-        Displays a summary of system info, outdated scoop packages, and chezmoi status.
+        Displays system info plus once-per-day update summaries (scoop/winget/chezmoi).
+        On a cache hit the full output is immediate. On a cache miss the header prints
+        instantly and the slow checks run in a background job; the results are flushed
+        above the next prompt via Set-ShellIntegration. Use -Force to refresh mid-day.
+    .PARAMETER Force
+        Bypass the cache, run synchronously, and show output immediately.
     .EXAMPLE
         Get-MessageOfTheDay
+        Get-MessageOfTheDay -Force
     #>
-    $output = [System.Text.StringBuilder]::new()
-    $dash = "." * $Host.UI.RawUI.WindowSize.Width
+    param([switch]$Force)
 
-    [void]$output.AppendLine($dash)
-    [void]$output.AppendLine("- Hostname: $(hostname)")
-    [void]$output.AppendLine("- User: $(whoami)")
-    [void]$output.AppendLine("- Date: $(Get-Date)")
+    $stateHome = if ($env:XDG_STATE_HOME) { $env:XDG_STATE_HOME } else { [IO.Path]::Combine($HOME, '.local', 'state') }
+    $stateDir  = [IO.Path]::Combine($stateHome, 'powershell')
+    $today     = Get-Date -Format 'yyyy-MM-dd'
+    $cacheFile = [IO.Path]::Combine($stateDir, "motd_$today.txt")
+    $dash = '.' * $Host.UI.RawUI.WindowSize.Width
 
-    if (Get-Command scoop -ErrorAction SilentlyContinue)
+    if (-not $Force -and (Test-Path $cacheFile))
     {
-        $outdatedPackages = scoop status 2>$null | Where-Object { $_.Name }
-        if ($outdatedPackages)
-        {
-            [void]$output.AppendLine($dash)
-            [void]$output.AppendLine("Scoop updates (run: scoop update *)")
-            [void]$output.AppendLine(($outdatedPackages | ForEach-Object { "  $($_.Name): $($_.'Installed Version') -> $($_.'Latest Version')" }) -join "`n")
-        }
+        if (Get-Command fastfetch -ErrorAction SilentlyContinue) { fastfetch } else { Write-Host "$dash`n- Hostname: $env:COMPUTERNAME`n- User: $env:USERDOMAIN\$env:USERNAME`n- Date: $(Get-Date)`n" -NoNewline }
+        Write-Host (Get-Content $cacheFile -Raw) -NoNewline
+        return
     }
 
-    if (Get-Command winget -ErrorAction SilentlyContinue)
+    # Cache miss: print header immediately, run slow checks in background
+    if (Get-Command fastfetch -ErrorAction SilentlyContinue) { fastfetch } else { Write-Host "$dash`n- Hostname: $env:COMPUTERNAME`n- User: $env:USERDOMAIN\$env:USERNAME`n- Date: $(Get-Date)`n" -NoNewline }
+
+    if ($global:motdJob)
     {
-        $wingetUpdates = winget upgrade 2>$null |
-            Where-Object { $_ -match '\s+winget\s*$' } |
-            ForEach-Object {
-                $parts = $_ -split '\s{2,}'
-                if ($parts.Count -ge 4) { "  $($parts[0].Trim()): $($parts[2].Trim()) -> $($parts[3].Trim())" }
-            }
-        if ($wingetUpdates)
-        {
-            [void]$output.AppendLine($dash)
-            [void]$output.AppendLine("WinGet updates (run: winget upgrade --all)")
-            [void]$output.AppendLine(($wingetUpdates -join "`n"))
-        }
+        $global:motdJob | Stop-Job -ErrorAction SilentlyContinue
+        $global:motdJob | Remove-Job -Force -ErrorAction SilentlyContinue
+        $global:motdJob = $null
     }
 
-    if (Get-Command chezmoi -ErrorAction SilentlyContinue)
+    $motdScript    = [IO.Path]::Combine($PSScriptRoot, 'motd-update.ps1')
+    $global:motdJob = Start-ThreadJob -FilePath $motdScript -ArgumentList $dash, $cacheFile, $stateDir
+
+    if ($Force)
     {
-        $chezmoiStatus = (chezmoi status) -join "`n"
-        if (-not [string]::IsNullOrEmpty($chezmoiStatus))
-        {
-            [void]$output.AppendLine($dash)
-            [void]$output.AppendLine("Chezmoi Status")
-            [void]$output.AppendLine($chezmoiStatus)
-        }
+        # Force: block until done and display immediately
+        $body = $global:motdJob | Wait-Job | Receive-Job -ErrorAction SilentlyContinue
+        $global:motdJob | Remove-Job -Force -ErrorAction SilentlyContinue
+        $global:motdJob = $null
+        if ($body) { Write-Host $body -NoNewline }
     }
-    [void]$output.Append($dash)
-    Write-Host $output -NoNewline
+    # else: Set-ShellIntegration's Prompt hook flushes the job above the next prompt
 }
 
 function Set-LocationButBetter
@@ -247,7 +243,6 @@ function Switch-Prompt
         }
         $Prompt = $keys[$next]
     }
-    Write-Host "Switching prompt from '$($current)' to '$Prompt'"
     $global:Prompts.Current = $Prompt
     $function:prompt = $global:Prompts.$Prompt
     if (-not $NoShellIntegration)
@@ -268,7 +263,6 @@ function Set-ShellIntegration
         [switch]$NoOriginalReset
     )
 
-    Write-Host "Setting up shell integration..."
     # Restore hooked functions in case this script is executed accidentally twice
     if ($global:shellIntegrationGlobals -and -not $NoOriginalReset)
     {
@@ -318,6 +312,15 @@ function Set-ShellIntegration
     $function:global:Prompt = {
         $lastCommandStatus = $?
 
+        # Flush async MOTD output above the prompt once the background job finishes
+        if ($global:motdJob -and $global:motdJob.State -in 'Completed', 'Failed')
+        {
+            $body = Receive-Job $global:motdJob -ErrorAction SilentlyContinue
+            if ($body) { Write-Host $body }
+            Remove-Job $global:motdJob -Force -ErrorAction SilentlyContinue
+            $global:motdJob = $null
+        }
+
         if ($global:shellIntegrationGlobals.lastCommand)
         {
             $exitCode = $global:shellIntegrationGlobals.getExitCode.Invoke($lastCommandStatus)
@@ -353,5 +356,40 @@ function Set-ShellIntegration
     }
 }
 
-Export-ModuleMember -Function Add-EnvPath, Set-EnvDefault, Get-MessageOfTheDay, Test-Administrator, Set-LocationButBetter, Switch-Prompt, Set-ShellIntegration
+function Measure-StartupTime
+{
+    <#
+    .SYNOPSIS
+        Times each step of the interactive profile to identify slow components.
+        Note: module timings reflect re-import cost; open a fresh terminal for cold-load numbers.
+    .EXAMPLE
+        Measure-StartupTime
+    #>
+    $psdir = Split-Path $PROFILE.CurrentUserCurrentHost
+
+    function tw($label, $block)
+    {
+        $sw = [Diagnostics.Stopwatch]::StartNew()
+        & $block
+        $sw.Stop()
+        [pscustomobject]@{ Step = $label; Ms = $sw.ElapsedMilliseconds }
+    }
+
+    $results = @(
+        (tw 'Import functions.psm1'  { Import-Module "$psdir/functions.psm1" -Force -ErrorAction SilentlyContinue })
+        (tw 'Import gittools.psm1'   { Import-Module "$psdir/gittools.psm1"  -Force -ErrorAction SilentlyContinue })
+        (tw 'Import PSReadLine'      { Import-Module PSReadLine -ErrorAction SilentlyContinue })
+        (tw 'chezmoi completion'     { if (gcm chezmoi -ea 0) { chezmoi completion powershell | Out-Null } })
+        (tw 'gh completion'          { if (gcm gh -ea 0)      { gh completion -s powershell   | Out-Null } })
+        (tw 'starship init'          { if (gcm starship -ea 0) { & starship init powershell   | Out-Null } })
+        (tw 'scoop status'           { if (gcm scoop -ea 0)   { scoop status 2>$null          | Out-Null } })
+        (tw 'winget upgrade'         { if (gcm winget -ea 0)  { winget upgrade 2>$null        | Out-Null } })
+        (tw 'chezmoi status'         { if (gcm chezmoi -ea 0) { chezmoi status                | Out-Null } })
+    )
+
+    $results | Sort-Object Ms -Descending | Format-Table -AutoSize
+    "Total: $(($results | Measure-Object Ms -Sum).Sum) ms"
+}
+
+Export-ModuleMember -Function Add-EnvPath, Set-EnvDefault, Get-MessageOfTheDay, Test-Administrator, Set-LocationButBetter, Switch-Prompt, Set-ShellIntegration, Measure-StartupTime
 Export-ModuleMember -Alias cd, .., ...
