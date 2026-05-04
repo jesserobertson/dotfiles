@@ -102,6 +102,6 @@
 {{- else if eq .chezmoi.os "linux" }}
     PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- else if eq .chezmoi.os "windows" }}
-    PATH = "{{ joinPath .chezmoi.homeDir "scoop" "shims" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir ".pixi" "bin" | replace "\\" "/" }};{{ joinPath $localDir "share" "cargo" "bin" | replace "\\" "/" }};{{ joinPath $localDir "bin" | replace "\\" "/" }};C:/Program Files/PowerShell/7;C:/Windows/System32;C:/Windows"
+    PATH = "{{ joinPath .chezmoi.homeDir "scoop" "shims" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir ".pixi" "bin" | replace "\\" "/" }};{{ joinPath $localDir "share" "cargo" "bin" | replace "\\" "/" }};{{ joinPath $localDir "bin" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WindowsApps" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WinGet" "Links" | replace "\\" "/" }};C:/Program Files/PowerShell/7;C:/Windows/System32;C:/Windows"
 {{- end }}
 
