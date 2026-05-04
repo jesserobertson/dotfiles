@@ -72,7 +72,7 @@ function Get-MessageOfTheDay
         if ($outdatedPackages)
         {
             [void]$output.AppendLine($dash)
-            [void]$output.AppendLine("Scoop Packages To Update")
+            [void]$output.AppendLine("Scoop updates (run: scoop update *)")
             [void]$output.AppendLine(($outdatedPackages | ForEach-Object { "  $($_.Name): $($_.InstalledVersion) -> $($_.LatestVersion)" }) -join "`n")
         }
     }
@@ -83,7 +83,7 @@ function Get-MessageOfTheDay
         if ($wingetUpdates)
         {
             [void]$output.AppendLine($dash)
-            [void]$output.AppendLine("WinGet Packages To Update")
+            [void]$output.AppendLine("WinGet updates (run: winget upgrade --all)")
             [void]$output.AppendLine(($wingetUpdates -join "`n"))
         }
     }
