@@ -12,9 +12,9 @@ main/ripgrep
 main/fd
 main/bat
 main/delta
-main/jq
 main/yq
 main/chezmoi
+main/helix
 
 # --- Languages & runtimes ---
 main/nodejs
