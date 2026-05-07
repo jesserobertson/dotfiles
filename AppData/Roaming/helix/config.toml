@@ -1,0 +1,19 @@
+# Set the theme for the editor
+theme = "dracula"
+
+[editor]
+shell = ["pwsh", "-c"]  # set the shell to use
+line-number = "relative"
+cursorline = true
+true-color = true
+color-modes = true
+
+[editor.whitespace.render]
+space = "all"
+tab = "all"
+nbsp = "all"
+nnbsp = "all"
+newline = "none"
+
+[editor.index-guides]
+render = true

@@ -9,6 +9,14 @@ $DataHome = Set-EnvDefault XDG_DATA_HOME   @($HOME, ".local", "share")
 [void](Set-EnvDefault XDG_STATE_HOME  @($HOME, ".local", "state"))
 [void](Set-EnvDefault XDG_CACHE_HOME  @($HOME, ".cache"))
 
+# Set Zed as default editor
+# Set-Item "env:EDITOR" "zed --wait"
+# Set-Item "env:VISUAL" "zed --wait"
+
+# Set helix as default editor
+Set-Item "env:EDITOR" hx
+Set-Item "env:VISUAL" hx
+
 # Add custom module path to avoid OneDrive Documents redirection
 $ModuleHome = [IO.Path]::Combine($DataHome, "powershell", "modules")
 if (-not ($env:PsModulePath -split [IO.Path]::PathSeparator -contains $ModuleHome))
@@ -23,6 +31,7 @@ $paths = @(
     [IO.Path]::Combine($HOME, "scoop", "shims"),
     [IO.Path]::Combine($HOME, ".pixi", "bin"),
     [IO.Path]::Combine($HOME, ".local", "share", "cargo", "bin"),
+    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links")
     [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links")
 )
 [array]::Reverse($paths)
