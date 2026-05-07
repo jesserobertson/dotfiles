@@ -7,6 +7,7 @@ AgileBits.1Password.CLI
 AgileBits.1Password
 
 # --- Dev tools ---
+twpayne.chezmoi
 Git.Git
 GoLang.Go
 GitHub.cli

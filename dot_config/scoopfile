@@ -13,7 +13,6 @@ main/fd
 main/bat
 main/delta
 main/yq
-main/chezmoi
 main/helix
 
 # --- Languages & runtimes ---

@@ -5,9 +5,9 @@ bootstrap: dotfiles prereqs brew rust crates skills mcp pixi tmux powershell  ##
 dotfiles:  ## Apply dotfiles (chezmoi apply)
 	chezmoi apply
 
-prereqs:  ## Homebrew (macOS/Linux) or Scoop bootstrap (Windows)
+prereqs:  ## Homebrew (macOS/Linux) or winget packages (Windows)
 ifeq ($(OS),Windows_NT)
-	powershell -ExecutionPolicy Bypass -File run_onchange_windows_install-packages.ps1
+	powershell -ExecutionPolicy Bypass -File scripts/install-prereqs.ps1
 else
 	bash scripts/install-prereqs.sh
 endif

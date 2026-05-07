@@ -1,5 +1,6 @@
-# Bootstrap scoop, then install all packages from scoopfile and wingetfile.
-# Re-runs whenever this file changes (triggered by chezmoi when scoopfile/wingetfile change).
+# Bootstrap scoop and install scoop packages from scoopfile.
+# Winget packages are handled by scripts/install-prereqs.ps1 (run before chezmoi apply).
+# Re-runs whenever this file changes (triggered by chezmoi when scoopfile changes).
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -11,7 +12,7 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
 }
 
-$scoopShims = Join-Path $HOME "scoop\shims"
+$scoopShims = Join-Path $env:SCOOP "shims"
 if ($env:PATH -notlike "*$scoopShims*") {
     $env:PATH = "$scoopShims;$env:PATH"
 }
@@ -26,19 +27,4 @@ foreach ($pkg in $packages) {
         Write-Host "Installing (scoop) $pkg..."
         scoop install $pkg
     }
-}
-
-# --- WinGet packages ---
-if (Get-Command winget -ErrorAction SilentlyContinue) {
-    $wingetfile = Join-Path $HOME ".config" "wingetfile"
-    $packages = Get-Content $wingetfile |
-        Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
-    foreach ($id in $packages) {
-        if (-not (winget list --id $id --exact 2>$null | Select-String $id -Quiet)) {
-            Write-Host "Installing (winget) $id..."
-            winget install --id $id --silent --accept-package-agreements --accept-source-agreements
-        }
-    }
-} else {
-    Write-Host "winget not found, skipping wingetfile install"
 }

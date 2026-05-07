@@ -1,10 +1,36 @@
 # dotfiles
 
-Managing my dotfiles using chezmoi and homebrew. This repository provides a complete, reproducible development environment that works across macOS (Intel/ARM) and Linux platforms.
+Managing my dotfiles using chezmoi. Supports macOS (Intel/ARM), Linux, and Windows.
 
 ## Quick Start
 
-### New machine (full setup)
+### New machine — Windows
+
+winget is the only prerequisite (built into Windows 11).
+
+**1. Install chezmoi:**
+```powershell
+winget install twpayne.chezmoi
+```
+
+**2. Apply dotfiles (also bootstraps scoop and installs scoop packages):**
+```powershell
+chezmoi init --ssh --apply jesserobertson
+```
+
+**3. Install remaining winget packages (Git, Go, VSCode, etc.):**
+```powershell
+make prereqs
+```
+
+**4. Set up the PowerShell profile wrapper:**
+```powershell
+make powershell
+```
+
+---
+
+### New machine — macOS / Linux
 
 On macOS, install Xcode command line tools first:
 
@@ -12,13 +38,13 @@ On macOS, install Xcode command line tools first:
 xcode-select --install
 ```
 
-Then bootstrap chezmoi (this clones the repo and applies dotfiles only):
+Install chezmoi and apply dotfiles:
 
 ```sh
-BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson  # replace with your GitHub username if forked
+BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson
 ```
 
-Then run installs:
+Then install all tools:
 
 ```sh
 make bootstrap   # installs prereqs + all tools
@@ -27,7 +53,7 @@ make bootstrap   # installs prereqs + all tools
 Or selectively:
 
 ```sh
-make prereqs     # Homebrew (macOS/Linux) or Scoop (Windows)
+make prereqs     # Homebrew (macOS/Linux)
 make brew        # Homebrew packages from Brewfile
 make rust        # Rust toolchain (stable + nightly)
 make crates      # Rust crates from cratefile
@@ -36,8 +62,9 @@ make skills      # Claude Code skills
 make mcp         # MCP servers (macOS only)
 make pixi        # pixi global packages
 make tmux        # tmux plugin manager
-make powershell  # PowerShell $PROFILE wrapper (Windows)
 ```
+
+---
 
 ### Dotfiles only
 
@@ -91,7 +118,7 @@ Chezmoi uses special prefixes to control how files are processed:
 ├── Makefile                          # Optional install targets
 ├── scripts/                          # Install scripts (run manually via make)
 │   ├── install-prereqs.sh            # Homebrew + 1Password (macOS/Linux)
-│   ├── install-prereqs.ps1           # Scoop + tools (Windows)
+│   ├── install-prereqs.ps1           # winget packages (Windows, run before chezmoi apply)
 │   ├── install-brew.sh               # brew bundle install
 │   ├── install-rust.fish             # rustup + toolchains
 │   ├── install-crates.fish           # cargo install from cratefile

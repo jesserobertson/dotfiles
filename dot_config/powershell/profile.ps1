@@ -8,6 +8,7 @@ $DataHome = Set-EnvDefault XDG_DATA_HOME   @($HOME, ".local", "share")
 [void](Set-EnvDefault XDG_CONFIG_HOME @($HOME, ".config"))
 [void](Set-EnvDefault XDG_STATE_HOME  @($HOME, ".local", "state"))
 [void](Set-EnvDefault XDG_CACHE_HOME  @($HOME, ".cache"))
+[void](Set-EnvDefault SCOOP           @($HOME, ".local", "scoop"))
 
 # Set Zed as default editor
 # Set-Item "env:EDITOR" "zed --wait"
@@ -28,7 +29,7 @@ if (-not ($env:PsModulePath -split [IO.Path]::PathSeparator -contains $ModuleHom
 $paths = @(
     [IO.Path]::Combine($DataHome, "powershell", "bin"),
     [IO.Path]::Combine($HOME, ".local", "bin"),
-    [IO.Path]::Combine($HOME, "scoop", "shims"),
+    [IO.Path]::Combine($HOME, ".local", "scoop", "shims"),
     [IO.Path]::Combine($HOME, ".pixi", "bin"),
     [IO.Path]::Combine($HOME, ".local", "share", "cargo", "bin"),
     [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links")

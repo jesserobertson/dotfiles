@@ -40,3 +40,14 @@ Public/**
 .npm/**
 .node_modules/**
 .bundle/**
+
+# Ignore local containers and scripts directories
+containers/**
+scripts/**
+
+# Scoop package manager
+scoop/**
+.local/scoop/**
+
+# Ignore NVIDIA Ansel screenshot folder
+Ansel/**
