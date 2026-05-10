@@ -5,6 +5,12 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Ensure SCOOP points to our XDG-friendly location BEFORE the installer runs,
+# so scoop installs there rather than the default ~/scoop.
+if (-not $env:SCOOP) {
+    $env:SCOOP = Join-Path $HOME ".local" "scoop"
+}
+
 # --- Bootstrap scoop ---
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Host "Installing scoop..."
