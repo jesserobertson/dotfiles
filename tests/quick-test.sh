@@ -116,6 +116,35 @@ else
 fi
 echo ""
 
+# Test 2b: Validate PowerShell script syntax
+log "Testing PowerShell script syntax..."
+if command -v pwsh >/dev/null 2>&1; then
+    # Run pwsh from REPO_ROOT so it resolves paths natively (avoids Git Bash /c/... path issues)
+    if pushd "$REPO_ROOT" > /dev/null 2>&1 && pwsh -NoProfile -NonInteractive -Command "
+        \$failed = \$false
+        Get-ChildItem -Recurse -Filter '*.ps1' | Where-Object { \$_.FullName -notmatch '\\.git' } | ForEach-Object {
+            \$parseErrors = \$null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(\$_.FullName, [ref]\$null, [ref]\$parseErrors)
+            if (\$parseErrors.Count -gt 0) {
+                Write-Host \"FAIL: \$(\$_.Name): \$(\$parseErrors -join '; ')\"
+                \$failed = \$true
+            } else {
+                Write-Host \"OK:   \$(\$_.Name)\"
+            }
+        }
+        if (\$failed) { exit 1 }
+    " && popd > /dev/null 2>&1; then
+        pass "All PowerShell files have valid syntax"
+    else
+        popd > /dev/null 2>&1 || true
+        fail "Some PowerShell files have syntax errors (see above)"
+        FAILED=1
+    fi
+else
+    warn "pwsh not installed, skipping PowerShell syntax checks"
+fi
+echo ""
+
 # Test 3: Validate Zsh configuration syntax
 log "Testing Zsh configuration syntax..."
 if command -v zsh >/dev/null 2>&1; then
