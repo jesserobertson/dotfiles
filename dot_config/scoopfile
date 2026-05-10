@@ -6,6 +6,7 @@ main/starship
 main/fastfetch
 
 # --- Dev tools ---
+main/pester
 main/neovim
 main/fzf
 main/ripgrep
