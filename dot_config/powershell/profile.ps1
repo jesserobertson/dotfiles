@@ -32,8 +32,9 @@ $paths = @(
     [IO.Path]::Combine($HOME, ".local", "scoop", "shims"),
     [IO.Path]::Combine($HOME, ".pixi", "bin"),
     [IO.Path]::Combine($HOME, ".local", "share", "cargo", "bin"),
-    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links")
-    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links")
+    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links"),
+    # Git for Windows — winget installs here but doesn't always create a WinGet shim
+    "C:\Program Files\Git\cmd"
 )
 [array]::Reverse($paths)
 foreach ($p in $paths)
