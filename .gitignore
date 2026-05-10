@@ -4,3 +4,5 @@ private_dot_ssh/config
 tests/bats/helpers/setup.bash
 .worktrees/
 .claude
+coverage.xml
+pester-results.xml
