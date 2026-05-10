@@ -4,43 +4,16 @@
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
   },
   "permissions": {
-    "allow": [
-      "Bash(bd:*)",
-      "Bash(pixi:*)"
-    ]
+    "allow": []
   },
   "model": "sonnet",
-  "hooks": {
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bd prime"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bd prime"
-          }
-        ]
-      }
-    ]
-  },
+  "hooks": {},
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/scripts/statusline.sh",
+    "command": "{{ if eq .chezmoi.os "windows" }}pwsh -NoProfile -NonInteractive -File ~/.claude/scripts/statusline.ps1{{ else }}bash ~/.claude/scripts/statusline.sh{{ end }}",
     "padding": 0
   },
   "enabledPlugins": {
-    "beads@beads-marketplace": true,
     "pyright-lsp@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
@@ -60,6 +33,29 @@
     "MultiEdit",
     "Glob",
     "Grep",
+    "TodoWrite",
+    "Task",
+{{ if eq .chezmoi.os "windows" -}}
+    "PowerShell(Get-ChildItem*)",
+    "PowerShell(Get-Content*)",
+    "PowerShell(Get-Item*)",
+    "PowerShell(Get-Location*)",
+    "PowerShell(Test-Path*)",
+    "PowerShell(Resolve-Path*)",
+    "PowerShell(Get-Command*)",
+    "PowerShell(Get-Module*)",
+    "PowerShell(Get-Process*)",
+    "PowerShell(Get-Date*)",
+    "PowerShell(Select-String*)",
+    "PowerShell(Write-Host*)",
+    "PowerShell(Write-Output*)",
+    "PowerShell(Set-Location*)",
+    "PowerShell(Push-Location*)",
+    "PowerShell(Pop-Location*)",
+    "PowerShell(Import-Module*)",
+    "PowerShell(Invoke-Pester*)",
+    "PowerShell(New-PesterConfiguration*)",
+{{- else -}}
     "Bash",
     "Bash(gh pr diff:*)",
     "Bash(gh pr list:*)",
@@ -67,13 +63,7 @@
     "Bash(gh pr view:*)",
     "Bash(gh run list:*)",
     "Bash(gh run view:*)",
-    "Bash(rg:*)",
-    "Bash(ls:*)",
-    "Bash(fd:*)",
-    "Bash(find:*)",
-    "Bash(command -v:*)",
-    "TodoWrite",
-    "Task",
+{{- end }}
     "mcp__plugin_serena_serena__find_symbol",
     "mcp__plugin_serena_serena__get_symbols_overview",
     "mcp__plugin_serena_serena__find_referencing_symbols",
