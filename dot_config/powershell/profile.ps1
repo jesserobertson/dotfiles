@@ -103,5 +103,12 @@ if ([System.Environment]::UserInteractive)
         Switch-Prompt -prompt "OldPrompt"
     }
 
+    # Zoxide for smart directory jumping
+    $zoxideCmd = Get-Command 'zoxide' -ErrorAction SilentlyContinue
+    if ($zoxideCmd)
+    {
+        Invoke-Expression (& zoxide init powershell | Out-String)
+    }
+
     Get-MessageOfTheDay
 }
