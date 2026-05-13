@@ -1,6 +1,6 @@
 # Bootstrap scoop and install scoop packages from scoopfile.
 # Winget packages are handled by scripts/install-prereqs.ps1 (run before chezmoi apply).
-# Re-runs whenever this file changes (triggered by chezmoi when scoopfile changes).
+# scoopfile hash: {{ include "dot_config/scoopfile" | sha256sum }}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
