@@ -18,7 +18,6 @@ RedHat.Podman
 LoftLabs.DevPod
 Nvidia.CUDA
 CondaForge.Miniforge3
-prefix-dev.pixi
 BrechtSanders.WinLibs.POSIX.UCRT
 
 # --- Editors ---
