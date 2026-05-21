@@ -20,4 +20,7 @@ main/helix
 # --- Languages & runtimes ---
 main/nodejs
 main/pixi
+main/pipx
+main/uv
+main/rustup
 
