@@ -22,7 +22,7 @@ BrechtSanders.WinLibs.POSIX.UCRT
 
 # --- Editors ---
 Microsoft.VisualStudioCode
-ZedIndustries.Zed.Preview
+ZedIndustries.Zed
 
 # --- Terminal ---
 Microsoft.WindowsTerminal
@@ -32,3 +32,4 @@ Anthropic.Claude
 Microsoft.WSL
 KYDronePilot.SpaceEye
 FilesCommunity.FilesPreview
+Microsoft.PowerToys

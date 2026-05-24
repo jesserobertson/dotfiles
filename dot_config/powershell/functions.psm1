@@ -95,7 +95,12 @@ function Get-MessageOfTheDay
     if ($Force)
     {
         # Force: block until done and display immediately
-        $body = $global:motdJob | Wait-Job | Receive-Job -ErrorAction SilentlyContinue
+        $completedJob = $global:motdJob | Wait-Job
+        if ($completedJob.State -eq 'Failed')
+        {
+            Write-Warning "MOTD update failed: $($completedJob.ChildJobs[0].JobStateInfo.Reason.Message)"
+        }
+        $body = $completedJob | Receive-Job
         $global:motdJob | Remove-Job -Force -ErrorAction SilentlyContinue
         $global:motdJob = $null
         if ($body) { Write-Host $body -NoNewline }
