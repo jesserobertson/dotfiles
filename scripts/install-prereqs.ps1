@@ -21,3 +21,4 @@ foreach ($id in $packages) {
         Write-Host "Already installed: $id"
     }
 }
+

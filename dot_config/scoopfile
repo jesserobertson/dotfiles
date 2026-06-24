@@ -17,10 +17,16 @@ main/delta
 main/yq
 main/helix
 
+# --- CLI tools ---
+main/gh
+man/aws
+
 # --- Languages & runtimes ---
 main/nodejs
 main/pixi
 main/pipx
 main/uv
 main/rustup
+main/ghcup
+main/go
 

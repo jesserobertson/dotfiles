@@ -9,11 +9,11 @@ AgileBits.1Password
 # --- Dev tools ---
 twpayne.chezmoi
 Git.Git
-GoLang.Go
-GitHub.cli
-Amazon.AWSCLI
+# GoLang.Go
+# GitHub.cli
+# Amazon.AWSCLI
 Microsoft.PowerShell
-Rustlang.Rustup
+# Rustlang.Rustup
 RedHat.Podman
 LoftLabs.DevPod
 Nvidia.CUDA
