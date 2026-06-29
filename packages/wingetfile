@@ -7,18 +7,18 @@ AgileBits.1Password.CLI
 AgileBits.1Password
 
 # --- Dev tools ---
-twpayne.chezmoi
-Git.Git
-# GoLang.Go
-# GitHub.cli
 # Amazon.AWSCLI
-Microsoft.PowerShell
+# GitHub.cli
+# GoLang.Go
 # Rustlang.Rustup
-RedHat.Podman
-LoftLabs.DevPod
-Nvidia.CUDA
-CondaForge.Miniforge3
 BrechtSanders.WinLibs.POSIX.UCRT
+CondaForge.Miniforge3
+Git.Git
+LoftLabs.DevPod
+Microsoft.PowerShell
+Nvidia.CUDA
+RedHat.Podman
+twpayne.chezmoi
 
 # --- Editors ---
 Microsoft.VisualStudioCode

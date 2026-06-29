@@ -1,6 +1,6 @@
 # Bootstrap scoop and install scoop packages from scoopfile.
 # Winget packages are handled by scripts/install-prereqs.ps1 (run before chezmoi apply).
-# scoopfile hash: {{ include "dot_config/scoopfile" | sha256sum }}
+# scoopfile hash: {{ include "packages/scoopfile" | sha256sum }}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -24,7 +24,7 @@ if ($env:PATH -notlike "*$scoopShims*") {
 }
 
 # --- Scoop packages ---
-$scoopfile = Join-Path $HOME ".config" "scoopfile"
+$scoopfile = Join-Path "{{ .chezmoi.sourceDir }}" "packages" "scoopfile"
 $packages = Get-Content $scoopfile |
     Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
 foreach ($pkg in $packages) {

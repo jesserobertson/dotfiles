@@ -9,7 +9,7 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-$wingetfile = Join-Path $PSScriptRoot ".." "dot_config" "wingetfile"
+$wingetfile = Join-Path $PSScriptRoot ".." "packages" "wingetfile"
 $packages = Get-Content $wingetfile |
     Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
 

@@ -135,11 +135,11 @@ jobs:
       - name: Validate wingetfile and scoopfile parse correctly
         shell: pwsh
         run: |
-          $winget = Get-Content dot_config/wingetfile | Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
+          $winget = Get-Content packages/wingetfile | Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
           Write-Host "wingetfile: $($winget.Count) packages"
           if ($winget.Count -eq 0) { Write-Error "No packages in wingetfile"; exit 1 }
 
-          $scoop = Get-Content dot_config/scoopfile | Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
+          $scoop = Get-Content packages/scoopfile | Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
           Write-Host "scoopfile: $($scoop.Count) packages"
           if ($scoop.Count -eq 0) { Write-Error "No packages in scoopfile"; exit 1 }
 

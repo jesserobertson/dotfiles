@@ -31,15 +31,20 @@ esac
 export PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:$PATH"
 echo "Using Homebrew prefix: ${HOMEBREW_PREFIX}"
 
-XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-BREWFILE="${XDG_CONFIG_HOME}/brewfile"
-echo "Installing packages from ${BREWFILE}..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BREWFILE_TEMPLATE="${SCRIPT_DIR}/../packages/brewfile.tmpl"
+BREWFILE_PROCESSED="$(mktemp /tmp/brewfile.XXXXXX)"
+trap 'rm -f "$BREWFILE_PROCESSED"' EXIT
+
+echo "Processing Brewfile template..."
+chezmoi execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PROCESSED"
+echo "Installing packages from ${BREWFILE_TEMPLATE}..."
 
 if [ "${FORCE:-false}" = "true" ]; then
     echo "Force mode enabled - reinstalling all packages..."
-    brew bundle install --force --file="${BREWFILE}" --verbose
+    brew bundle install --force --file="${BREWFILE_PROCESSED}" --verbose
 else
-    brew bundle install --file="${BREWFILE}" --verbose
+    brew bundle install --file="${BREWFILE_PROCESSED}" --verbose
 fi
 
 echo "Homebrew package installation complete!"

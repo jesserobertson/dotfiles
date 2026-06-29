@@ -25,7 +25,7 @@ if not type -q cargo
     exit 1
 end
 
-set CRATES_FILE "$XDG_CONFIG_HOME/cratefile"
+set CRATES_FILE (dirname (status filename))/../packages/cratefile
 if not test -f "$CRATES_FILE"
     echo "Error: Crates file not found at $CRATES_FILE"
     exit 1

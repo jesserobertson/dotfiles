@@ -19,9 +19,10 @@ main/helix
 
 # --- CLI tools ---
 main/gh
-man/aws
+main/aws
 
 # --- Languages & runtimes ---
+main/python
 main/nodejs
 main/pixi
 main/pipx
