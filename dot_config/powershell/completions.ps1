@@ -45,3 +45,7 @@ function Import-Completion
 # Note Zoxide handled by the new functions in functinos.psm1
 Import-Completion chezmoi { chezmoi completion powershell }
 Import-Completion gh      { gh completion -s powershell }
+Import-Completion zoxide  { zoxide init powershell }
+Import-Completion rip     { rip completions powershell }
+Import-Completion rg      { rg --generate complete-powershell }
+Import-Completion fd      { fd --gen-completions powershell }
