@@ -103,11 +103,17 @@ if ([System.Environment]::UserInteractive)
         Switch-Prompt -prompt "OldPrompt"
     }
 
-    # Zoxide for smart directory jumping
-    $zoxideCmd = Get-Command 'zoxide' -ErrorAction SilentlyContinue
-    if ($zoxideCmd)
-    {
-        Invoke-Expression (& zoxide init powershell | Out-String)
+    # Add completions for command line tools
+    foreach ($entry in @(
+        # Add each new tool - Args is just a list that generates the completion strings to evaluate
+        @{ Cmd = 'zoxide'; Args = 'init', 'powershell' },
+        @{ Cmd = 'rip';    Args = 'completions', 'powershell' },
+        @{ Cmd = 'rg';     Args = '--generate', 'complete-powershell'}
+        @{ Cmd = 'fd';     Args = '--gen-completions', 'powershell' }
+    )) {
+        if (Get-Command $entry.Cmd -ErrorAction SilentlyContinue) {
+            Invoke-Expression (& $entry.Cmd @($entry.Args) | Out-String)
+        }
     }
 
     Get-MessageOfTheDay
