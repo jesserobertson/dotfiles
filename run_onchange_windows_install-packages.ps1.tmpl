@@ -1,6 +1,7 @@
-# Bootstrap scoop and install scoop packages from scoopfile.
+# Bootstrap scoop and install scoop/cargo packages from package definitions.
 # Winget packages are handled by scripts/install-prereqs.ps1 (run before chezmoi apply).
 # scoopfile hash: {{ include "packages/scoopfile" | sha256sum }}
+# cratefile hash: {{ include "packages/cratefile" | sha256sum }}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -34,3 +35,6 @@ foreach ($pkg in $packages) {
         scoop install $pkg
     }
 }
+
+# --- Rust crates ---
+& "{{ .chezmoi.sourceDir }}\scripts\install-crates.ps1"
