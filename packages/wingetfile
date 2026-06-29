@@ -29,6 +29,7 @@ Microsoft.WindowsTerminal
 
 # --- Apps ---
 Anthropic.Claude
+Google.Chrome.Dev
 Microsoft.WSL
 KYDronePilot.SpaceEye
 FilesCommunity.FilesPreview
