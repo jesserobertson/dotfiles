@@ -41,9 +41,10 @@ Public/**
 .node_modules/**
 .bundle/**
 
-# Ignore local containers and scripts directories
+# Ignore local containers, scripts, and package definitions directories
 containers/**
 scripts/**
+packages/**
 
 # Scoop package manager
 scoop/**
