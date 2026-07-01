@@ -17,6 +17,7 @@ Git.Git
 LoftLabs.DevPod
 Microsoft.PowerShell
 Nvidia.CUDA
+Ollama.Ollama
 RedHat.Podman
 twpayne.chezmoi
 
