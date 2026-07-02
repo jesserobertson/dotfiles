@@ -84,6 +84,39 @@ else
     }
 fi
 
+echo "=== Installing prerequisites and Homebrew packages ==="
+# The new architecture (post-April-2026) separates chezmoi apply (dotfiles only)
+# from tool installation (run via scripts/ or 'make bootstrap').
+# Run the install scripts explicitly in tests, mirroring what a user does after apply.
+SOURCE_DIR=""
+if [ -d "/dotfiles-source" ]; then
+    SOURCE_DIR="/dotfiles-source"
+elif [ -d "/tmp/dotfiles-source-copy" ]; then
+    SOURCE_DIR="/tmp/dotfiles-source-copy"
+fi
+
+if [ -n "$SOURCE_DIR" ]; then
+    echo "Running install-prereqs.sh (installs Homebrew)..."
+    bash "$SOURCE_DIR/scripts/install-prereqs.sh" || {
+        echo "install-prereqs.sh failed"
+        exit 1
+    }
+    # Reload PATH so brew is found
+    if [ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
+        export PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+    elif [ -x "${HOME}/.linuxbrew/bin/brew" ]; then
+        export PATH="${HOME}/.linuxbrew/bin:${HOME}/.linuxbrew/sbin:$PATH"
+    fi
+
+    echo "Running install-brew.sh (installs Brewfile packages)..."
+    bash "$SOURCE_DIR/scripts/install-brew.sh" || {
+        echo "install-brew.sh failed"
+        exit 1
+    }
+else
+    echo "Could not find dotfiles source directory, skipping package installation"
+fi
+
 echo "=== Verifying installation ==="
 
 # Wait for any background processes to complete

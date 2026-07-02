@@ -233,7 +233,7 @@ Manages system packages, GUI applications, and programming languages:
 - **Fonts**: Fira Code, Fira Code Nerd Font, Fira Mono Nerd Font
 - **System dependencies**: coreutils, gnupg, openssl
 
-**Managed via**: `dot_config/brewfile.tmpl` (30 brews, 6 casks, 4 fonts)
+**Managed via**: `packages/brewfile.tmpl` (cross-platform brews + macOS-only casks/fonts)
 
 ### Cargo (Rust Crates)
 
@@ -244,7 +244,7 @@ Installs Rust-based CLI tools with pinned versions:
 - **Git tools**: git-delta, gitui
 - **Development**: tokei, cargo-watch, cargo-edit
 
-**Managed via**: `dot_config/cratefile` (21 crates)
+**Managed via**: `packages/cratefile`
 
 ### Pixi (Python Global Packages)
 
@@ -264,7 +264,7 @@ Installs Haskell libraries globally:
 
 - **Live coding**: tidal (TidalCycles for music)
 
-**Managed via**: `dot_config/haskellfile` (1 package)
+**Managed via**: `packages/haskellfile`
 
 ### Fisher (Fish Shell Plugins)
 
@@ -370,13 +370,13 @@ $ chezmoi diff
 ### Adding New Packages
 
 **Homebrew packages:**
-Edit `dot_config/brewfile.tmpl` and run:
+Edit `packages/brewfile.tmpl` and run:
 ```sh
 make brew
 ```
 
 **Rust crates:**
-Edit `dot_config/cratefile` and run:
+Edit `packages/cratefile` and run:
 ```sh
 make crates
 ```
@@ -401,76 +401,94 @@ $ chezmoi apply
 
 ## Testing
 
-### Docker-based Testing Framework
+### Running Tests
 
-This repository includes a comprehensive Docker-based testing framework to validate the dotfiles setup across different platforms:
-
-```sh
-# Test Ubuntu environment
-./tests/run-tests.sh --platforms ubuntu
-
-# Test both Ubuntu and macOS-like environments
-./tests/run-tests.sh --platforms ubuntu,macos
-
-# Extended timeout with verbose output
-./tests/run-tests.sh --platforms ubuntu,macos --timeout 900 --verbose
+**Windows (Pester unit tests + chezmoi dry-run):**
+```powershell
+make test   # or directly:
+$env:CI = "true"; chezmoi init --source="$PWD" --apply --dry-run
+Invoke-Pester tests/powershell
 ```
 
-#### What Gets Tested
+**Linux / macOS (Docker Compose):**
+```sh
+cd tests
+docker compose run --rm ubuntu          # full bootstrap test
+docker compose run --rm ubuntu-offline  # offline/mock test
+docker compose run --rm macos-sim       # macOS path simulation
+```
 
-The testing framework validates:
+**Template validation (any platform):**
+```sh
+chezmoi execute-template < dot_bashrc.tmpl
+chezmoi execute-template < dot_zshrc.tmpl
+chezmoi execute-template < dot_config/fish/env.fish.tmpl
+chezmoi execute-template < packages/brewfile.tmpl
+```
 
-- ✅ **Complete bootstrap process**: Full `chezmoi init --apply` workflow
-- ✅ **Cross-platform Homebrew**: Linux Homebrew installation and configuration
-- ✅ **Package installation**: All Brewfile packages install correctly
-- ✅ **Dotfiles application**: Shell configs and application configs are applied
-- ✅ **OS detection logic**: Platform-specific path handling works correctly
-- ✅ **Core tools verification**: Essential CLI tools (git, fish, nvim, tmux, etc.)
-- ✅ **Programming languages**: Go, Node.js, Rust installation
-- ✅ **Development tools**: AWS CLI, gcloud, terraform, etc.
+### What Gets Tested
 
-#### Test Architecture
+The testing framework validates the **two-step setup** (dotfiles first, then tools):
+
+- ✅ **Dotfiles application**: `chezmoi init --apply` applies shell configs correctly
+- ✅ **Prerequisites**: `scripts/install-prereqs.sh` installs Homebrew (Linux/macOS)
+- ✅ **Package installation**: `scripts/install-brew.sh` installs all Brewfile packages
+- ✅ **Cross-platform Homebrew**: Linux (`/home/linuxbrew`) vs macOS (`/opt/homebrew`) paths
+- ✅ **Core tools**: git, fish, jq, tmux, fzf, bat, etc.
+- ✅ **OS detection**: Platform-specific path handling
+- ✅ **Windows**: Pester tests for PowerShell functions, chezmoi dry-run
+
+### Test Architecture
 
 ```
 tests/
-├── run-tests.sh              # Main test runner with CLI options
-├── verify-installation.sh    # Standalone verification script
-├── test-shell-env.sh         # Shell environment tests
-├── README.md                 # Detailed testing documentation
+├── docker-compose.yml            # Ubuntu + macOS-sim test services
+├── verify-installation.sh        # Standalone verification (any system)
+├── test-shell-env.sh             # Shell environment consistency tests
+├── powershell/                   # Pester unit tests (Windows)
+│   └── functions.Tests.ps1       # 22 tests for PowerShell functions
 └── docker/
-    ├── ubuntu/               # Ubuntu container tests
+    ├── ubuntu/
     │   ├── Dockerfile
-    │   ├── test-bootstrap.sh           # Live GitHub test
-    │   └── test-bootstrap-offline.sh   # Mock repository test
-    └── macos/                # macOS-like container tests
+    │   ├── test-bootstrap.sh           # Online: chezmoi apply + install scripts
+    │   └── test-bootstrap-offline.sh   # Offline: mock repo, dotfiles only
+    └── macos/
         ├── Dockerfile
-        ├── test-bootstrap-macos.sh
-        └── test-bootstrap-offline.sh
+        └── test-bootstrap-macos.sh
 ```
 
-#### Standalone Verification
+### Standalone Verification
 
-You can also verify an existing installation on any system:
-
+On any system after install:
 ```sh
 ./tests/verify-installation.sh
 ```
 
-This script performs comprehensive checks without requiring Docker and can be used to verify live installations.
-
-#### CI/CD Integration
-
-The Docker tests are designed for CI/CD pipelines:
-
-- **Configurable timeouts**: Adjust for different CI environments
-- **Parallel execution**: Test multiple platforms simultaneously
-- **Detailed reporting**: Color-coded output with clear pass/fail indicators
-- **Exit codes**: Proper exit codes for CI integration
-- **Offline testing**: Mock repositories avoid external dependencies
-
-See `tests/README.md` for detailed usage instructions and troubleshooting.
+Checks Homebrew, installed packages (via `packages/brewfile.tmpl`), dotfiles, and shell environment consistency.
 
 ## Advanced Features
+
+### Cached Shell Tool Initialization
+
+Shell tool init scripts (`starship init`, `zoxide init`, `direnv hook`, `fzf --fish`, etc.) are cached by binary mtime so they only run once per tool upgrade, not on every shell startup. This mirrors the PowerShell profile pattern for starship.
+
+**Fish** — shared helper in `dot_config/fish/functions/init_cached.fish`:
+```fish
+init_cached starship starship init fish   # cached to ~/.cache/fish/starship_init_<mtime>.fish
+init_cached zoxide   zoxide init fish
+init_cached direnv   direnv hook fish
+# ...etc
+```
+
+**Bash / Zsh** — `_init_cached` helper defined inline in `.bashrc`/`.zshrc`:
+```bash
+_init_cached fzf      fzf --bash          # cached to ~/.cache/bash/fzf_init_<mtime>.bash
+_init_cached starship starship init bash
+_init_cached zoxide   zoxide init bash
+# ...etc
+```
+
+Cache files live under `$XDG_CACHE_HOME/{bash,zsh,fish}/` and are invalidated automatically when the binary changes.
 
 ### Safe PATH Management
 

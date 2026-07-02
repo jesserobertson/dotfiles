@@ -222,7 +222,7 @@ function Switch-Prompt
     #>
     param(
         [Parameter(Position = 0)]
-        [ValidateSet('Simple', 'Starship', 'Original', 'OldPrompt')]
+        [ValidateSet('Simple', 'Starship', 'StarshipShort', 'Original', 'OldPrompt')]
         [string]$Prompt,
         [switch]
         $NoShellIntegration
@@ -263,7 +263,7 @@ function Set-ShellIntegration
 {
     param
     (
-        [ValidateSet('WindowsTerminal', 'ITerm2', 'WezTerm', 'vscode')]
+        [ValidateSet('', 'WindowsTerminal', 'ITerm2', 'WezTerm', 'vscode')]
         [String]$TerminalProgram = $global:term_app,
         [switch]$NoOriginalReset
     )

@@ -1,4 +1,3 @@
-# FZF fuzzy finder integration
-if status is-interactive && type -q fzf
-    fzf --fish | source
+if status is-interactive
+    init_cached fzf fzf --fish
 end

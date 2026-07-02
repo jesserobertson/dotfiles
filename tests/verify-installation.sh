@@ -110,9 +110,23 @@ test_command "which git" "Git is installed"
 # Homebrew package verification
 echo -e "${BLUE}=== Homebrew Package Verification ===${NC}"
 if command -v brew >/dev/null 2>&1; then
-    # Find Brewfile and count expected packages
+    # Find and process Brewfile (now a template at packages/brewfile.tmpl)
     BREWFILE_PATH=""
-    if [ -f "$HOME/.local/share/chezmoi/Brewfile" ]; then
+    BREWFILE_TEMPLATE=""
+    CHEZMOI_SOURCE="$HOME/.local/share/chezmoi"
+
+    if [ -f "$CHEZMOI_SOURCE/packages/brewfile.tmpl" ]; then
+        BREWFILE_TEMPLATE="$CHEZMOI_SOURCE/packages/brewfile.tmpl"
+    fi
+
+    if [ -n "$BREWFILE_TEMPLATE" ] && command -v chezmoi >/dev/null 2>&1; then
+        # Process the template to get the actual Brewfile content
+        BREWFILE_PATH=$(mktemp /tmp/brewfile.XXXXXX)
+        chezmoi execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PATH" 2>/dev/null || {
+            rm -f "$BREWFILE_PATH"
+            BREWFILE_PATH=""
+        }
+    elif [ -f "$HOME/.local/share/chezmoi/Brewfile" ]; then
         BREWFILE_PATH="$HOME/.local/share/chezmoi/Brewfile"
     elif [ -f "$HOME/Brewfile" ]; then
         BREWFILE_PATH="$HOME/Brewfile"
@@ -244,6 +258,11 @@ if command -v brew >/dev/null 2>&1; then
     fi
 else
     echo -e "${RED}Homebrew not found, skipping package verification${NC}"
+fi
+
+# Clean up temp Brewfile if we created one
+if [[ "${BREWFILE_PATH:-}" == /tmp/brewfile.* ]]; then
+    rm -f "$BREWFILE_PATH"
 fi
 
 # Dotfiles verification

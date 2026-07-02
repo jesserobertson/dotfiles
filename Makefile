@@ -1,4 +1,4 @@
-.PHONY: bootstrap dotfiles prereqs brew rust crates python skills mcp pixi tmux powershell
+.PHONY: bootstrap dotfiles prereqs brew rust crates python skills mcp pixi tmux powershell test test-templates test-docker test-windows
 
 bootstrap: dotfiles prereqs brew rust crates skills mcp pixi tmux powershell  ## Full new-machine setup
 
@@ -38,3 +38,21 @@ tmux:  ## Install/update tmux plugin manager
 
 powershell:  ## Write PowerShell $PROFILE wrapper (Windows)
 	powershell -ExecutionPolicy Bypass -File scripts/setup-powershell.ps1
+
+test: test-templates test-docker  ## Run all tests
+
+test-templates:  ## Validate chezmoi templates render without errors
+	chezmoi execute-template < dot_bashrc.tmpl > /dev/null
+	chezmoi execute-template < dot_zshrc.tmpl > /dev/null
+	chezmoi execute-template < dot_config/fish/env.fish.tmpl > /dev/null
+	chezmoi execute-template < packages/brewfile.tmpl > /dev/null
+	chezmoi execute-template < .chezmoiignore.tmpl > /dev/null
+	@echo "All templates OK"
+
+test-docker:  ## Run Docker Compose tests (Linux)
+	cd tests && docker compose run --rm ubuntu
+	cd tests && docker compose run --rm ubuntu-offline
+
+test-windows:  ## Run Windows tests (Pester + chezmoi dry-run)
+	powershell -Command "Invoke-Pester tests/powershell -Output Detailed"
+	powershell -Command "$$env:CI='true'; chezmoi init --source='$$PWD' --apply --dry-run"
