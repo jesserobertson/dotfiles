@@ -26,12 +26,15 @@ jobs:
             -v "${{ github.workspace }}:/dotfiles-source:ro" \
             -e CI=true \
             dotfiles-test-ubuntu \
-            bash -c "
+            bash -c '
               /home/testuser/test-bootstrap.sh &&
-              echo '' &&
-              echo '=== Running Installation Verification ===' &&
+              for bp in /home/linuxbrew/.linuxbrew/bin/brew "$HOME/.linuxbrew/bin/brew" /opt/homebrew/bin/brew; do
+                if [ -x "$bp" ]; then eval "$($bp shellenv)"; break; fi
+              done &&
+              echo "" &&
+              echo "=== Running Installation Verification ===" &&
               bash /dotfiles-source/tests/verify-installation.sh
-            "
+            '
 
   test-macos:
     name: Test on macOS (Native)

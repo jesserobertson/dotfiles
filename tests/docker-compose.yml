@@ -18,6 +18,9 @@ services:
         echo '=== Starting Ubuntu Dotfiles Test ===' &&
         echo 'Running bootstrap test...' &&
         /home/testuser/test-bootstrap.sh &&
+        for bp in /home/linuxbrew/.linuxbrew/bin/brew \"\$HOME/.linuxbrew/bin/brew\" /opt/homebrew/bin/brew; do
+          if [ -x \"\$bp\" ]; then eval \"\$(\$bp shellenv)\"; break; fi
+        done &&
         echo '' &&
         echo '=== Running Installation Verification ===' &&
         if [ -f /dotfiles-source/tests/verify-installation.sh ]; then

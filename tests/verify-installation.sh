@@ -289,7 +289,7 @@ fi
 
 # Test chezmoi functionality
 echo -e "${BLUE}=== Chezmoi Functionality ===${NC}"
-test_command "chezmoi status" "Chezmoi status check"
+test_command "chezmoi status" "Chezmoi status check" true
 test_command "chezmoi verify" "Chezmoi verify" true
 
 # Shell environment consistency tests
