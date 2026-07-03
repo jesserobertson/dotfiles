@@ -16,37 +16,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build Ubuntu test image
         working-directory: tests/docker/ubuntu
         run: docker build -t dotfiles-test-ubuntu .
 
       - name: Run Ubuntu bootstrap test
         run: |
-          docker run --name test-container dotfiles-test-ubuntu
-
-      - name: Copy verification script into container
-        if: always()
-        run: |
-          docker cp tests/verify-installation.sh test-container:/home/testuser/verify.sh || true
-
-      - name: Run verification in container
-        if: always()
-        run: |
-          docker start test-container || true
-          docker exec test-container bash -c "chmod +x /home/testuser/verify.sh && /home/testuser/verify.sh" || true
-
-      - name: Show container logs on failure
-        if: failure()
-        run: |
-          docker logs test-container || true
-
-      - name: Cleanup
-        if: always()
-        run: |
-          docker rm -f test-container || true
+          docker run --rm \
+            -v "${{ github.workspace }}:/dotfiles-source:ro" \
+            -e CI=true \
+            dotfiles-test-ubuntu \
+            bash -c "
+              /home/testuser/test-bootstrap.sh &&
+              echo '' &&
+              echo '=== Running Installation Verification ===' &&
+              bash /dotfiles-source/tests/verify-installation.sh
+            "
 
   test-macos:
     name: Test on macOS (Native)
