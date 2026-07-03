@@ -11,7 +11,7 @@ services:
       - CI=true
     volumes:
       # Mount the parent directory (dotfiles repo) for testing
-      - ../..:/dotfiles-source:ro
+      - ..:/dotfiles-source:ro
     # Override CMD to run full verification
     command: >
       bash -c "
@@ -55,7 +55,7 @@ services:
       - CI=true
       - SIMULATE_MACOS=true
     volumes:
-      - ../..:/dotfiles-source:ro
+      - ..:/dotfiles-source:ro
     command: >
       bash -c "
         echo '=== Starting macOS Simulation Test ===' &&

@@ -92,6 +92,9 @@ Describe 'Set-LocationButBetter' {
         $script:testRoot = Join-Path $env:TEMP "pester-nav-$([System.IO.Path]::GetRandomFileName())"
         New-Item -ItemType Directory -Path "$script:testRoot\a\b\c" -Force | Out-Null
         New-Item -ItemType File     -Path "$script:testRoot\a\file.txt" -Force | Out-Null
+        # Resolve to long/canonical path so it matches what Resolve-Path returns inside
+        # Set-LocationButBetter (on CI, $env:TEMP may return a short 8.3 path like RUNNER~1)
+        $script:testRoot = (Resolve-Path $script:testRoot).Path
         $global:__zoxide_initialized = $false   # disable zoxide integration
     }
     AfterAll {
