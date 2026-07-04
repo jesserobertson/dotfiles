@@ -13,19 +13,9 @@ winget is the only prerequisite (built into Windows 11).
 winget install twpayne.chezmoi
 ```
 
-**2. Apply dotfiles (also bootstraps scoop and installs scoop packages):**
+**2. Apply dotfiles and bootstrap tools (Scoop packages + PowerShell profile wired automatically):**
 ```powershell
 chezmoi init --ssh --apply jesserobertson
-```
-
-**3. Install remaining winget packages (Git, Go, VSCode, etc.):**
-```powershell
-make prereqs
-```
-
-**4. Set up the PowerShell profile wrapper:**
-```powershell
-make powershell
 ```
 
 ---
@@ -38,19 +28,13 @@ On macOS, install Xcode command line tools first:
 xcode-select --install
 ```
 
-Install chezmoi and apply dotfiles:
+Install chezmoi and apply dotfiles — this handles everything (Homebrew, packages, tools) automatically via `run_onchange_` scripts:
 
 ```sh
 BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)" -- init --ssh --apply jesserobertson
 ```
 
-Then install all tools:
-
-```sh
-make bootstrap   # installs prereqs + all tools
-```
-
-Or selectively:
+Or run individual steps manually:
 
 ```sh
 make prereqs     # Homebrew (macOS/Linux)
@@ -189,7 +173,7 @@ homebrew_prefix = "/opt/homebrew"              # ARM Mac
 
 **Tool Configuration:**
 ```toml
-editor = "nvim"
+editor = "hx"
 pager = "less"
 git_pager = "delta"
 cargo_home = "~/.local/share/cargo"
@@ -250,13 +234,12 @@ Installs Rust-based CLI tools with pinned versions:
 
 Manages global Python tools via conda-forge in isolated environments:
 
-- **Development tools**: ipython, jupyter, jupyterlab, marimo
-- **Linters/formatters**: ruff, mypy
-- **Language servers**: pyright
+- **python env**: python, uv, ruff, mypy
+- **requests env**: requests
 
-**Managed via**: `private_dot_pixi/manifests/pixi-global.toml.tmpl` (8 packages in python environment)
+**Managed via**: `scripts/install-pixi.sh` (run automatically on `chezmoi apply` via `run_onchange_after_03`)
 
-All packages are installed in `~/.pixi/bin` and automatically added to PATH. The manifest is native pixi format and synced automatically when changes are detected.
+All packages are installed in `~/.pixi/bin` and automatically added to PATH.
 
 ### Cabal (Haskell Packages)
 
@@ -283,7 +266,7 @@ Manages Fish shell plugins:
 - **Fish** (Primary shell): 119 custom functions, 9 completions
   - Git operations, project management, system utilities, text processing
 - **Bash/Zsh**: Templated configs using shared environment variables
-- **Common**: `dot_config/shell/dot_common_env.sh.tmpl` (shared across shells)
+- **Common**: `dot_config/shell/env.sh.tmpl` (shared POSIX env vars sourced by bash/zsh)
 
 #### Development Tools
 
@@ -388,7 +371,7 @@ make python
 ```
 
 **Haskell packages:**
-Edit `dot_config/haskellfile` and run:
+Edit `packages/haskellfile` and run:
 ```sh
 $ chezmoi apply
 ```
@@ -405,21 +388,24 @@ $ chezmoi apply
 
 **Windows (Pester unit tests + chezmoi dry-run):**
 ```powershell
-make test   # or directly:
 $env:CI = "true"; chezmoi init --source="$PWD" --apply --dry-run
 Invoke-Pester tests/powershell
 ```
 
-**Linux / macOS (Docker Compose):**
+**Linux (Docker):**
 ```sh
-cd tests
-docker compose run --rm ubuntu          # full bootstrap test
-docker compose run --rm ubuntu-offline  # offline/mock test
-docker compose run --rm macos-sim       # macOS path simulation
+bash tests/docker/ubuntu/test-bootstrap.sh       # full bootstrap
+bash tests/docker/ubuntu/test-bootstrap-offline.sh  # offline/mock
+```
+
+**bats shell tests (after install):**
+```sh
+bats tests/bats/install.bats tests/bats/shell-env.bats tests/bats/fish.bats
 ```
 
 **Template validation (any platform):**
 ```sh
+chezmoi init --source="$PWD"   # needed once so template vars are available
 chezmoi execute-template < dot_bashrc.tmpl
 chezmoi execute-template < dot_zshrc.tmpl
 chezmoi execute-template < dot_config/fish/env.fish.tmpl
@@ -442,19 +428,20 @@ The testing framework validates the **two-step setup** (dotfiles first, then too
 
 ```
 tests/
-├── docker-compose.yml            # Ubuntu + macOS-sim test services
 ├── verify-installation.sh        # Standalone verification (any system)
 ├── test-shell-env.sh             # Shell environment consistency tests
+├── bats/                         # bats-core shell tests
+│   ├── install.bats              # Tool install checks
+│   ├── shell-env.bats            # EDITOR/PAGER/PATH consistency across bash/zsh/fish
+│   ├── fish.bats                 # Fish-specific startup and config tests
+│   └── helpers/                  # brew env setup, bats-support/assert loaders
 ├── powershell/                   # Pester unit tests (Windows)
-│   └── functions.Tests.ps1       # 22 tests for PowerShell functions
+│   └── functions.Tests.ps1
 └── docker/
-    ├── ubuntu/
-    │   ├── Dockerfile
-    │   ├── test-bootstrap.sh           # Online: chezmoi apply + install scripts
-    │   └── test-bootstrap-offline.sh   # Offline: mock repo, dotfiles only
-    └── macos/
+    └── ubuntu/
         ├── Dockerfile
-        └── test-bootstrap-macos.sh
+        ├── test-bootstrap.sh           # Online: chezmoi apply + run_onchange_ scripts
+        └── test-bootstrap-offline.sh   # Offline: mock repo, dotfiles only
 ```
 
 ### Standalone Verification
