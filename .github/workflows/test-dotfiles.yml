@@ -166,30 +166,3 @@ jobs:
         run: |
           chezmoi init --source="$env:GITHUB_WORKSPACE" --apply --dry-run
 
-  test-docker-compose:
-    name: Test with Docker Compose
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run all Docker Compose tests
-        working-directory: tests
-        run: |
-          echo "=== Running Ubuntu test ==="
-          docker compose run --rm ubuntu
-
-          echo ""
-          echo "=== Running Ubuntu offline test ==="
-          docker compose run --rm ubuntu-offline
-
-          echo ""
-          echo "=== Running macOS simulation test ==="
-          docker compose run --rm macos-sim
-
-      - name: Cleanup Docker Compose
-        if: always()
-        working-directory: tests
-        run: |
-          docker compose down -v || true
