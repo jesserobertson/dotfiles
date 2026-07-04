@@ -51,13 +51,13 @@ test_command_output() {
 }
 
 echo "=== Running chezmoi bootstrap ==="
-# Run the bootstrap process using the local source (mounted in docker-compose)
-# Check if we're in docker with the source mounted, otherwise use GitHub
-if [ -d "/dotfiles-source" ]; then
-    echo "Using local dotfiles source from /dotfiles-source"
-    # Copy to a writable location and initialize as git repo since /dotfiles-source is mounted read-only
+# Check for a local source: DOTFILES_SOURCE env var, /dotfiles-source Docker mount, or fall back to GitHub
+_local_src="${DOTFILES_SOURCE:-/dotfiles-source}"
+if [ -d "$_local_src" ]; then
+    echo "Using local dotfiles source from $_local_src"
+    # Copy to a writable location and initialize as git repo since source may be read-only
     echo "Copying source to writable location..."
-    cp -r /dotfiles-source /tmp/dotfiles-source-copy
+    cp -r "$_local_src" /tmp/dotfiles-source-copy
 
     # Make it a git repo if it isn't already (chezmoi needs a git repo)
     if [ ! -d "/tmp/dotfiles-source-copy/.git" ]; then
@@ -89,8 +89,8 @@ echo "=== Installing prerequisites and Homebrew packages ==="
 # from tool installation (run via scripts/ or 'make bootstrap').
 # Run the install scripts explicitly in tests, mirroring what a user does after apply.
 SOURCE_DIR=""
-if [ -d "/dotfiles-source" ]; then
-    SOURCE_DIR="/dotfiles-source"
+if [ -d "${DOTFILES_SOURCE:-/dotfiles-source}" ]; then
+    SOURCE_DIR="${DOTFILES_SOURCE:-/dotfiles-source}"
 elif [ -d "/tmp/dotfiles-source-copy" ]; then
     SOURCE_DIR="/tmp/dotfiles-source-copy"
 fi

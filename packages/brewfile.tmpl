@@ -1,5 +1,5 @@
 {{- $is_container := false -}}
-{{- if stat "/.dockerenv" -}}
+{{- if or (stat "/.dockerenv") (env "CI") -}}
 {{-   $is_container = true -}}
 {{- end -}}
 
