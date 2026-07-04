@@ -1,8 +1,3 @@
-{{- if eq .chezmoi.os "windows" -}}
-#!/bin/sh
-exit 0
-{{- else -}}
 #!/usr/bin/env fish
 # skills: install-and-update
 fish "{{ .chezmoi.sourceDir }}/scripts/install-skills.fish"
-{{- end -}}

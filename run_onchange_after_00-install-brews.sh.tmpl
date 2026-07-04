@@ -1,9 +1,4 @@
-{{- if eq .chezmoi.os "windows" -}}
-#!/bin/sh
-exit 0
-{{- else -}}
 #!/bin/bash
 set -euo pipefail
 # brewfile hash: {{ include "packages/brewfile.tmpl" | sha256sum }}
 CHEZMOI_BIN="{{ .chezmoi.executable }}" bash "{{ .chezmoi.sourceDir }}/scripts/install-brew.sh"
-{{- end -}}
