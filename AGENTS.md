@@ -78,9 +78,3 @@ Three jobs in `.github/workflows/test-dotfiles.yml`:
 
 All Unix scripts use `{{- if eq .chezmoi.os "windows" -}}#!/bin/sh\nexit 0{{- else -}}` guard so they exit harmlessly on Windows. The PowerShell script is excluded via `.chezmoiignore.tmpl` on non-Windows (avoids requiring `pwsh` on macOS/Linux).
 
-## Known deferred items
-
-From the July 2026 architectural review — intentionally not fixed yet:
-- `dot_bashrc.tmpl` and `dot_zshrc.tmpl` are near-identical (~3 lines differ) — candidate for consolidation via `dot_config/shell/env.sh.tmpl`
-- Linux Homebrew prefix is baked at template render time, not detected at runtime
-- Windows CI only does `--dry-run`, never a full apply
