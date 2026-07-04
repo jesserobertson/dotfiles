@@ -103,62 +103,62 @@ Chezmoi uses special prefixes to control how files are processed:
 
 ```
 ~/.local/share/chezmoi/
-├── chezmoi.toml                      # Main configuration with template variables
-├── .chezmoiignore                    # Files to ignore when applying
-├── .chezmoitemplates/                # Shared template functions
-├── LICENSE                           # MIT License
-├── README.md                         # This file
+├── .chezmoi.toml.tmpl                # Template variables (editor, homebrew prefix, ssh agent, etc.)
+├── .chezmoiignore.tmpl               # OS-conditional file exclusions
+├── AGENTS.md                         # Repo context for AI agents
+├── Makefile                          # Manual install targets (bootstrap = chezmoi apply)
 │
-├── Shell configurations
-├── dot_bashrc.tmpl                   # Bash shell configuration (templated)
-├── dot_zshrc.tmpl                    # Zsh shell configuration (templated)
+├── run_before_00-install-prereqs.sh.tmpl         # Install Homebrew before dotfiles apply
+├── run_onchange_after_00-install-brews.sh.tmpl   # brew bundle (re-runs when brewfile changes)
+├── run_onchange_after_01-install-rust.fish.tmpl  # rustup + stable/nightly
+├── run_onchange_after_02-install-crates.fish.tmpl # cargo install (re-runs when cratefile changes)
+├── run_onchange_after_03-install-pixi.sh.tmpl    # pixi global install
+├── run_onchange_after_04-install-skills.fish.tmpl # Claude Code skills
+├── run_onchange_after_05-install-mcp-servers.fish.tmpl # MCP setup (macOS only)
+├── run_once_after_06-install-tmux-plugins.sh.tmpl # TPM install (once)
+├── run_onchange_after_07-setup-powershell.ps1    # Wire $PROFILE (Windows only)
+├── run_onchange_windows_install-packages.ps1.tmpl # Scoop + cargo crates (Windows only)
+│
+├── dot_bashrc.tmpl                   # Bash config
+├── dot_zshrc.tmpl                    # Zsh config
 ├── dot_editorconfig                  # EditorConfig settings
 ├── dot_gitconfig.tmpl                # Git config (1Password integrated)
 │
-├── Makefile                          # Optional install targets
-├── scripts/                          # Install scripts (run manually via make)
+├── packages/                         # Package definition files
+│   ├── brewfile.tmpl                 # Homebrew packages (cross-platform + macOS-only)
+│   ├── cratefile                     # Rust crates
+│   ├── haskellfile                   # Haskell packages
+│   ├── scoopfile                     # Scoop packages (Windows)
+│   └── wingetfile                    # Winget packages (Windows)
+│
+├── scripts/                          # Manual fallbacks (called by run_onchange_ scripts above)
 │   ├── install-prereqs.sh            # Homebrew + 1Password (macOS/Linux)
-│   ├── install-prereqs.ps1           # winget packages (Windows, run before chezmoi apply)
+│   ├── install-prereqs.ps1           # Winget bootstrap (Windows)
 │   ├── install-brew.sh               # brew bundle install
 │   ├── install-rust.fish             # rustup + toolchains
 │   ├── install-crates.fish           # cargo install from cratefile
-│   ├── install-python.fish           # pixi global sync
+│   ├── install-crates.ps1            # cargo install (Windows)
+│   ├── install-pixi.sh               # pixi global install
 │   ├── install-skills.fish           # Claude Code skills
 │   ├── install-mcp-servers.fish      # MCP servers (macOS)
-│   ├── install-pixi.sh               # pixi global install
-│   ├── update-tmux.sh                # TPM install
-│   └── setup-powershell.ps1          # $PROFILE wrapper (Windows)
+│   ├── install-winget-packages.ps1   # Bulk winget install (Windows)
+│   └── update-tmux.sh                # TPM install
 │
-├── Application configurations
 ├── dot_config/
-│   ├── alacritty/                    # Terminal emulator (145+ themes)
-│   ├── bat/                          # Syntax highlighter configuration
-│   ├── brewfile.tmpl                 # Homebrew package definitions
-│   ├── cratefile                     # Rust crate definitions
-│   ├── haskellfile                   # Haskell package definitions
-│   ├── executable_start-terminal.sh.tmpl  # Terminal startup script
-│   ├── fish/                         # Fish shell (119 functions, 9 completions)
-│   ├── nvim/                         # Neovim LazyVim configuration
+│   ├── fish/                         # Fish shell config and functions
+│   ├── bash/                         # Bash-specific config
+│   ├── zsh/                          # Zsh-specific config
+│   ├── shell/                        # Shared POSIX env vars (sourced by bash/zsh)
+│   ├── powershell/                   # PowerShell profile and functions (Windows)
+│   ├── alacritty/                    # Terminal emulator
+│   ├── bat/                          # Syntax highlighter
+│   ├── nvim/                         # Neovim configuration
+│   ├── tmux/                         # Tmux config
 │   ├── sesh/                         # Tmux session manager
-│   ├── shell/                        # Shared shell environment variables
-│   ├── starship.toml                 # Starship prompt configuration
-│   └── tmux/                         # Tmux modular configuration
-│       ├── tmux.conf                 # Main config (loads others)
-│       ├── conf.d/                   # Modular config files
-│       ├── scripts/                  # Utility scripts
-│       └── themes/                   # Theme files
+│   ├── starship.toml                 # Starship prompt
+│   └── executable_start-terminal.sh.tmpl
 │
-├── Python environment
-├── private_dot_pixi/
-│   └── manifests/
-│       └── pixi-global.toml.tmpl     # Pixi global manifest
-│
-├── Private configurations
-├── private_dot_aws/                  # AWS CLI configuration (private)
-│
-├── Claude Code settings
-├── .claude/                          # Local settings
-└── dot_claude/                       # User settings
+└── private_dot_aws/                  # AWS CLI config (private permissions)
 ```
 
 ## Template System
