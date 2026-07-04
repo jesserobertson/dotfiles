@@ -152,8 +152,7 @@ function Set-LocationButBetter
             $resolvedPath = Resolve-Path $Path -ErrorAction SilentlyContinue
             if ($null -eq $resolvedPath)
             {
-                # Override caller's $ErrorActionPreference so Write-Error remains non-terminating
-                # even when called from a Pester test (which sets $ErrorActionPreference='Stop').
+                # $local: keeps Write-Error non-terminating even when Pester sets $ErrorActionPreference='Stop'
                 $local:ErrorActionPreference = 'Continue'
                 Write-Error "Cannot find path '$Path' because it does not exist."
                 return
@@ -186,7 +185,18 @@ Set-Alias -Name ... -Value Set-LocationButBetter
 if (-not $global:__zoxide_initialized -and (Get-Command zoxide -ErrorAction SilentlyContinue))
 {
     $global:__zoxide_initialized = $true
-    zoxide init powershell --no-cmd --hook none | Out-String | Invoke-Expression
+    $zoxideCmd = Get-Command 'zoxide' -ErrorAction SilentlyContinue
+    $zoxideMtime = (Get-Item $zoxideCmd.Source).LastWriteTimeUtc.Ticks
+    $zoxideCacheHome = if ($env:XDG_CACHE_HOME) { $env:XDG_CACHE_HOME } else { [IO.Path]::Combine($HOME, '.cache') }
+    $zoxideCache = [IO.Path]::Combine($zoxideCacheHome, 'powershell', "zoxide_init_$zoxideMtime.ps1")
+    if (-not (Test-Path $zoxideCache))
+    {
+        $cacheDir = Split-Path $zoxideCache
+        if (-not (Test-Path $cacheDir)) { [void](New-Item -ItemType Directory -Path $cacheDir -Force) }
+        Get-ChildItem $cacheDir -Filter 'zoxide_init_*.ps1' | Remove-Item -Force
+        zoxide init powershell --no-cmd --hook none | Set-Content -Path $zoxideCache
+    }
+    . $zoxideCache
     # Override __zoxide_cd to use Push-Location and feed zoxide's database
     function global:__zoxide_cd($dir, $literal)
     {

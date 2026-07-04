@@ -90,6 +90,7 @@ setup_file() {
 }
 
 @test "bash sources bashrc without errors" {
-    run bash --norc -c "source ~/.bashrc 2>&1; echo ok"
+    run bash --norc -c "source ~/.bashrc; echo ok"
+    [ "$status" -eq 0 ]
     [[ "$output" == *"ok"* ]]
 }

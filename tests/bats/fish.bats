@@ -12,8 +12,9 @@ setup_file() {
 # ── Startup ──────────────────────────────────────────────────────────────────
 
 @test "fish starts without errors" {
-    run fish --no-execute -c ""
+    run fish -c "echo ok"
     [ "$status" -eq 0 ]
+    [ "$output" = "ok" ]
 }
 
 @test "fish config.fish parses without errors" {

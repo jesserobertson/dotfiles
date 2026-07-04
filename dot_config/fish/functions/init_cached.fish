@@ -16,7 +16,8 @@ function init_cached --description 'Run an init command once per binary version,
                   || command stat -f '%m' "$binary" 2>/dev/null \
                   || echo '0')
 
-    set -l cache_dir "$XDG_CACHE_HOME/fish"
+    set -l xdg_cache (if set -q XDG_CACHE_HOME; and test -n "$XDG_CACHE_HOME"; echo $XDG_CACHE_HOME; else; echo "$HOME/.cache"; end)
+    set -l cache_dir "$xdg_cache/fish"
     set -l cache_file "$cache_dir/{$tool}_init_{$mtime}.fish"
 
     if not test -f "$cache_file"
@@ -26,8 +27,11 @@ function init_cached --description 'Run an init command once per binary version,
             command rm -f "$stale"
         end
         $cmd >"$cache_file" 2>/dev/null
+        if not test -s "$cache_file"
+            command rm -f "$cache_file"
+        end
     end
 
-    test -f "$cache_file" && source "$cache_file"
+    test -s "$cache_file" && source "$cache_file"
     return 0
 end

@@ -8,7 +8,7 @@ if ($env:CI) {
     exit 0
 }
 
-if (-not $env:CARGO_HOME)  { $env:CARGO_HOME  = Join-Path $HOME ".cargo" }
+if (-not $env:CARGO_HOME)  { $env:CARGO_HOME  = Join-Path $HOME ".local" "share" "cargo" }
 if (-not $env:RUSTUP_HOME) { $env:RUSTUP_HOME = Join-Path $HOME ".rustup" }
 $cargoBin = Join-Path $env:CARGO_HOME "bin"
 if ($env:PATH -notlike "*$cargoBin*") { $env:PATH = "$cargoBin;$env:PATH" }

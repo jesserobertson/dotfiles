@@ -1,8 +1,6 @@
 Import-Module "$PSScriptRoot/functions.psm1"
 Import-Module "$PSScriptRoot/gittools.psm1"
 
-$global:profile_initialized = $false
-
 # Use XDG base dirs so tools like Neovim find config in ~/.config rather than AppData
 $DataHome = Set-EnvDefault XDG_DATA_HOME   @($HOME, ".local", "share")
 [void](Set-EnvDefault XDG_CONFIG_HOME @($HOME, ".config"))
@@ -103,5 +101,5 @@ if ([System.Environment]::UserInteractive)
         Switch-Prompt -prompt "OldPrompt"
     }
 
-    Get-MessageOfTheDay
+#    Get-MessageOfTheDay
 }

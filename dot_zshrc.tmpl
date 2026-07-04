@@ -15,7 +15,7 @@ export CARGO_HOME="{{ .cargo_home }}"
 export CABAL_DIR="{{ .cabal_home }}"
 
 # Shell tools
-export EDITOR=nvim
+export EDITOR="{{ .editor }}"
 export PAGER=less
 export GIT_PAGER=delta
 
@@ -57,17 +57,20 @@ _init_cached() {
         mkdir -p "$cache_dir"
         rm -f "$cache_dir/${tool}_init_"*.zsh
         "$@" > "$cache_file" 2>/dev/null
+        [[ -s "$cache_file" ]] || rm -f "$cache_file"
     fi
-    [[ -f "$cache_file" ]] && source "$cache_file"
+    [[ -s "$cache_file" ]] && source "$cache_file"
 }
 
 # Tool integrations (cached by binary mtime — only regenerated after upgrades)
-_init_cached fzf     fzf --zsh
-_init_cached starship starship init zsh
-_init_cached zoxide  zoxide init zsh
-_init_cached direnv  direnv hook zsh
-_init_cached batpipe batpipe
-_init_cached batman  batman --export-env
+if [[ -o interactive ]]; then
+    _init_cached fzf     fzf --zsh
+    _init_cached starship starship init zsh
+    _init_cached zoxide  zoxide init zsh
+    _init_cached direnv  direnv hook zsh
+    _init_cached batpipe batpipe
+    _init_cached batman  batman --export-env
+fi
 
 # Function to safely add path only if directory exists and is readable
 safe_add_path() {

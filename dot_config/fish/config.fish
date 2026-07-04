@@ -3,7 +3,7 @@ fish_vi_key_bindings
 
 # Add completions and aliases
 set dir (dirname (status --current-filename))
-source_if_exists "$dir/env.fish"
-source_if_exists "$dir/alias.fish"
+test -f "$dir/env.fish" && source "$dir/env.fish"
+test -f "$dir/alias.fish" && source "$dir/alias.fish"
 
 # Tool integrations are now in conf.d/ and loaded automatically

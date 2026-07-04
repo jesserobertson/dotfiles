@@ -33,7 +33,7 @@ echo "Using Homebrew prefix: ${HOMEBREW_PREFIX}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BREWFILE_TEMPLATE="${SCRIPT_DIR}/../packages/brewfile.tmpl"
-BREWFILE_PROCESSED="$(mktemp /tmp/brewfile.XXXXXX)"
+BREWFILE_PROCESSED="$(mktemp "${TMPDIR:-/tmp}/brewfile.XXXXXX")"
 trap 'rm -f "$BREWFILE_PROCESSED"' EXIT
 
 echo "Processing Brewfile template..."

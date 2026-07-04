@@ -29,6 +29,14 @@ jobs:
           BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+      - name: Validate templates
+        run: |
+          chezmoi execute-template < dot_bashrc.tmpl > /dev/null
+          chezmoi execute-template < dot_zshrc.tmpl > /dev/null
+          chezmoi execute-template < dot_config/fish/env.fish.tmpl > /dev/null
+          chezmoi execute-template < packages/brewfile.tmpl > /dev/null
+          echo "All templates OK"
+
       - name: Cache Homebrew
         uses: actions/cache@v4
         with:
@@ -70,17 +78,19 @@ jobs:
       - name: Install chezmoi
         run: |
           if ! command -v chezmoi &> /dev/null; then
-            echo "Installing chezmoi v2.66.0..."
             mkdir -p "$HOME/.local/bin"
-            cd /tmp
-            curl -sL "https://github.com/twpayne/chezmoi/releases/download/v2.66.0/chezmoi_2.66.0_darwin_arm64.tar.gz" -o chezmoi.tar.gz
-            tar -xzf chezmoi.tar.gz
-            mv chezmoi "$HOME/.local/bin/"
-            chmod +x "$HOME/.local/bin/chezmoi"
+            BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
             echo "$HOME/.local/bin" >> $GITHUB_PATH
           else
             echo "Chezmoi already installed"
           fi
+
+      - name: Cache Homebrew downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: macos-homebrew-${{ hashFiles('packages/brewfile.tmpl') }}
+          restore-keys: macos-homebrew-
 
       - name: Initialize dotfiles with chezmoi
         env:
