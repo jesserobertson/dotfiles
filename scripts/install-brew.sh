@@ -36,6 +36,12 @@ BREWFILE_TEMPLATE="${SCRIPT_DIR}/../packages/brewfile.tmpl"
 BREWFILE_PROCESSED="$(mktemp "${TMPDIR:-/tmp}/brewfile.XXXXXX")"
 trap 'rm -f "$BREWFILE_PROCESSED"' EXIT
 
+# Remove stale third-party taps pre-installed by CI runners that Homebrew 4.x
+# now flags as untrusted (awscli is in Homebrew core; aws/tap is redundant).
+if [ -n "${CI:-}" ]; then
+    brew untap aws/tap 2>/dev/null || true
+fi
+
 echo "Processing Brewfile template..."
 chezmoi execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PROCESSED"
 echo "Installing packages from ${BREWFILE_TEMPLATE}..."
