@@ -14,10 +14,11 @@
 .config/shell
 .bashrc
 .zshrc
+00-install-prereqs.sh
 {{ end -}}
 
 # Skip Windows-only files on non-Windows
 {{- if ne .chezmoi.os "windows" }}
 .config/powershell
-run_onchange_after_07-setup-powershell.ps1
+07-setup-powershell.ps1
 {{ end -}}

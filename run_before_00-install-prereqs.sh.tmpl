@@ -1,8 +1,3 @@
-{{- if eq .chezmoi.os "windows" -}}
-#!/bin/sh
-exit 0
-{{- else -}}
 #!/bin/bash
 set -euo pipefail
 bash "{{ .chezmoi.sourceDir }}/scripts/install-prereqs.sh"
-{{- end -}}
