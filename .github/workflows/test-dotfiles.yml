@@ -9,33 +9,44 @@ on:
 
 jobs:
   test-ubuntu:
-    name: Test on Ubuntu (Docker)
+    name: Test on Ubuntu
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Ubuntu test image
-        working-directory: tests/docker/ubuntu
-        run: docker build -t dotfiles-test-ubuntu .
-
-      - name: Run Ubuntu bootstrap and bats tests
+      - name: Install bats
         run: |
-          docker run --rm \
-            -v "${{ github.workspace }}:/dotfiles-source:ro" \
-            -e CI=true \
-            dotfiles-test-ubuntu \
-            bash -c '
-              /home/testuser/test-bootstrap.sh &&
-              for bp in /home/linuxbrew/.linuxbrew/bin/brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
-                [ -x "$bp" ] && eval "$($bp shellenv)" && break; done &&
-              echo "" &&
-              echo "=== Running bats tests ===" &&
-              bats /dotfiles-source/tests/bats/install.bats \
-                   /dotfiles-source/tests/bats/shell-env.bats \
-                   /dotfiles-source/tests/bats/fish.bats
-            '
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          sudo /tmp/bats-core/install.sh /usr/local
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats-assert
+
+      - name: Install chezmoi
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Cache Homebrew
+        uses: actions/cache@v4
+        with:
+          path: /home/linuxbrew/.linuxbrew
+          key: linuxbrew-${{ hashFiles('packages/brewfile.tmpl') }}
+          restore-keys: linuxbrew-
+
+      - name: Run bootstrap
+        env:
+          CI: true
+          DOTFILES_SOURCE: ${{ github.workspace }}
+        run: bash tests/docker/ubuntu/test-bootstrap.sh
+
+      - name: Run bats tests
+        run: |
+          for bp in /home/linuxbrew/.linuxbrew/bin/brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
+            [ -x "$bp" ] && eval "$($bp shellenv)" && break; done
+          bats tests/bats/install.bats tests/bats/shell-env.bats tests/bats/fish.bats
 
   test-macos:
     name: Test on macOS (Native)
