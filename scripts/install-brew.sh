@@ -3,6 +3,8 @@ set -euo pipefail
 
 echo "Installing Homebrew packages..."
 
+CHEZMOI_BIN="${CHEZMOI_BIN:-chezmoi}"
+
 case "$(uname -s)" in
 Darwin)
     if [ -x "/opt/homebrew/bin/brew" ]; then
@@ -43,7 +45,7 @@ if [ -n "${CI:-}" ]; then
 fi
 
 echo "Processing Brewfile template..."
-chezmoi execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PROCESSED"
+"$CHEZMOI_BIN" execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PROCESSED"
 echo "Installing packages from ${BREWFILE_TEMPLATE}..."
 
 if [ "${FORCE:-false}" = "true" ]; then
