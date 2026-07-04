@@ -6,10 +6,9 @@
 {{ if eq .chezmoi.os "darwin" }}
 cask_args appdir: "/Applications"
 
-## TAPS
 {{ if not $is_container }}
+## TAPS
 tap "FelixKratz/formulae"
-{{ end }}
 
 ## CASKS
 # Utilities
@@ -27,6 +26,7 @@ cask "font-fira-code"
 cask "font-fira-code-nerd-font"
 cask "font-fira-mono-nerd-font"
 cask "font-prompt"
+{{ end }}
 {{ end }}
 
 ## BREWS - cross-platform shell and dev essentials
