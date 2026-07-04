@@ -44,9 +44,20 @@ if [ -n "${CI:-}" ]; then
     brew untap aws/tap 2>/dev/null || true
 fi
 
+# roborev-dev/tap is a real (non-redundant) third-party tap we actually want,
+# so trust it explicitly rather than untapping — Homebrew 4.x refuses to load
+# formulae from any non-core tap until it's trusted.
+brew tap roborev-dev/tap 2>/dev/null || true
+brew trust roborev-dev/tap 2>/dev/null || true
+
 echo "Processing Brewfile template..."
 "$CHEZMOI_BIN" execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PROCESSED"
 echo "Installing packages from ${BREWFILE_TEMPLATE}..."
+
+# brew bundle defaults to parallel installs (HOMEBREW_BUNDLE_JOBS=auto), which
+# hits a known Homebrew race condition where independent formulae lock the
+# same Cellar path (https://github.com/Homebrew/brew/issues/22293).
+export HOMEBREW_BUNDLE_NO_JOBS=1
 
 if [ "${FORCE:-false}" = "true" ]; then
     echo "Force mode enabled - reinstalling all packages..."

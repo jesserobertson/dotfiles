@@ -310,7 +310,7 @@ jobs:
       - name: Verify installation
         shell: pwsh
         run: |
-          $status = chezmoi status
+          $status = chezmoi status --source="$env:GITHUB_WORKSPACE"
           if ($status) {
             Write-Host "chezmoi status is not clean:"
             Write-Host $status
