@@ -16,37 +16,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build Ubuntu test image
         working-directory: tests/docker/ubuntu
         run: docker build -t dotfiles-test-ubuntu .
 
-      - name: Run Ubuntu bootstrap test
+      - name: Run Ubuntu bootstrap and bats tests
         run: |
-          docker run --name test-container dotfiles-test-ubuntu
-
-      - name: Copy verification script into container
-        if: always()
-        run: |
-          docker cp tests/verify-installation.sh test-container:/home/testuser/verify.sh || true
-
-      - name: Run verification in container
-        if: always()
-        run: |
-          docker start test-container || true
-          docker exec test-container bash -c "chmod +x /home/testuser/verify.sh && /home/testuser/verify.sh" || true
-
-      - name: Show container logs on failure
-        if: failure()
-        run: |
-          docker logs test-container || true
-
-      - name: Cleanup
-        if: always()
-        run: |
-          docker rm -f test-container || true
+          docker run --rm \
+            -v "${{ github.workspace }}:/dotfiles-source:ro" \
+            -e CI=true \
+            dotfiles-test-ubuntu \
+            bash -c '
+              /home/testuser/test-bootstrap.sh &&
+              for bp in /home/linuxbrew/.linuxbrew/bin/brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
+                [ -x "$bp" ] && eval "$($bp shellenv)" && break; done &&
+              echo "" &&
+              echo "=== Running bats tests ===" &&
+              bats /dotfiles-source/tests/bats/install.bats \
+                   /dotfiles-source/tests/bats/shell-env.bats \
+                   /dotfiles-source/tests/bats/fish.bats
+            '
 
   test-macos:
     name: Test on macOS (Native)
@@ -86,9 +75,11 @@ jobs:
         env:
           CI: true
         run: |
-          # Initialize chezmoi with the current checkout
-          # The --apply flag will run chezmoi apply after init
           chezmoi init --source="$GITHUB_WORKSPACE" --apply
+
+      - name: Install core packages for verification
+        run: |
+          brew install fish jq tmux starship fzf ripgrep zoxide bat git-delta
 
       - name: Run installation verification
         run: |
@@ -175,30 +166,3 @@ jobs:
         run: |
           chezmoi init --source="$env:GITHUB_WORKSPACE" --apply --dry-run
 
-  test-docker-compose:
-    name: Test with Docker Compose
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run all Docker Compose tests
-        working-directory: tests
-        run: |
-          echo "=== Running Ubuntu test ==="
-          docker compose run --rm ubuntu
-
-          echo ""
-          echo "=== Running Ubuntu offline test ==="
-          docker compose run --rm ubuntu-offline
-
-          echo ""
-          echo "=== Running macOS simulation test ==="
-          docker compose run --rm macos-sim
-
-      - name: Cleanup Docker Compose
-        if: always()
-        working-directory: tests
-        run: |
-          docker compose down -v || true

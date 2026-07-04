@@ -20,7 +20,9 @@ export PAGER=less
 export GIT_PAGER=delta
 
 # Add 1Password SSH agent
-export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+{{- if .ssh_auth_sock }}
+export SSH_AUTH_SOCK="{{ .ssh_auth_sock }}"
+{{- end }}
 
 # Add local paths
 export CONFIG="$HOME/.config"
@@ -35,12 +37,37 @@ export HOMEBREW_REPOSITORY="{{ .homebrew_repository }}"
 export MANPATH="$LOCAL/share/man:$HOMEBREW_PREFIX/share/man${MANPATH:+:$MANPATH}"
 export INFOPATH="$LOCAL/share/info:$HOMEBREW_PREFIX/share/info${INFOPATH:+:$INFOPATH}"
 
-# Set up fzf and fd
+# Set up FZF
 export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git
 --color=always"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_DEFAULT_OPTS="--ansi"
-source <(fzf --zsh)
+
+# Helper: run a tool's init command once per binary version, caching to XDG_CACHE_HOME.
+# Mirrors the PowerShell profile's starship-init caching pattern.
+_init_cached() {
+    local tool="$1"; shift
+    local binary
+    binary="$(command -v "$tool" 2>/dev/null)" || return 0
+    local mtime
+    mtime="$(stat -c '%Y' "$binary" 2>/dev/null || stat -f '%m' "$binary" 2>/dev/null || echo '0')"
+    local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+    local cache_file="$cache_dir/${tool}_init_${mtime}.zsh"
+    if [[ ! -f "$cache_file" ]]; then
+        mkdir -p "$cache_dir"
+        rm -f "$cache_dir/${tool}_init_"*.zsh
+        "$@" > "$cache_file" 2>/dev/null
+    fi
+    [[ -f "$cache_file" ]] && source "$cache_file"
+}
+
+# Tool integrations (cached by binary mtime — only regenerated after upgrades)
+_init_cached fzf     fzf --zsh
+_init_cached starship starship init zsh
+_init_cached zoxide  zoxide init zsh
+_init_cached direnv  direnv hook zsh
+_init_cached batpipe batpipe
+_init_cached batman  batman --export-env
 
 # Function to safely add path only if directory exists and is readable
 safe_add_path() {

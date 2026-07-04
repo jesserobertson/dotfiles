@@ -152,6 +152,9 @@ function Set-LocationButBetter
             $resolvedPath = Resolve-Path $Path -ErrorAction SilentlyContinue
             if ($null -eq $resolvedPath)
             {
+                # Override caller's $ErrorActionPreference so Write-Error remains non-terminating
+                # even when called from a Pester test (which sets $ErrorActionPreference='Stop').
+                $local:ErrorActionPreference = 'Continue'
                 Write-Error "Cannot find path '$Path' because it does not exist."
                 return
             }
@@ -222,7 +225,7 @@ function Switch-Prompt
     #>
     param(
         [Parameter(Position = 0)]
-        [ValidateSet('Simple', 'Starship', 'Original', 'OldPrompt')]
+        [ValidateSet('Simple', 'Starship', 'StarshipShort', 'Original', 'OldPrompt')]
         [string]$Prompt,
         [switch]
         $NoShellIntegration
@@ -263,7 +266,7 @@ function Set-ShellIntegration
 {
     param
     (
-        [ValidateSet('WindowsTerminal', 'ITerm2', 'WezTerm', 'vscode')]
+        [ValidateSet('', 'WindowsTerminal', 'ITerm2', 'WezTerm', 'vscode')]
         [String]$TerminalProgram = $global:term_app,
         [switch]$NoOriginalReset
     )

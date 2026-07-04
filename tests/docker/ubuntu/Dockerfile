@@ -11,6 +11,13 @@ RUN apt-get update && apt-get install -y \
     file \
     && rm -rf /var/lib/apt/lists/*
 
+# Install bats-core and assertion libraries from source
+RUN git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core \
+    && /tmp/bats-core/install.sh /usr/local \
+    && git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats-support \
+    && git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats-assert \
+    && rm -rf /tmp/bats-core
+
 # Create a non-root user for testing
 RUN useradd -m -s /bin/bash testuser && \
     echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
@@ -35,6 +42,7 @@ RUN mkdir -p ${HOME}/.local/bin && \
 # Copy test scripts
 COPY --chown=testuser:testuser test-bootstrap.sh /home/testuser/
 COPY --chown=testuser:testuser test-bootstrap-offline.sh /home/testuser/
-RUN chmod +x /home/testuser/test-bootstrap.sh /home/testuser/test-bootstrap-offline.sh
+COPY --chown=testuser:testuser run-bats-tests.sh /home/testuser/
+RUN chmod +x /home/testuser/test-bootstrap.sh /home/testuser/test-bootstrap-offline.sh /home/testuser/run-bats-tests.sh
 
 CMD ["/home/testuser/test-bootstrap-offline.sh"]

@@ -1,4 +1,3 @@
-# Zoxide for smart directory jumping
-if status is-interactive && type -q zoxide
-    zoxide init fish | source
+if status is-interactive
+    init_cached zoxide zoxide init fish
 end

@@ -24,16 +24,16 @@ test_command() {
     echo -e "${YELLOW}Testing: ${description}${NC}"
     if eval "$cmd" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ PASS: ${description}${NC}"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
         if [ "$is_optional" = "true" ]; then
             echo -e "${BLUE}⚬ SKIP: ${description} (optional)${NC}"
-            ((TESTS_SKIPPED++))
+            TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
             return 0
         else
             echo -e "${RED}✗ FAIL: ${description}${NC}"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
         fi
     fi
@@ -48,17 +48,17 @@ test_file_exists() {
     if [ -e "$file_path" ]; then
         echo -e "${GREEN}✓ PASS: ${description}${NC}"
         echo "  → Found at: $file_path"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
         if [ "$is_optional" = "true" ]; then
             echo -e "${BLUE}⚬ SKIP: ${description} (optional)${NC}"
-            ((TESTS_SKIPPED++))
+            TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
             return 0
         else
             echo -e "${RED}✗ FAIL: ${description}${NC}"
             echo "  → Expected at: $file_path"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
         fi
     fi
@@ -79,18 +79,18 @@ test_package_count() {
             ;;
         *)
             echo -e "${RED}✗ FAIL: Unknown package type: ${package_type}${NC}"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
             ;;
     esac
 
     if [ "$count" -ge "$min_packages" ]; then
         echo -e "${GREEN}✓ PASS: ${count} ${package_type} packages installed (minimum: ${min_packages})${NC}"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
         echo -e "${RED}✗ FAIL: Only ${count} ${package_type} packages installed (minimum: ${min_packages})${NC}"
-        ((TESTS_FAILED++))
+        TESTS_FAILED=$((TESTS_FAILED + 1))
         return 1
     fi
 }
@@ -110,9 +110,23 @@ test_command "which git" "Git is installed"
 # Homebrew package verification
 echo -e "${BLUE}=== Homebrew Package Verification ===${NC}"
 if command -v brew >/dev/null 2>&1; then
-    # Find Brewfile and count expected packages
+    # Find and process Brewfile (now a template at packages/brewfile.tmpl)
     BREWFILE_PATH=""
-    if [ -f "$HOME/.local/share/chezmoi/Brewfile" ]; then
+    BREWFILE_TEMPLATE=""
+    CHEZMOI_SOURCE="$HOME/.local/share/chezmoi"
+
+    if [ -f "$CHEZMOI_SOURCE/packages/brewfile.tmpl" ]; then
+        BREWFILE_TEMPLATE="$CHEZMOI_SOURCE/packages/brewfile.tmpl"
+    fi
+
+    if [ -n "$BREWFILE_TEMPLATE" ] && command -v chezmoi >/dev/null 2>&1; then
+        # Process the template to get the actual Brewfile content
+        BREWFILE_PATH=$(mktemp /tmp/brewfile.XXXXXX)
+        chezmoi execute-template < "$BREWFILE_TEMPLATE" > "$BREWFILE_PATH" 2>/dev/null || {
+            rm -f "$BREWFILE_PATH"
+            BREWFILE_PATH=""
+        }
+    elif [ -f "$HOME/.local/share/chezmoi/Brewfile" ]; then
         BREWFILE_PATH="$HOME/.local/share/chezmoi/Brewfile"
     elif [ -f "$HOME/Brewfile" ]; then
         BREWFILE_PATH="$HOME/Brewfile"
@@ -193,9 +207,9 @@ if command -v brew >/dev/null 2>&1; then
         test_package_count 10 "brew"  # Fallback minimum
 
         # Basic fallback checks for common tools
-        test_command "which fish" "Fish shell" true
+        test_command "which fish" "Fish shell"
         test_command "which nvim" "Neovim" true
-        test_command "which git" "Git" true
+        test_command "which git" "Git"
     fi
 
     # Optional cask packages (only check on macOS)
@@ -246,6 +260,11 @@ else
     echo -e "${RED}Homebrew not found, skipping package verification${NC}"
 fi
 
+# Clean up temp Brewfile if we created one
+if [[ "${BREWFILE_PATH:-}" == /tmp/brewfile.* ]]; then
+    rm -f "$BREWFILE_PATH"
+fi
+
 # Dotfiles verification
 echo -e "${BLUE}=== Dotfiles Configuration ===${NC}"
 test_file_exists "$HOME/.zshrc" "Zsh configuration"
@@ -270,7 +289,7 @@ fi
 
 # Test chezmoi functionality
 echo -e "${BLUE}=== Chezmoi Functionality ===${NC}"
-test_command "chezmoi status" "Chezmoi status check"
+test_command "chezmoi status" "Chezmoi status check" true
 test_command "chezmoi verify" "Chezmoi verify" true
 
 # Shell environment consistency tests

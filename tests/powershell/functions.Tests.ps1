@@ -92,6 +92,12 @@ Describe 'Set-LocationButBetter' {
         $script:testRoot = Join-Path $env:TEMP "pester-nav-$([System.IO.Path]::GetRandomFileName())"
         New-Item -ItemType Directory -Path "$script:testRoot\a\b\c" -Force | Out-Null
         New-Item -ItemType File     -Path "$script:testRoot\a\file.txt" -Force | Out-Null
+        # Normalize to long/canonical path via Push-Location — on CI $env:TEMP contains
+        # 8.3 short-path segments (RUNNER~1) but Get-Location after Push-Location
+        # returns the same long form that Set-LocationButBetter produces internally.
+        Push-Location $script:testRoot
+        $script:testRoot = (Get-Location).Path
+        Pop-Location
         $global:__zoxide_initialized = $false   # disable zoxide integration
     }
     AfterAll {

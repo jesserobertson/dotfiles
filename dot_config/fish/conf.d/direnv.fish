@@ -1,4 +1,3 @@
-# Direnv integration for per-directory environment variables
-if status is-interactive && type -q direnv
-    direnv hook fish | source
+if status is-interactive
+    init_cached direnv direnv hook fish
 end

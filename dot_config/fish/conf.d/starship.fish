@@ -1,4 +1,3 @@
-# Starship prompt initialization
-if status is-interactive && type -q starship
-    starship init fish | source
+if status is-interactive
+    init_cached starship starship init fish
 end

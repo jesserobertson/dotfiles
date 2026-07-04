@@ -1,4 +1,3 @@
-# Pixi completion for Python packaging
-if status is-interactive && type -q pixi
-    pixi completion --shell fish | source
+if status is-interactive
+    init_cached pixi pixi completion --shell fish
 end
