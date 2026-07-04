@@ -4,17 +4,27 @@ FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu24.04
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y \
-    build-essential procps curl file git wget unzip
+    build-essential procps curl file git wget unzip sudo
 
-RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# Homebrew's installer refuses to run as root, so it (and `brew install`)
+# must run as an unprivileged user. Pre-create and own its target prefix
+# so the installer doesn't need to shell out to sudo for it.
+RUN useradd -m -s /bin/bash linuxbrew && \
+    echo "linuxbrew ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/linuxbrew && \
+    mkdir -p /home/linuxbrew/.linuxbrew && \
+    chown -R linuxbrew:linuxbrew /home/linuxbrew
 
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
 ENV HOMEBREW_NO_AUTO_UPDATE=1
 ENV HOMEBREW_NO_ANALYTICS=1
 
+USER linuxbrew
+RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
 RUN brew install \
     bat bat-extras eza fd fish fzf jq just neovim ripgrep starship zoxide
 
+USER root
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 RUN curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
 RUN GIT_TERMINAL_PROMPT=0 chezmoi init --apply --no-tty --exclude=scripts \
