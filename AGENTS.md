@@ -58,14 +58,29 @@ Three jobs in `.github/workflows/test-dotfiles.yml`:
 ## Branches
 
 - **main** — the only long-lived branch; push directly, no PRs needed for solo work
-- **`feature/windows-support`** (remote only) — 23 commits of Windows-specific improvements not yet merged: OS guards on run scripts, scriptEnv PATH fixes, has1password detection, chezmoiignore for Windows-only files. Review before discarding.
+
+## Setup is automated via run_onchange_ scripts
+
+`chezmoi apply` now runs everything in order:
+
+| Script | Trigger | What it does |
+|--------|---------|--------------|
+| `run_before_00-install-prereqs.sh.tmpl` | always | installs Homebrew (Unix only) |
+| `run_onchange_after_00-install-brews.sh.tmpl` | brewfile hash | `brew bundle install` |
+| `run_onchange_after_01-install-rust.fish.tmpl` | toolchain marker | rustup + stable/nightly |
+| `run_onchange_after_02-install-crates.fish.tmpl` | cratefile hash | `cargo install` |
+| `run_onchange_after_03-install-pixi.sh.tmpl` | package marker | pixi global install |
+| `run_onchange_after_04-install-skills.fish.tmpl` | marker | Claude Code skills |
+| `run_onchange_after_05-install-mcp-servers.fish.tmpl` | marker | MCP setup (macOS only) |
+| `run_once_after_06-install-tmux-plugins.sh.tmpl` | once | TPM install |
+| `run_onchange_after_07-setup-powershell.ps1` | — | wire `$PROFILE` (Windows only) |
+| `run_onchange_windows_install-packages.ps1.tmpl` | scoop+crate hash | Scoop + cargo (Windows only) |
+
+All Unix scripts use `{{- if eq .chezmoi.os "windows" -}}#!/bin/sh\nexit 0{{- else -}}` guard so they exit harmlessly on Windows. The PowerShell script is excluded via `.chezmoiignore.tmpl` on non-Windows (avoids requiring `pwsh` on macOS/Linux).
 
 ## Known deferred items
 
 From the July 2026 architectural review — intentionally not fixed yet:
 - `dot_bashrc.tmpl` and `dot_zshrc.tmpl` are near-identical (~3 lines differ) — candidate for consolidation via `dot_config/shell/env.sh.tmpl`
-- No `run_onchange_` script for brew packages on Linux/macOS (Windows has one via `run_onchange_windows_install-packages.ps1.tmpl`)
 - Linux Homebrew prefix is baked at template render time, not detected at runtime
-- `autoPush = true` in `[git]` — chezmoi will auto-push any plaintext credential accidentally added to source
 - Windows CI only does `--dry-run`, never a full apply
-- Zsh behaviour is not independently tested in bats (only bash and fish are)

@@ -58,6 +58,14 @@ _bash_path_contains() {
     [ "$bash_val" = "$fish_val" ]
 }
 
+@test "EDITOR is consistent across bash and zsh" {
+    command -v zsh || skip "zsh not available"
+    local bash_val zsh_val
+    bash_val=$(_bash_var EDITOR)
+    zsh_val=$(_zsh_var EDITOR)
+    [ "$bash_val" = "$zsh_val" ]
+}
+
 # ── PAGER ───────────────────────────────────────────────────────────────────
 
 @test "bash sets PAGER" {
@@ -72,6 +80,20 @@ _bash_path_contains() {
     [ "$bash_val" = "$fish_val" ]
 }
 
+@test "zsh sets PAGER" {
+    command -v zsh || skip "zsh not available"
+    run _zsh_var PAGER
+    [ -n "$output" ]
+}
+
+@test "PAGER is consistent across bash and zsh" {
+    command -v zsh || skip "zsh not available"
+    local bash_val zsh_val
+    bash_val=$(_bash_var PAGER)
+    zsh_val=$(_zsh_var PAGER)
+    [ "$bash_val" = "$zsh_val" ]
+}
+
 # ── Homebrew in PATH ─────────────────────────────────────────────────────────
 
 @test "bash PATH includes homebrew bin" {
@@ -82,6 +104,12 @@ _bash_path_contains() {
 @test "fish PATH includes homebrew bin" {
     [ -n "$DETECTED_BREW_PREFIX" ] || skip "Homebrew not found"
     fish -c "contains $DETECTED_BREW_PREFIX/bin \$PATH; and echo yes" | grep -q "^yes$"
+}
+
+@test "zsh PATH includes homebrew bin" {
+    command -v zsh || skip "zsh not available"
+    [ -n "$DETECTED_BREW_PREFIX" ] || skip "Homebrew not found"
+    zsh --no-rcs -c "source ~/.zshrc 2>/dev/null; echo \$PATH" | tr ':' '\n' | grep -qxF "$DETECTED_BREW_PREFIX/bin"
 }
 
 # ── XDG dirs ────────────────────────────────────────────────────────────────
@@ -95,5 +123,12 @@ _bash_path_contains() {
 @test "fish sets CONFIG" {
     local val
     val=$(_fish_var CONFIG)
+    [ "$val" = "$HOME/.config" ]
+}
+
+@test "zsh sets CONFIG" {
+    command -v zsh || skip "zsh not available"
+    local val
+    val=$(_zsh_var CONFIG)
     [ "$val" = "$HOME/.config" ]
 }

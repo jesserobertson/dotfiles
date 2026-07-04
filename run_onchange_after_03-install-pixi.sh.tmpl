@@ -1,0 +1,9 @@
+{{- if eq .chezmoi.os "windows" -}}
+#!/bin/sh
+exit 0
+{{- else -}}
+#!/bin/bash
+set -euo pipefail
+# pixi packages: python uv ruff mypy requests
+bash "{{ .chezmoi.sourceDir }}/scripts/install-pixi.sh"
+{{- end -}}

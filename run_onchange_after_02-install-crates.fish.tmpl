@@ -1,0 +1,8 @@
+{{- if eq .chezmoi.os "windows" -}}
+#!/bin/sh
+exit 0
+{{- else -}}
+#!/usr/bin/env fish
+# cratefile hash: {{ include "packages/cratefile" | sha256sum }}
+fish "{{ .chezmoi.sourceDir }}/scripts/install-crates.fish"
+{{- end -}}
