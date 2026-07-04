@@ -31,6 +31,7 @@ jobs:
 
       - name: Validate templates
         run: |
+          chezmoi init --source="$GITHUB_WORKSPACE"
           chezmoi execute-template < dot_bashrc.tmpl > /dev/null
           chezmoi execute-template < dot_zshrc.tmpl > /dev/null
           chezmoi execute-template < dot_config/fish/env.fish.tmpl > /dev/null
