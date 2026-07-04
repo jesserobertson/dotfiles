@@ -1,12 +1,27 @@
 {{- $is_container := false -}}
-{{- if or (stat "/.dockerenv") (env "CI") -}}
+{{- if stat "/.dockerenv" -}}
 {{-   $is_container = true -}}
+{{- end -}}
+
+{{- $skip_heavy := false -}}
+{{- if or $is_container (env "HOMEBREW_SKIP_HEAVY") -}}
+{{-   $skip_heavy = true -}}
+{{- end -}}
+
+{{- $skip_gui := false -}}
+{{- if or $is_container (env "CI") -}}
+{{-   $skip_gui = true -}}
+{{- end -}}
+
+{{- $full_install := false -}}
+{{- if env "DOTFILES_FULL_INSTALL" -}}
+{{-   $full_install = true -}}
 {{- end -}}
 
 {{ if eq .chezmoi.os "darwin" }}
 cask_args appdir: "/Applications"
 
-{{ if not $is_container }}
+{{ if not $skip_gui }}
 ## TAPS
 tap "FelixKratz/formulae"
 
@@ -46,6 +61,7 @@ brew "jq"
 brew "just"
 brew "neovim"
 brew "openssl"
+brew "pixi"
 brew "readline"
 brew "ripgrep"
 brew "starship"
@@ -54,29 +70,32 @@ brew "tmux"
 brew "zoxide"
 
 ## BREWS - not suitable for containers (heavy or host-only)
-{{ if not $is_container }}
+{{ if not $skip_heavy }}
 brew "awscli"
 brew "bats-core"
 brew "cmake"
 brew "coreutils"
-brew "ghcup"
 brew "git-flow"
 brew "gnupg"
-brew "golang"
 brew "htop"
 brew "juliaup"
 brew "llm"
-brew "llvm"
-brew "nodejs"
 brew "openjdk"
 brew "pandoc"
-brew "pixi"
 brew "roborev-dev/tap/roborev"
+{{ end }}
+
+## BREWS - heavy toolchains, opt-in only (set DOTFILES_FULL_INSTALL=1)
+{{ if $full_install }}
+brew "ghcup"
+brew "golang"
+brew "llvm"
+brew "nodejs"
 {{ end }}
 
 ## BREWS - macOS only
 {{ if eq .chezmoi.os "darwin" }}
-{{ if not $is_container }}
+{{ if not $skip_gui }}
 brew "borders"
 {{ end }}
 brew "dolt"

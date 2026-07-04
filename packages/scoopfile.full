@@ -1,0 +1,8 @@
+# Heavy/opt-in Scoop packages (Windows equivalent of the opt-in Brewfile
+# toolchains) — installed only when DOTFILES_FULL_INSTALL=1 is set.
+# Format: [bucket/]package — all from the default 'main' bucket
+
+main/nodejs
+main/rustup
+main/ghcup
+main/go

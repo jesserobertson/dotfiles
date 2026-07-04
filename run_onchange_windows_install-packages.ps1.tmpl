@@ -5,6 +5,7 @@ exit 0
 # Bootstrap scoop and install scoop/cargo packages from package definitions.
 # Winget packages are handled by scripts/install-prereqs.ps1 (run before chezmoi apply).
 # scoopfile hash: {{ include "packages/scoopfile" | sha256sum }}
+# scoopfile.full hash: {{ include "packages/scoopfile.full" | sha256sum }}
 # cratefile hash: {{ include "packages/cratefile" | sha256sum }}
 
 Set-StrictMode -Version Latest
@@ -29,16 +30,24 @@ if ($env:PATH -notlike "*$scoopShims*") {
 }
 
 # --- Scoop packages ---
-$scoopfile = Join-Path "{{ .chezmoi.sourceDir }}" "packages" "scoopfile"
-$packages = Get-Content $scoopfile |
-    Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
-foreach ($pkg in $packages) {
-    $name = ($pkg -split '/') | Select-Object -Last 1
-    if (-not (scoop list $name 2>$null | Select-String $name -Quiet)) {
-        Write-Host "Installing (scoop) $pkg..."
-        scoop install $pkg
+function Install-ScoopPackages($scoopfile) {
+    $packages = Get-Content $scoopfile |
+        Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
+    foreach ($pkg in $packages) {
+        $name = ($pkg -split '/') | Select-Object -Last 1
+        if (-not (scoop list $name 2>$null | Select-String $name -Quiet)) {
+            Write-Host "Installing (scoop) $pkg..."
+            scoop install $pkg
+        }
     }
 }
+
+Install-ScoopPackages (Join-Path "{{ .chezmoi.sourceDir }}" "packages" "scoopfile")
+
+{{ if env "DOTFILES_FULL_INSTALL" -}}
+# Heavy/opt-in toolchains (DOTFILES_FULL_INSTALL is set)
+Install-ScoopPackages (Join-Path "{{ .chezmoi.sourceDir }}" "packages" "scoopfile.full")
+{{ end -}}
 
 # --- Rust crates ---
 & "{{ .chezmoi.sourceDir }}\scripts\install-crates.ps1"

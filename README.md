@@ -206,11 +206,37 @@ cask "claude-code"
 
 This dotfiles setup uses a multi-layered package management approach:
 
+### Light vs. Heavy Installs
+
+Not every package installs by default. Three tiers, controlled by two
+environment variables (set before running `chezmoi apply`/`chezmoi init`):
+
+| Tier | Packages | Default behavior | Controlled by |
+|------|----------|-------------------|----------------|
+| **Core** | Shell/dev essentials — `bat`, `chezmoi`, `direnv`, `eza`, `fd`, `fish`, `fzf`, `git`, `git-delta`, `gh`, `jq`, `just`, `neovim`, `pixi`, `ripgrep`, `starship`, `tmux`, `zoxide`, etc. (Windows equivalents via scoop: `starship`, `zoxide`, `fzf`, `ripgrep`, `fd`, `bat`, `delta`, `yq`, `helix`, `gh`, `aws`, `pixi`, ...) | Always installed | — |
+| **Heavy CLI tools** | `awscli`, `bats-core`, `cmake`, `coreutils`, `git-flow`, `gnupg`, `htop`, `juliaup`, `llm`, `openjdk`, `pandoc`, `roborev` | Installed on a real machine; skipped in Docker containers or CI | `HOMEBREW_SKIP_HEAVY=1` to skip (CI-only knob — you shouldn't need this) |
+| **Heavy toolchains** | `llvm`, `nodejs`, `golang`, `ghcup`, `rustup` | Skipped everywhere by default, even on a real machine, since they're slow and not always needed right after a fresh apply | `DOTFILES_FULL_INSTALL=1` to install |
+
+```sh
+DOTFILES_FULL_INSTALL=1 chezmoi apply          # Linux/macOS: install everything, including heavy toolchains
+```
+```powershell
+$env:DOTFILES_FULL_INSTALL = "1"; chezmoi init --apply jesserobertson   # Windows
+```
+
+chezmoi doesn't support custom CLI flags on `init`/`apply`, so this is an
+environment variable rather than a literal `--full-install` flag. `pixi` is
+always installed regardless of tier, since several other scripts depend on it.
+
+macOS GUI casks (Raycast, Chromium, Anki, Ghostty, fonts, etc.) are a fourth,
+separate concern — they install on a real machine but are always skipped in
+CI, independent of the flags above.
+
 ### Homebrew (Primary Package Manager)
 
 Manages system packages, GUI applications, and programming languages:
 
-- **Programming languages**: Node.js, Go, Rust (rustup), Julia (juliaup)
+- **Programming languages**: Node.js, Go, Rust (rustup), LLVM/GHC (ghcup) — heavy toolchains, opt-in via `DOTFILES_FULL_INSTALL=1` (see [Light vs. Heavy Installs](#light-vs-heavy-installs)); Julia (juliaup) installs by default
 - **Core CLI tools**: bat, eza, fd, fzf, ripgrep, chezmoi, direnv, fish, git
 - **Development tools**: awscli, gcloud, jq, neovim, pixi, terraform, packer
 - **Desktop applications**: Alacritty, Claude Code, Raycast (macOS only)
@@ -423,6 +449,12 @@ The testing framework validates the **two-step setup** (dotfiles first, then too
 - ✅ **Core tools**: git, fish, jq, tmux, fzf, bat, etc.
 - ✅ **OS detection**: Platform-specific path handling
 - ✅ **Windows**: Pester tests for PowerShell functions, chezmoi dry-run
+
+These are smoke tests: Windows only does a `--dry-run` and macOS/Ubuntu skip
+heavy packages, so they can't catch bugs that only surface when scripts
+actually execute for real. Once these smoke tests pass, `full-install-ubuntu`,
+`full-install-macos`, and `full-install-windows` run a real, undiluted
+`chezmoi init --apply` (with `DOTFILES_FULL_INSTALL=1`) on each platform.
 
 ### Test Architecture
 

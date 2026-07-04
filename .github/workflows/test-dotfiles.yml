@@ -48,6 +48,7 @@ jobs:
       - name: Run bootstrap
         env:
           CI: true
+          HOMEBREW_SKIP_HEAVY: true
           DOTFILES_SOURCE: ${{ github.workspace }}
         run: bash tests/docker/ubuntu/test-bootstrap.sh
 
@@ -96,6 +97,7 @@ jobs:
       - name: Initialize dotfiles with chezmoi
         env:
           CI: true
+          HOMEBREW_SKIP_HEAVY: true
         run: |
           chezmoi init --source="$GITHUB_WORKSPACE" --apply
 
@@ -187,4 +189,144 @@ jobs:
           CI: "true"
         run: |
           chezmoi init --source="$env:GITHUB_WORKSPACE" --apply --dry-run
+
+  # The jobs above are smoke tests: they validate templates/syntax and (on
+  # Ubuntu/macOS) run a real bootstrap, but Windows only does a --dry-run and
+  # macOS/Ubuntu skip heavy packages, so they can't catch every real-install
+  # bug (e.g. scripts that only break when actually executed on Windows).
+  # These jobs do a real, undiluted `chezmoi init --apply` on each platform,
+  # gated to only run once the corresponding smoke test above has passed.
+  full-install-ubuntu:
+    name: Full Install on Ubuntu
+    needs: test-ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Homebrew
+        uses: actions/cache@v4
+        with:
+          path: /home/linuxbrew/.linuxbrew
+          key: linuxbrew-full-${{ hashFiles('packages/brewfile.tmpl') }}
+          restore-keys: linuxbrew-full-
+
+      - name: Install chezmoi
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Full install (real chezmoi init --apply)
+        env:
+          DOTFILES_FULL_INSTALL: "1"
+        run: |
+          chezmoi init --source="$GITHUB_WORKSPACE" --apply
+
+      - name: Verify installation
+        run: |
+          for bp in /home/linuxbrew/.linuxbrew/bin/brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
+            [ -x "$bp" ] && eval "$($bp shellenv)" && break; done
+          chmod +x tests/verify-installation.sh
+          tests/verify-installation.sh
+
+  full-install-macos:
+    name: Full Install on macOS
+    needs: test-macos
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Homebrew downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: macos-homebrew-full-${{ hashFiles('packages/brewfile.tmpl') }}
+          restore-keys: macos-homebrew-full-
+
+      - name: Install chezmoi
+        run: |
+          if ! command -v chezmoi &> /dev/null; then
+            mkdir -p "$HOME/.local/bin"
+            BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS get.chezmoi.io)"
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+          fi
+
+      - name: Full install (real chezmoi init --apply)
+        env:
+          DOTFILES_FULL_INSTALL: "1"
+        run: |
+          chezmoi init --source="$GITHUB_WORKSPACE" --apply
+
+      - name: Verify installation
+        run: |
+          chmod +x tests/verify-installation.sh
+          tests/verify-installation.sh
+
+      - name: Check installed packages
+        if: always()
+        run: |
+          echo "=== Homebrew Formulae ==="
+          brew list --formula || true
+          echo ""
+          echo "=== Chezmoi Status ==="
+          chezmoi status || true
+
+  full-install-windows:
+    name: Full Install on Windows
+    needs: test-windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        shell: pwsh
+        run: |
+          winget install twpayne.chezmoi --silent --accept-package-agreements --accept-source-agreements
+          $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
+          echo "$wingetLinks" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Full install (real chezmoi init --apply)
+        shell: pwsh
+        env:
+          DOTFILES_FULL_INSTALL: "1"
+        run: |
+          chezmoi init --source="$env:GITHUB_WORKSPACE" --apply
+
+          # scoop shims aren't persisted to $GITHUB_PATH by the run_ script
+          # (it only updates its own process's PATH), so add them here for
+          # the verification step below.
+          $scoopShims = Join-Path $HOME ".local" "scoop" "shims"
+          echo "$scoopShims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify installation
+        shell: pwsh
+        run: |
+          $status = chezmoi status
+          if ($status) {
+            Write-Host "chezmoi status is not clean:"
+            Write-Host $status
+            exit 1
+          }
+
+          $tools = @('starship', 'zoxide', 'fzf', 'rg', 'fd', 'bat', 'delta', 'yq', 'hx', 'gh', 'aws')
+          $missing = @()
+          foreach ($tool in $tools) {
+            if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) {
+              $missing += $tool
+            }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing expected tools: $($missing -join ', ')"
+            exit 1
+          }
+          Write-Host "All expected tools found on PATH"
 

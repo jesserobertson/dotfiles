@@ -23,11 +23,7 @@ main/aws
 
 # --- Languages & runtimes ---
 main/python
-main/nodejs
 main/pixi
 main/pipx
 main/uv
-main/rustup
-main/ghcup
-main/go
 
