@@ -5,19 +5,14 @@
 # Falls back to environment variable if not available at runtime
 HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
 
-# Load bats helper libraries if available
-# These provide better assertions and file testing helpers
-if [ -n "${HOMEBREW_PREFIX}" ]; then
-    if [ -f "${HOMEBREW_PREFIX}/lib/bats-support/load.bash" ]; then
-        load "${HOMEBREW_PREFIX}/lib/bats-support/load.bash"
-    fi
-    if [ -f "${HOMEBREW_PREFIX}/lib/bats-assert/load.bash" ]; then
-        load "${HOMEBREW_PREFIX}/lib/bats-assert/load.bash"
-    fi
-    if [ -f "${HOMEBREW_PREFIX}/lib/bats-file/load.bash" ]; then
-        load "${HOMEBREW_PREFIX}/lib/bats-file/load.bash"
-    fi
-fi
+# Load bats helper libraries — check Docker install path first, then Homebrew
+for _d in /usr/local/lib "${HOMEBREW_PREFIX}/lib" /home/linuxbrew/.linuxbrew/lib; do
+    [ -f "$_d/bats-support/load.bash" ] || continue
+    load "$_d/bats-support/load.bash"
+    [ -f "$_d/bats-assert/load.bash" ] && load "$_d/bats-assert/load.bash"
+    [ -f "$_d/bats-file/load.bash" ]   && load "$_d/bats-file/load.bash"
+    break
+done
 
 # Test session name prefix to avoid conflicts
 export TEST_SESSION_PREFIX="bats-test"

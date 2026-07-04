@@ -24,16 +24,16 @@ test_command() {
     echo -e "${YELLOW}Testing: ${description}${NC}"
     if eval "$cmd" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ PASS: ${description}${NC}"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
         if [ "$is_optional" = "true" ]; then
             echo -e "${BLUE}⚬ SKIP: ${description} (optional)${NC}"
-            ((TESTS_SKIPPED++))
+            TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
             return 0
         else
             echo -e "${RED}✗ FAIL: ${description}${NC}"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
         fi
     fi
@@ -48,17 +48,17 @@ test_file_exists() {
     if [ -e "$file_path" ]; then
         echo -e "${GREEN}✓ PASS: ${description}${NC}"
         echo "  → Found at: $file_path"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
         if [ "$is_optional" = "true" ]; then
             echo -e "${BLUE}⚬ SKIP: ${description} (optional)${NC}"
-            ((TESTS_SKIPPED++))
+            TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
             return 0
         else
             echo -e "${RED}✗ FAIL: ${description}${NC}"
             echo "  → Expected at: $file_path"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
         fi
     fi
@@ -79,18 +79,18 @@ test_package_count() {
             ;;
         *)
             echo -e "${RED}✗ FAIL: Unknown package type: ${package_type}${NC}"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
             ;;
     esac
 
     if [ "$count" -ge "$min_packages" ]; then
         echo -e "${GREEN}✓ PASS: ${count} ${package_type} packages installed (minimum: ${min_packages})${NC}"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
         return 0
     else
         echo -e "${RED}✗ FAIL: Only ${count} ${package_type} packages installed (minimum: ${min_packages})${NC}"
-        ((TESTS_FAILED++))
+        TESTS_FAILED=$((TESTS_FAILED + 1))
         return 1
     fi
 }

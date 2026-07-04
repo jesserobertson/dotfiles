@@ -152,6 +152,9 @@ function Set-LocationButBetter
             $resolvedPath = Resolve-Path $Path -ErrorAction SilentlyContinue
             if ($null -eq $resolvedPath)
             {
+                # Override caller's $ErrorActionPreference so Write-Error remains non-terminating
+                # even when called from a Pester test (which sets $ErrorActionPreference='Stop').
+                $local:ErrorActionPreference = 'Continue'
                 Write-Error "Cannot find path '$Path' because it does not exist."
                 return
             }

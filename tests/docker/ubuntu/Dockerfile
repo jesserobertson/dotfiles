@@ -11,6 +11,13 @@ RUN apt-get update && apt-get install -y \
     file \
     && rm -rf /var/lib/apt/lists/*
 
+# Install bats-core and assertion libraries from source
+RUN git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core \
+    && /tmp/bats-core/install.sh /usr/local \
+    && git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats-support \
+    && git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats-assert \
+    && rm -rf /tmp/bats-core
+
 # Create a non-root user for testing
 RUN useradd -m -s /bin/bash testuser && \
     echo 'testuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers

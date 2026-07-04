@@ -10,24 +10,17 @@ services:
       - TEST_ENV=docker
       - CI=true
     volumes:
-      # Mount the parent directory (dotfiles repo) for testing
       - ..:/dotfiles-source:ro
-    # Override CMD to run full verification
     command: >
       bash -c "
-        echo '=== Starting Ubuntu Dotfiles Test ===' &&
-        echo 'Running bootstrap test...' &&
         /home/testuser/test-bootstrap.sh &&
-        for bp in /home/linuxbrew/.linuxbrew/bin/brew \"\$HOME/.linuxbrew/bin/brew\" /opt/homebrew/bin/brew; do
-          if [ -x \"\$bp\" ]; then eval \"\$(\$bp shellenv)\"; break; fi
-        done &&
+        for bp in /home/linuxbrew/.linuxbrew/bin/brew /opt/homebrew/bin/brew /usr/local/bin/brew; do
+          [ -x \"\$bp\" ] && eval \"\$(\$bp shellenv)\" && break; done &&
         echo '' &&
-        echo '=== Running Installation Verification ===' &&
-        if [ -f /dotfiles-source/tests/verify-installation.sh ]; then
-          bash /dotfiles-source/tests/verify-installation.sh
-        else
-          echo 'Verification script not found, skipping...'
-        fi
+        echo '=== Running bats tests ===' &&
+        bats /dotfiles-source/tests/bats/install.bats
+             /dotfiles-source/tests/bats/shell-env.bats
+             /dotfiles-source/tests/bats/fish.bats
       "
 
   # Ubuntu offline test (simulates no internet connection)
@@ -61,14 +54,10 @@ services:
       - ..:/dotfiles-source:ro
     command: >
       bash -c "
-        echo '=== Starting macOS Simulation Test ===' &&
-        echo 'Running macOS bootstrap test...' &&
         /home/testuser/test-bootstrap-macos.sh &&
+        for bp in /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew /usr/local/bin/brew; do
+          [ -x \"\$bp\" ] && eval \"\$(\$bp shellenv)\" && break; done &&
         echo '' &&
-        echo '=== Running Installation Verification ===' &&
-        if [ -f /dotfiles-source/tests/verify-installation.sh ]; then
-          bash /dotfiles-source/tests/verify-installation.sh
-        else
-          echo 'Verification script not found, skipping...'
-        fi
+        echo '=== Running bats tests ===' &&
+        bats /dotfiles-source/tests/bats/install.bats
       "
