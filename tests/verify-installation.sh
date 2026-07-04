@@ -207,9 +207,9 @@ if command -v brew >/dev/null 2>&1; then
         test_package_count 10 "brew"  # Fallback minimum
 
         # Basic fallback checks for common tools
-        test_command "which fish" "Fish shell" true
+        test_command "which fish" "Fish shell"
         test_command "which nvim" "Neovim" true
-        test_command "which git" "Git" true
+        test_command "which git" "Git"
     fi
 
     # Optional cask packages (only check on macOS)

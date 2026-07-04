@@ -42,6 +42,7 @@ RUN mkdir -p ${HOME}/.local/bin && \
 # Copy test scripts
 COPY --chown=testuser:testuser test-bootstrap-macos.sh /home/testuser/
 COPY --chown=testuser:testuser test-bootstrap-offline.sh /home/testuser/
-RUN chmod +x /home/testuser/test-bootstrap-macos.sh /home/testuser/test-bootstrap-offline.sh
+COPY --chown=testuser:testuser run-bats-tests.sh /home/testuser/
+RUN chmod +x /home/testuser/test-bootstrap-macos.sh /home/testuser/test-bootstrap-offline.sh /home/testuser/run-bats-tests.sh
 
 CMD ["/home/testuser/test-bootstrap-offline.sh"]

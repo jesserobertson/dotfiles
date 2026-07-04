@@ -75,9 +75,11 @@ jobs:
         env:
           CI: true
         run: |
-          # Initialize chezmoi with the current checkout
-          # The --apply flag will run chezmoi apply after init
           chezmoi init --source="$GITHUB_WORKSPACE" --apply
+
+      - name: Install core packages for verification
+        run: |
+          brew install fish jq tmux starship fzf ripgrep zoxide bat git-delta
 
       - name: Run installation verification
         run: |
