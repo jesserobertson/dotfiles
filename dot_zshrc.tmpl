@@ -62,6 +62,22 @@ _init_cached() {
     [[ -s "$cache_file" ]] && source "$cache_file"
 }
 
+# Completions (Homebrew-installed zsh-completions + per-formula scripts).
+# Only fully rescan fpath once every 24h (compinit -C skips the security
+# check and is much faster on every other shell startup).
+if [[ -o interactive ]]; then
+    fpath=("$HOMEBREW_PREFIX/share/zsh-completions" "$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+    autoload -Uz compinit
+    _zcompdump="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+    mkdir -p "${_zcompdump:h}"
+    if [[ -n "${_zcompdump}"(#qN.mh+24) ]]; then
+        compinit -d "$_zcompdump"
+    else
+        compinit -C -d "$_zcompdump"
+    fi
+    unset _zcompdump
+fi
+
 # Tool integrations (cached by binary mtime — only regenerated after upgrades)
 if [[ -o interactive ]]; then
     _init_cached fzf     fzf --zsh

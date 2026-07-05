@@ -62,6 +62,12 @@ _init_cached() {
     [ -s "$cache_file" ] && source "$cache_file"
 }
 
+# Completions (Homebrew-installed bash-completion@2 + per-formula scripts)
+if [[ $- == *i* ]]; then
+    [ -r "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh" ] && \
+        source "$HOMEBREW_PREFIX/etc/profile.d/bash_completion.sh"
+fi
+
 # Tool integrations (cached by binary mtime — only regenerated after upgrades)
 if [[ $- == *i* ]]; then
     _init_cached fzf    fzf --bash

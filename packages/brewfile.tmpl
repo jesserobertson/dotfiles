@@ -45,6 +45,7 @@ cask "font-prompt"
 {{ end }}
 
 ## BREWS - cross-platform shell and dev essentials
+brew "bash-completion@2"
 brew "bat"
 brew "bat-extras"
 brew "chezmoi"
@@ -68,6 +69,7 @@ brew "starship"
 brew "tig"
 brew "tmux"
 brew "zoxide"
+brew "zsh-completions"
 
 ## BREWS - not suitable for containers (heavy or host-only)
 {{ if not $skip_heavy }}
