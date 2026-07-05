@@ -309,6 +309,8 @@ jobs:
 
       - name: Verify installation
         shell: pwsh
+        env:
+          DOTFILES_FULL_INSTALL: "1"
         run: |
           $status = chezmoi status --source="$env:GITHUB_WORKSPACE"
           if ($status) {
