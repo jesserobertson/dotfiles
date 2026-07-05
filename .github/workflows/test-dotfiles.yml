@@ -161,7 +161,7 @@ jobs:
       - name: Install chezmoi
         shell: pwsh
         run: |
-          winget install twpayne.chezmoi --silent --accept-package-agreements --accept-source-agreements
+          winget install twpayne.chezmoi --source winget --silent --accept-package-agreements --accept-source-agreements
           # winget installs to WinGet Links dir; add it to PATH for subsequent steps
           $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
           echo "$wingetLinks" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -290,7 +290,7 @@ jobs:
       - name: Install chezmoi
         shell: pwsh
         run: |
-          winget install twpayne.chezmoi --silent --accept-package-agreements --accept-source-agreements
+          winget install twpayne.chezmoi --source winget --silent --accept-package-agreements --accept-source-agreements
           $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
           echo "$wingetLinks" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 

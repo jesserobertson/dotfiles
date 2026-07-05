@@ -239,7 +239,7 @@ if command -v brew >/dev/null 2>&1; then
                     font-*)
                         # Skip font checks as they're hard to verify reliably
                         echo -e "${BLUE}⚬ SKIP: Font package ${cask} (fonts are hard to verify)${NC}"
-                        ((TESTS_SKIPPED++))
+                        TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
                         ;;
                     *)
                         # For other casks, try a generic application check
@@ -299,14 +299,14 @@ if [ -x "$SCRIPT_DIR/test-shell-env.sh" ]; then
     echo -e "${YELLOW}Running shell environment consistency tests...${NC}"
     if "$SCRIPT_DIR/test-shell-env.sh"; then
         echo -e "${GREEN}✓ PASS: Shell environment consistency tests${NC}"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
     else
         echo -e "${RED}✗ FAIL: Shell environment consistency tests${NC}"
-        ((TESTS_FAILED++))
+        TESTS_FAILED=$((TESTS_FAILED + 1))
     fi
 else
     echo -e "${BLUE}⚬ SKIP: Shell environment test script not found (optional)${NC}"
-    ((TESTS_SKIPPED++))
+    TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
 fi
 
 echo ""

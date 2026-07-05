@@ -49,7 +49,7 @@ test_env_var_consistency() {
         bash_val=$(bash -c "source ~/.bashrc 2>/dev/null; echo \"\$$var\"" 2>/dev/null || echo "")
     else
         echo -e "${BLUE}⚬ SKIP: Bash not available or ~/.bashrc not found${NC}"
-        ((TESTS_SKIPPED++))
+        TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
         return 0
     fi
 
@@ -58,7 +58,7 @@ test_env_var_consistency() {
         zsh_val=$(zsh -c "source ~/.zshrc 2>/dev/null; echo \"\$$var\"" 2>/dev/null || echo "")
     else
         echo -e "${BLUE}⚬ SKIP: Zsh not available or ~/.zshrc not found${NC}"
-        ((TESTS_SKIPPED++))
+        TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
         return 0
     fi
 
@@ -72,7 +72,7 @@ test_env_var_consistency() {
         fi
     else
         echo -e "${BLUE}⚬ SKIP: Fish not available or config not found${NC}"
-        ((TESTS_SKIPPED++))
+        TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
         return 0
     fi
 
@@ -85,7 +85,7 @@ test_env_var_consistency() {
         # Special handling for homebrew paths - ensure they're present
         if ! check_homebrew_paths "$bash_val" "$zsh_val" "$fish_val"; then
             echo -e "${RED}✗ FAIL: ${description} - Homebrew paths missing or inconsistent${NC}"
-            ((TESTS_FAILED++))
+            TESTS_FAILED=$((TESTS_FAILED + 1))
             return 1
         fi
     elif [[ "$var" == "MANPATH" || "$var" == "INFOPATH" ]]; then
@@ -98,7 +98,7 @@ test_env_var_consistency() {
     if [[ "$var" == "PATH" ]]; then
         if paths_equivalent "$bash_val" "$zsh_val" "$fish_val"; then
             echo -e "${GREEN}✓ PASS: ${description}${NC}"
-            ((TESTS_PASSED++))
+            TESTS_PASSED=$((TESTS_PASSED + 1))
             return 0
         fi
     elif [[ "$var" == "MANPATH" || "$var" == "INFOPATH" ]]; then
@@ -109,13 +109,13 @@ test_env_var_consistency() {
 
         if [[ "$path1_sorted" == "$path2_sorted" && "$path2_sorted" == "$path3_sorted" ]]; then
             echo -e "${GREEN}✓ PASS: ${description}${NC}"
-            ((TESTS_PASSED++))
+            TESTS_PASSED=$((TESTS_PASSED + 1))
             return 0
         fi
     else
         if [[ "$bash_val" == "$zsh_val" && "$zsh_val" == "$fish_val" ]]; then
             echo -e "${GREEN}✓ PASS: ${description}${NC}"
-            ((TESTS_PASSED++))
+            TESTS_PASSED=$((TESTS_PASSED + 1))
             return 0
         fi
     fi
@@ -124,7 +124,7 @@ test_env_var_consistency() {
     echo "  bash: $bash_val"
     echo "  zsh:  $zsh_val"
     echo "  fish: $fish_val"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
     return 1
 }
 
