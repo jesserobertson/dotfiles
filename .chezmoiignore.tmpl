@@ -31,7 +31,10 @@
 {{ end -}}
 
 # rustup is a heavy, opt-in toolchain (not a brew formula, so it's gated here
-# rather than in brewfile.tmpl) — only installed when DOTFILES_FULL_INSTALL=1
+# rather than in brewfile.tmpl) — only installed when DOTFILES_FULL_INSTALL=1.
+# Crate installation depends on cargo, so it's gated the same way — otherwise
+# it fails outright when rustup was skipped.
 {{- if not (env "DOTFILES_FULL_INSTALL") }}
 01-install-rust.fish
+02-install-crates.fish
 {{ end -}}

@@ -47,7 +47,9 @@ Install-ScoopPackages (Join-Path "{{ .chezmoi.sourceDir }}" "packages" "scoopfil
 {{ if env "DOTFILES_FULL_INSTALL" -}}
 # Heavy/opt-in toolchains (DOTFILES_FULL_INSTALL is set)
 Install-ScoopPackages (Join-Path "{{ .chezmoi.sourceDir }}" "packages" "scoopfile.full")
-{{ end -}}
 
 # --- Rust crates ---
+# rustup only installs above when DOTFILES_FULL_INSTALL is set, so only
+# attempt crate installation in that case too — otherwise there's no cargo.
 & "{{ .chezmoi.sourceDir }}\scripts\install-crates.ps1"
+{{ end -}}
