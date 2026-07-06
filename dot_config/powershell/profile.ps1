@@ -71,7 +71,7 @@ if ([System.Environment]::UserInteractive)
     # Enable PSReadLine
     Import-Module PSReadLine
     Set-PSReadLineOption -PredictionSource History
-    Set-PSReadLineOption -PredictionViewStyle ListView
+    Set-PSReadLineOption -PredictionViewStyle InlineView
     Set-PSReadLineOption -EditMode Windows
 
     # Load completions
