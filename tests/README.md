@@ -26,15 +26,15 @@ This framework follows a **test pyramid** approach with different types of tests
 
 | Test Type | Tool | Speed | Scope | When to Run |
 |-----------|------|-------|-------|-------------|
-| **Quick Tests** | Shell | ⚡⚡⚡ Instant (~5s) | Syntax, templates, basic validation | Every save, pre-commit |
+| **Quick Tests** | bats-core | ⚡⚡⚡ Instant (~5s) | Syntax, templates, basic validation | Every save, pre-commit |
 | **Feature Tests** | bats-core | ⚡⚡ Fast (~30s) | Specific features (tmux, shell, etc.) | Every commit, local dev |
 | **E2E Bootstrap** | Docker | 🐌 Slow (5-10 min) | Full installation from scratch | PR merges, releases |
 
 ## Overview
 
-**Quick Tests (Shell)** validate:
-- Fish shell syntax for all config files
-- Chezmoi template processing without errors
+**Quick Tests (`syntax.bats`/`templates.bats`/`repo-hygiene.bats`)** validate:
+- Fish/bash/PowerShell/zsh syntax for all config files
+- Chezmoi template processing without errors, including the `[[data.env_vars]]` single source of truth reaching bash and fish
 - Critical files exist
 - JSON configuration validity
 - No common mistakes (hardcoded paths, etc.)
@@ -58,12 +58,14 @@ This framework follows a **test pyramid** approach with different types of tests
 ```
 tests/
 ├── README.md                       # This file
-├── quick-test.sh                   # Fast validation tests (~5 seconds)
-├── run-local-tests.sh              # Runner for quick/bats/legacy tests
+├── run-local-tests.sh              # Runner for bats tests
 ├── run-tests.sh                    # Runner for Docker bootstrap tests (Ubuntu only today)
 ├── verify-installation.sh          # Post-install verification script (any system)
 ├── test-shell-env.sh               # Shell environment consistency tests (any system)
 ├── bats/                           # Bats feature tests
+│   ├── syntax.bats                # Fish/bash/PowerShell/zsh syntax checks
+│   ├── templates.bats             # Chezmoi template rendering + env_vars consistency
+│   ├── repo-hygiene.bats          # Critical files, JSON validity, hardcoded paths
 │   ├── install.bats               # Post-bootstrap verification (Docker/CI)
 │   ├── shell-env.bats             # EDITOR/PAGER/CONFIG/PATH consistency across bash/zsh/fish
 │   ├── fish.bats                  # Fish-specific startup, config, and tool-init checks
@@ -98,8 +100,8 @@ macos" — only `-p ubuntu` (the default) actually works locally.
 cd tests
 ./run-local-tests.sh --quick
 
-# Or run directly
-./quick-test.sh
+# Or run the three bats files directly
+bats bats/syntax.bats bats/templates.bats bats/repo-hygiene.bats
 ```
 
 **Use quick tests for:**
