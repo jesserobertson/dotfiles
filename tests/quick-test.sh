@@ -370,7 +370,7 @@ if [ $FAILED -eq 0 ]; then
     echo ""
     echo "Run full tests with:"
     echo "  ./run-local-tests.sh      # Feature tests (fast)"
-    echo "  docker-compose up         # Full bootstrap tests (slow)"
+    echo "  ./run-tests.sh            # Full bootstrap tests (slow)"
 else
     echo -e "${RED}✗ Some tests failed${NC}"
 fi

@@ -126,38 +126,45 @@ sleep 5
 test_command "which brew" "Homebrew is installed and in PATH"
 test_command_output "brew --version" "Homebrew version check" "Homebrew"
 
-# Test core CLI tools from Brewfile (always installed)
+# Test core CLI tools from Brewfile's cross-platform "always installed" tier
+# (packages/brewfile.tmpl installs these regardless of container/CI/full-install mode)
 test_command "which git" "Git is installed"
 test_command "which fish" "Fish shell is installed"
 test_command "which jq" "Jq is installed"
 test_command "which tmux" "Tmux is installed"
+test_command "which nvim" "Neovim is installed"
+test_command "which bat" "Bat is installed"
+test_command "which fzf" "Fzf is installed"
+test_command "which gh" "GitHub CLI is installed"
 
 # Test that chezmoi applied dotfiles
 test_command "test -f ~/.bashrc" "Bash config file exists"
 test_command "test -d ~/.config" "Config directory exists"
+test_command "test -f ~/.zshrc" "Zsh config file exists"
 
-# In CI, we skip optional packages to save time
-if [ -n "${CI:-}" ]; then
-    echo "CI mode - skipping optional package checks (Rust, Haskell, cloud tools, etc.)"
+# awscli is in brewfile.tmpl's $skip_heavy tier, gated on /.dockerenv or
+# HOMEBREW_SKIP_HEAVY (see packages/brewfile.tmpl) - mirror that logic here
+# rather than gating on $CI, since a non-CI container run still skips it.
+_is_container=false
+[ -f /.dockerenv ] && _is_container=true
+if [ "$_is_container" = "true" ] || [ -n "${HOMEBREW_SKIP_HEAVY:-}" ]; then
+    echo "Container/HOMEBREW_SKIP_HEAVY mode - skipping awscli check (brewfile.tmpl doesn't install it here)"
 else
-    # Test additional CLI tools (not in CI)
-    test_command "which nvim" "Neovim is installed"
-    test_command "which bat" "Bat is installed"
-    test_command "which fzf" "Fzf is installed"
-    test_command "which gh" "GitHub CLI is installed"
+    test_command "which aws" "AWS CLI is installed"
+fi
 
-    # Test programming languages
+# go/node only install via brewfile.tmpl's $full_install tier
+# (DOTFILES_FULL_INSTALL=1), independent of CI/container mode.
+if [ -n "${DOTFILES_FULL_INSTALL:-}" ]; then
     test_command "which go" "Go is installed"
     test_command "which node" "Node.js is installed"
-    test_command "which rustup" "Rustup is installed"
-
-    # Test development tools
-    test_command "which aws" "AWS CLI is installed"
-    test_command "which tofu" "OpenTofu is installed"
-    test_command "which packer" "Packer is installed"
-
-    test_command "test -f ~/.zshrc" "Zsh config file exists"
+else
+    echo "DOTFILES_FULL_INSTALL not set - skipping go/node checks (opt-in toolchains)"
 fi
+
+# Not checking rustup/tofu/packer: rustup installs via a separate
+# run_onchange_ script this test doesn't invoke, and tofu/packer aren't
+# installed by any script in this repo.
 
 # Test Homebrew bundle was successful
 test_command "brew list --formula | wc -l | grep -E '^[1-9][0-9]*$'" "Brew packages installed"

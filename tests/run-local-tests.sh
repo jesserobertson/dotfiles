@@ -47,7 +47,7 @@ usage() {
     echo "Test Types:"
     echo "  Quick Tests:         Fast syntax and template validation (~5 seconds)"
     echo "  Feature Tests:       Bats tests for specific features (~30 seconds)"
-    echo "  Bootstrap Tests:     Full Docker integration tests (see docker-compose.yml)"
+    echo "  Bootstrap Tests:     Full Docker integration tests (see run-tests.sh)"
     echo ""
     echo "Examples:"
     echo "  $0 --quick                     # Quick validation (fastest)"

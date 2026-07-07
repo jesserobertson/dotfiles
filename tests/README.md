@@ -59,26 +59,35 @@ This framework follows a **test pyramid** approach with different types of tests
 tests/
 ├── README.md                       # This file
 ├── quick-test.sh                   # Fast validation tests (~5 seconds)
-├── run-local-tests.sh             # Runner for quick/bats/legacy tests
-├── run-tests.sh                    # Runner for Docker bootstrap tests
-├── verify-installation.sh          # Post-install verification script
-├── test-shell-env.sh              # Shell environment consistency tests
+├── run-local-tests.sh              # Runner for quick/bats/legacy tests
+├── run-tests.sh                    # Runner for Docker bootstrap tests (Ubuntu only today)
+├── verify-installation.sh          # Post-install verification script (any system)
+├── test-shell-env.sh               # Shell environment consistency tests (any system)
 ├── bats/                           # Bats feature tests
+│   ├── install.bats               # Post-bootstrap verification (Docker/CI)
+│   ├── shell-env.bats             # EDITOR/PAGER/CONFIG/PATH consistency across bash/zsh/fish
+│   ├── fish.bats                  # Fish-specific startup, config, and tool-init checks
 │   ├── developer-layout.bats      # Developer project tmux layout
 │   ├── tmux-scripts.bats          # Tmux helper scripts
 │   └── helpers/
-│       └── setup.bash             # Shared test helpers
-├── docker/                         # Docker E2E tests
-│   ├── ubuntu/
-│   │   ├── Dockerfile
-│   │   ├── test-bootstrap.sh
-│   │   └── test-bootstrap-offline.sh
-│   └── macos/
-│       ├── Dockerfile
-│       ├── test-bootstrap-macos.sh
-│       └── test-bootstrap-offline.sh
-└── docker-compose.yml              # Multi-platform orchestration
+│       ├── setup.bash             # Shared tmux test helpers
+│       └── brew.bash              # Homebrew env setup for bats
+├── powershell/                     # Pester unit tests (Windows)
+│   └── functions.Tests.ps1
+└── docker/                         # Docker E2E tests
+    └── ubuntu/
+        ├── Dockerfile
+        ├── test-bootstrap.sh          # Full bootstrap using local/GitHub source
+        ├── test-bootstrap-offline.sh  # Offline bootstrap using a mock repo
+        └── run-bats-tests.sh          # Runs install.bats/shell-env.bats/fish.bats post-bootstrap
 ```
+
+There is no `docker-compose.yml` and no `docker/macos/` directory in this repo
+today — macOS is tested natively via GitHub Actions (`test-dotfiles.yml`'s
+`test-macos` job), not via a local Linux-simulated container. `run-tests.sh`
+still advertises a `-p macos` option, but there's no `docker/macos/Dockerfile`
+backing it, so it currently fails with "Dockerfile not found for platform:
+macos" — only `-p ubuntu` (the default) actually works locally.
 
 ## Quick Start
 
@@ -122,18 +131,18 @@ bats bats/developer-layout.bats
 ### E2E Bootstrap Tests (Slow - For CI/CD)
 
 ```bash
-# Test all platforms with Docker Compose
+# Using the test runner script (builds the Docker image and runs the offline
+# bootstrap by default; only the "ubuntu" platform is implemented locally)
 cd tests
-docker-compose up --abort-on-container-exit
+./run-tests.sh
+./run-tests.sh -t 900 -v                 # extended timeout, verbose
 
-# Or test individual platforms
-docker-compose run --rm ubuntu          # Ubuntu with verification
-docker-compose run --rm ubuntu-offline  # Ubuntu offline mode
-docker-compose run --rm macos-sim       # macOS simulation
-
-# Using the test runner script
-./run-tests.sh                          # Default Ubuntu test
-./run-tests.sh -p ubuntu,macos -t 900 -v # Multiple platforms with timeout
+# Or drive Docker directly for more control (e.g. to mount your local
+# checkout instead of testing against a mock/GitHub source, or to also
+# run the bats tests in the same container):
+docker build -t dotfiles-test-ubuntu docker/ubuntu
+docker run --rm -v "$PWD/..:/dotfiles-source:ro" dotfiles-test-ubuntu \
+  bash -c "bash /home/testuser/test-bootstrap.sh && bash /home/testuser/run-bats-tests.sh"
 ```
 
 ### Advanced Test Runner Options
@@ -214,6 +223,22 @@ bats --timing bats/*.bats
 
 ### Available Bats Tests
 
+**Install** (`bats/install.bats`) - 18 tests
+- Post-bootstrap verification for Docker/CI: brew/chezmoi/git/fish/jq/tmux/etc.
+  are installed, config files and directories exist
+- Replaces `verify-installation.sh` for the containerized flow
+
+**Shell Environment** (`bats/shell-env.bats`) - 15 tests
+- EDITOR/PAGER/CONFIG consistency across bash, zsh, and fish (after a real
+  `chezmoi apply`) — this is what verifies the `[[data.env_vars]]` single
+  source of truth in `.chezmoi.toml.tmpl` actually reaches every shell
+- Homebrew bin present in PATH for each shell
+
+**Fish** (`bats/fish.bats`) - 13 tests
+- Fish starts and parses `config.fish`/`env.fish` without errors
+- EDITOR/PAGER/CONFIG set correctly, `init_cached` helper defined
+- starship/zoxide/fzf fish integrations run without errors
+
 **Developer Layout** (`bats/developer-layout.bats`) - 15 tests
 - Tests automatic tmux layout for Developer projects
 - Validates 3-pane layout creation
@@ -227,44 +252,27 @@ bats --timing bats/*.bats
 - Validates tmux hooks configuration
 - Checks configuration file loading
 
-**Total: 21 tests**
-
-Example test output:
-```
-bats/developer-layout.bats
- ✓ Developer directory exists
- ✓ Test project exists in Developer directory
- ✓ Developer project session creates exactly 3 panes
- ✓ All panes are in the correct project directory
- ✓ Pane 0 runs neovim
- ✓ Pane 2 runs claude
- ✓ Session layout is split correctly
- ✓ Additional splits can be added after hook runs
- ✓ Active pane after setup is the neovim pane
- ✓ Panes have expected size ratios
- ... and 5 more
-
-bats/tmux-scripts.bats
- ✓ setup-dev-layout.sh script exists and is executable
- ✓ tmux hooks configuration contains developer layout hook
- ... and 4 more
-
-21 tests, 0 failures in ~27s
-```
+**Total: 67 tests.** `docker/ubuntu/run-bats-tests.sh` runs `install.bats`,
+`shell-env.bats`, and `fish.bats` (46 tests) after a real bootstrap inside the
+Docker container — those three need the packages/dotfiles a bootstrap
+provides. `developer-layout.bats` and `tmux-scripts.bats` (21 tests) are
+meant for a local machine with tmux and an existing `~/Developer` layout, and
+aren't wired into the Docker flow.
 
 ### Test Coverage
 
 **Well Covered:**
+- ✅ Shell environment variable consistency across bash/zsh/fish (15 tests)
+- ✅ Fish startup, config parsing, and tool integrations (13 tests)
+- ✅ Post-bootstrap package/config verification (18 tests)
 - ✅ Developer project automatic layout (15 tests)
 - ✅ Tmux configuration and scripts (6 tests)
-- ✅ Edge cases and negative tests
-- ✅ Pane commands, paths, and dimensions
-- ✅ Multiple project support
-- ✅ Configuration file validation
 
 **Not Yet Covered:**
 - ⏸️ Sesh integration scripts
-- ⏸️ Shell environment tests
+- ⏸️ PowerShell environment variable consistency (Pester covers function
+  units in `tests/powershell/`, but not env-var consistency the way
+  `shell-env.bats` does for bash/zsh/fish)
 - ⏸️ Other tmux utility scripts (cpu_usage, ram_usage, etc.)
 
 To add coverage for these areas, create new `.bats` files in the `bats/` directory following the existing patterns.
@@ -327,43 +335,22 @@ Both test types (bats and Docker) can be integrated into CI/CD pipelines.
 
 ### GitHub Actions
 
-Automated tests run on every push and pull request via `.github/workflows/test-dotfiles.yml`:
+Automated tests run on every push and pull request via `.github/workflows/test-dotfiles.yml`, which has six jobs:
 
-**Feature Tests (Bats):**
-- Run on every commit for fast feedback
-- Test specific features without full bootstrap
-- TAP output for CI integration
-- Can run in parallel for speed
+**Smoke tests** (validate templates/syntax, run once per push/PR):
+- `test-ubuntu` — builds `docker/ubuntu`, runs the online bootstrap
+  (`test-bootstrap.sh`) against the checked-out repo, then `run-bats-tests.sh`
+  (`install.bats`, `shell-env.bats`, `fish.bats`)
+- `test-macos` — runs natively on a `macos-latest` runner
+- `test-windows` — validates PowerShell syntax (including rendering
+  `*.ps1.tmpl` files first), Pester unit tests, and a `chezmoi --dry-run`
 
-**E2E Bootstrap Tests (Docker):**
-- Run on PR merges and releases
-- Full installation validation
-- Cross-platform testing (Ubuntu, macOS)
+**Full install jobs** (gated on the matching smoke test passing):
+- `full-install-ubuntu` / `full-install-macos` / `full-install-windows` — a
+  real, undiluted `chezmoi init --apply` with `DOTFILES_FULL_INSTALL=1`, since
+  the smoke tests above skip heavy packages or only dry-run
 
-Example GitHub Actions workflow:
-```yaml
-jobs:
-  feature-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install bats
-        run: |
-          brew install bats-core bats-support bats-assert bats-file
-      - name: Run feature tests
-        run: ./tests/run-local-tests.sh
-
-  e2e-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run Docker tests
-        run: |
-          cd tests
-          docker-compose up --abort-on-container-exit
-```
-
-View test results at: `https://github.com/[user]/[repo]/actions`
+View test results at: `https://github.com/jesserobertson/dotfiles/actions`
 
 ### Bats TAP Output for CI
 
@@ -385,13 +372,17 @@ bats --formatter junit bats/*.bats > test-results.xml
 - Checks dotfile application
 - Verifies shell configurations
 - **Fast**: 3-5 minutes typical runtime
+- Runnable locally via `./run-tests.sh` or `docker build`/`docker run` (see
+  Quick Start above) — the only platform with a local Docker path today
 
-### macOS (Simulated - Linux with macOS Paths)
-- Uses Linux container with macOS-like paths for testing
-- Validates cross-platform logic in bootstrap scripts
-- Tests formula installations (casks are skipped)
-- Tests Homebrew path detection logic
-- **Note**: This is a simulation for quick path/logic testing
+### Windows (GitHub Actions + local)
+- CI validates PowerShell syntax (including chezmoi-templated `.ps1.tmpl`
+  files, rendered before parsing), runs Pester unit tests
+  (`tests/powershell/functions.Tests.ps1`), and does a `chezmoi --dry-run`
+- Locally: `Invoke-Pester tests/powershell -Output Detailed` and
+  `$env:CI = "true"; chezmoi init --source="$PWD" --apply --dry-run`
+- No Windows container path exists for local Docker-based testing — Windows
+  containers require a Windows Docker host, which this repo doesn't set up
 
 ### macOS (Native - GitHub Actions)
 - Runs on actual macOS runners in CI/CD
@@ -436,9 +427,11 @@ For local development on Linux with KVM, you can use [dockur/macos](https://gith
 5. **Package Installation**: Verifies all Brewfile packages are installed
 
 ### Verification Checks
-- **Core Tools**: git, fish, neovim, tmux, etc.
-- **Programming Languages**: Go, Node.js, Rust
-- **Development Tools**: AWS CLI, Google Cloud SDK, Terraform, etc.
+- **Core Tools** (always installed): git, fish, jq, tmux, neovim, bat, fzf, gh
+- **Optional/heavy toolchains** (only with `DOTFILES_FULL_INSTALL=1`,
+  independent of CI/container mode): Go, Node.js
+- **Skipped in containers** (`packages/brewfile.tmpl`'s `$skip_heavy`, tied
+  to `/.dockerenv` detection): AWS CLI and other heavy formulae
 - **Shell Integration**: Fish, Starship prompt configuration
 - **Configuration Files**: Presence and basic validation of dotfiles
 
@@ -459,10 +452,16 @@ docker exec -it <container-name> /bin/bash
 # Build and run Ubuntu test manually
 cd tests/docker/ubuntu
 docker build -t dotfiles-test-ubuntu .
-docker run --name debug-ubuntu dotfiles-test-ubuntu
 
-# Check logs
-docker logs debug-ubuntu
+# Without a volume mount, the container's default CMD
+# (test-bootstrap-offline.sh) runs against a mock repo, not your checkout.
+# To test your actual local changes, mount the repo root as /dotfiles-source
+# and run the online bootstrap + bats explicitly:
+docker run --rm -v "$(cd .. && cd .. && pwd):/dotfiles-source:ro" dotfiles-test-ubuntu \
+  bash -c "bash /home/testuser/test-bootstrap.sh && bash /home/testuser/run-bats-tests.sh"
+
+# On Windows Git Bash, prefix with MSYS_NO_PATHCONV=1 so the /dotfiles-source
+# container-side path in -v isn't mistranslated to a Windows path.
 ```
 
 ### Manual Verification
@@ -479,7 +478,9 @@ docker exec -it <container-name> /home/testuser/verify-installation.sh
 
 - Docker installed and running
 - Network access for downloading packages
-- SSH access to the dotfiles repository (for the bootstrap process)
+- No SSH access needed: `test-bootstrap.sh` either mounts your local checkout
+  at `/dotfiles-source`, or falls back to an HTTPS clone of the public GitHub
+  repo — nothing here needs SSH keys
 
 ## Customization
 
@@ -498,10 +499,7 @@ docker exec -it <container-name> /home/testuser/verify-installation.sh
 
 ### Common Issues
 
-1. **SSH Key Access**: The bootstrap requires SSH access to GitHub
-   - Solution: Ensure your SSH keys are properly configured
-
-2. **Timeout Errors**: Default timeout is 10 minutes
+1. **Timeout Errors**: Default timeout is 10 minutes
    - Solution: Increase timeout with `-t 900` (15 minutes)
 
 3. **Network Issues**: Package downloads may fail on slow connections
