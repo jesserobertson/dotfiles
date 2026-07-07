@@ -119,10 +119,34 @@ echo ""
 # Test 2b: Validate PowerShell script syntax
 log "Testing PowerShell script syntax..."
 if command -v pwsh >/dev/null 2>&1; then
+    # *.ps1.tmpl files (e.g. profile.ps1.tmpl) contain chezmoi template syntax
+    # that isn't valid PowerShell on its own, so render them first and parse
+    # the rendered output instead of the source.
+    ps1_tmpl_render_dir=""
+    ps1_tmpl_render_dir_win=""
+    if command -v chezmoi >/dev/null 2>&1; then
+        ps1_tmpl_render_dir="$(mktemp -d)"
+        # pwsh is a native Windows process, so pass it a Windows-style path
+        # rather than the Git Bash /tmp/... POSIX path (which it can't resolve).
+        if command -v cygpath >/dev/null 2>&1; then
+            ps1_tmpl_render_dir_win="$(cygpath -w "$ps1_tmpl_render_dir")"
+        else
+            ps1_tmpl_render_dir_win="$ps1_tmpl_render_dir"
+        fi
+        while IFS= read -r -d '' tmpl_file; do
+            rendered_name="$(basename "$tmpl_file" .tmpl)"
+            env CI=true chezmoi execute-template < "$tmpl_file" > "$ps1_tmpl_render_dir/$rendered_name" 2>/dev/null
+        done < <(find "$REPO_ROOT" -name "*.ps1.tmpl" -not -path "*/.git/*" -print0)
+    else
+        warn "chezmoi not installed, skipping *.ps1.tmpl rendering (syntax unchecked)"
+    fi
+
     # Run pwsh from REPO_ROOT so it resolves paths natively (avoids Git Bash /c/... path issues)
     if pushd "$REPO_ROOT" > /dev/null 2>&1 && pwsh -NoProfile -NonInteractive -Command "
         \$failed = \$false
-        Get-ChildItem -Recurse -Filter '*.ps1' | Where-Object { \$_.FullName -notmatch '\\.git' } | ForEach-Object {
+        \$dirs = @('.')
+        if ('$ps1_tmpl_render_dir_win') { \$dirs += '$ps1_tmpl_render_dir_win' }
+        Get-ChildItem -Path \$dirs -Recurse -Filter '*.ps1' | Where-Object { \$_.FullName -notmatch '\\.git' } | ForEach-Object {
             \$parseErrors = \$null
             [void][System.Management.Automation.Language.Parser]::ParseFile(\$_.FullName, [ref]\$null, [ref]\$parseErrors)
             if (\$parseErrors.Count -gt 0) {
@@ -140,6 +164,7 @@ if command -v pwsh >/dev/null 2>&1; then
         fail "Some PowerShell files have syntax errors (see above)"
         FAILED=1
     fi
+    [ -n "$ps1_tmpl_render_dir" ] && rm -rf "$ps1_tmpl_render_dir"
 else
     warn "pwsh not installed, skipping PowerShell syntax checks"
 fi
@@ -252,43 +277,59 @@ critical_vars=(
     "HOMEBREW_PREFIX"
 )
 
-# Check Fish config
+# Bash/fish/PowerShell each `range` over the [[data.env_vars]] /
+# [[data.homebrew_env_vars]] lists in .chezmoi.toml.tmpl (single source of
+# truth for *which* vars get exported), so the per-shell templates no longer
+# contain literal `export NAME` / `set -gx NAME` text for any given var. Check
+# the rendered output instead, and fall back to a static check if chezmoi
+# isn't available.
+toml_config="$REPO_ROOT/.chezmoi.toml.tmpl"
 fish_config="$REPO_ROOT/dot_config/fish/env.fish.tmpl"
-if [ -f "$fish_config" ]; then
+shared_env_config="$REPO_ROOT/dot_config/bash/env.sh.tmpl"
+
+if command -v chezmoi >/dev/null 2>&1; then
+    rendered_bash="$(env CI=true chezmoi execute-template < "$shared_env_config" 2>/dev/null)"
+    rendered_fish="$(env CI=true chezmoi execute-template < "$fish_config" 2>/dev/null)"
+
     for var in "${critical_vars[@]}"; do
-        if grep -q "set -gx $var" "$fish_config" 2>/dev/null || \
-           grep -q "fish_add_path.*$var" "$fish_config" 2>/dev/null; then
-            : # Variable found, do nothing
-        else
-            fail "Fish: $var not set in env.fish.tmpl"
+        if ! echo "$rendered_bash" | grep -q "export $var="; then
+            fail "Bash/Zsh: $var not exported by rendered env.sh.tmpl"
+            env_errors=1
+        fi
+        if ! echo "$rendered_fish" | grep -q "set -gx $var "; then
+            fail "Fish: $var not exported by rendered env.fish.tmpl"
             env_errors=1
         fi
     done
     if [ $env_errors -eq 0 ]; then
-        pass "Fish: All critical variables defined"
+        pass "Bash/Zsh and Fish: all critical variables rendered"
     fi
 else
-    warn "Fish env config not found"
+    warn "chezmoi not installed, falling back to static template checks"
+    for var in "${critical_vars[@]}"; do
+        if ! grep -q "\"${var}\"" "$toml_config" 2>/dev/null; then
+            fail "$var not declared in .chezmoi.toml.tmpl env_vars/homebrew_env_vars"
+            env_errors=1
+        fi
+    done
+    for f in "$fish_config" "$shared_env_config"; do
+        if ! grep -q "range \.env_vars" "$f" 2>/dev/null; then
+            fail "$(basename "$f") no longer loops over .env_vars"
+            env_errors=1
+        fi
+    done
+    if [ $env_errors -eq 0 ]; then
+        pass "Bash/Zsh and Fish: env_vars loop and declarations present"
+    fi
 fi
 
-# Check Zsh config
-zsh_config="$REPO_ROOT/dot_zshrc.tmpl"
-if [ -f "$zsh_config" ]; then
-    for var in "${critical_vars[@]}"; do
-        if grep -q "export $var" "$zsh_config" 2>/dev/null || \
-           grep -q "path=.*$var" "$zsh_config" 2>/dev/null; then
-            : # Variable found, do nothing
-        else
-            fail "Zsh: $var not set in .zshrc.tmpl"
-            env_errors=1
-        fi
-    done
-    if [ $env_errors -eq 0 ]; then
-        pass "Zsh: All critical variables defined"
+# dot_bashrc.tmpl and dot_zshrc.tmpl just source the shared env file
+for rc in "$REPO_ROOT/dot_bashrc.tmpl" "$REPO_ROOT/dot_zshrc.tmpl"; do
+    if ! grep -q "^source " "$rc" 2>/dev/null; then
+        fail "$(basename "$rc") no longer sources the shared env file"
+        env_errors=1
     fi
-else
-    warn "Zsh config not found"
-fi
+done
 
 [ $env_errors -eq 0 ] || FAILED=1
 echo ""

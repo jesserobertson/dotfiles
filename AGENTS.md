@@ -10,7 +10,7 @@ dot_bashrc.tmpl             # Bash config (renders to ~/.bashrc)
 dot_zshrc.tmpl              # Zsh config (renders to ~/.zshrc)
 dot_config/fish/            # Fish config
 dot_config/powershell/      # PowerShell config (Windows)
-dot_config/shell/env.sh.tmpl # Shared POSIX env vars (sourced by bash/zsh via chezmoi)
+dot_config/bash/env.sh.tmpl # Single source of truth for env vars; zsh/env.zsh and fish/env.fish mirror it
 packages/                   # brewfile.tmpl, wingetfile, scoopfile, cratefile, etc.
 scripts/                    # install-prereqs.sh, install-brew.sh, install-crates.ps1, etc.
 tests/                      # bats tests (tests/bats/), Docker bootstrap tests, Pester (Windows)

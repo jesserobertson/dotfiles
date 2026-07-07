@@ -34,7 +34,9 @@ jobs:
           chezmoi init --source="$GITHUB_WORKSPACE"
           chezmoi execute-template < dot_bashrc.tmpl > /dev/null
           chezmoi execute-template < dot_zshrc.tmpl > /dev/null
+          chezmoi execute-template < dot_config/bash/env.sh.tmpl > /dev/null
           chezmoi execute-template < dot_config/fish/env.fish.tmpl > /dev/null
+          chezmoi execute-template < dot_config/powershell/profile.ps1.tmpl > /dev/null
           chezmoi execute-template < packages/brewfile.tmpl > /dev/null
           echo "All templates OK"
 
@@ -130,11 +132,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install chezmoi
+        shell: pwsh
+        run: |
+          winget install twpayne.chezmoi --source winget --silent --accept-package-agreements --accept-source-agreements
+          # winget installs to WinGet Links dir; add it to PATH for subsequent steps
+          $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
+          echo "$wingetLinks" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Initialize chezmoi config
+        shell: pwsh
+        env:
+          CI: "true"
+        run: |
+          # Populate chezmoi's config/data (source of .env_vars etc.) without
+          # applying anything. Steps below (syntax check, later dry-run) both
+          # rely on this config being present.
+          chezmoi init --source="$env:GITHUB_WORKSPACE"
+
       - name: Validate PowerShell syntax
         shell: pwsh
         run: |
           $failed = $false
-          Get-ChildItem -Recurse -Filter *.ps1 | Where-Object { $_.FullName -notmatch '\.git' } | ForEach-Object {
+
+          # *.ps1.tmpl files (e.g. profile.ps1.tmpl) contain chezmoi template
+          # syntax that isn't valid PowerShell on its own, so render them
+          # first and parse the rendered output instead of the source.
+          $renderDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+          New-Item -ItemType Directory -Path $renderDir | Out-Null
+          Get-ChildItem -Recurse -Filter *.ps1.tmpl | Where-Object { $_.FullName -notmatch '\.git' } | ForEach-Object {
+            $renderedPath = Join-Path $renderDir ($_.BaseName)
+            Get-Content -Raw $_.FullName | chezmoi execute-template | Set-Content $renderedPath
+          }
+
+          $dirs = @('.', $renderDir)
+          Get-ChildItem -Path $dirs -Recurse -Filter *.ps1 | Where-Object { $_.FullName -notmatch '\.git' } | ForEach-Object {
             $parseErrors = $null
             [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$parseErrors)
             if ($parseErrors.Count -gt 0) {
@@ -145,6 +177,7 @@ jobs:
               Write-Host "OK:   $($_.Name)"
             }
           }
+          Remove-Item -Recurse -Force $renderDir
           if ($failed) { exit 1 }
 
       - name: Validate wingetfile and scoopfile parse correctly
@@ -157,14 +190,6 @@ jobs:
           $scoop = Get-Content packages/scoopfile | Where-Object { $_ -notmatch '^\s*#' -and $_ -match '\S' }
           Write-Host "scoopfile: $($scoop.Count) packages"
           if ($scoop.Count -eq 0) { Write-Error "No packages in scoopfile"; exit 1 }
-
-      - name: Install chezmoi
-        shell: pwsh
-        run: |
-          winget install twpayne.chezmoi --source winget --silent --accept-package-agreements --accept-source-agreements
-          # winget installs to WinGet Links dir; add it to PATH for subsequent steps
-          $wingetLinks = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Links"
-          echo "$wingetLinks" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install Pester
         shell: pwsh

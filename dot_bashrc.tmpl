@@ -1,47 +1,5 @@
-# XDG Base Directory specification
-export XDG_CONFIG_HOME="{{ .xdg_config_home }}"
-export XDG_DATA_HOME="{{ .xdg_data_home }}"
-export XDG_CACHE_HOME="{{ .xdg_cache_home }}"
-export XDG_STATE_HOME="{{ .xdg_state_home }}"
-
-# Local directory structure
-export LOCAL="{{ .local_dir }}"
-
-# Rust environment
-export RUSTUP_HOME="{{ .rustup_home }}"
-export CARGO_HOME="{{ .cargo_home }}"
-
-# Haskell environment (via Homebrew)
-export CABAL_DIR="{{ .cabal_home }}"
-
-# Shell tools
-export EDITOR="{{ .editor }}"
-export PAGER=less
-export GIT_PAGER=delta
-
-# Add 1Password SSH agent
-{{- if .ssh_auth_sock }}
-export SSH_AUTH_SOCK="{{ .ssh_auth_sock }}"
-{{- end }}
-
-# Add local paths
-export CONFIG="$HOME/.config"
-export LOCAL_BIN="$LOCAL/bin"
-
-# Add brew to path
-export HOMEBREW_PREFIX="{{ .homebrew_prefix }}"
-export HOMEBREW_CELLAR="{{ .homebrew_cellar }}"
-export HOMEBREW_REPOSITORY="{{ .homebrew_repository }}"
-
-# Set up manuals and docs
-export MANPATH="$LOCAL/share/man:$HOMEBREW_PREFIX/share/man${MANPATH:+:$MANPATH}"
-export INFOPATH="$LOCAL/share/info:$HOMEBREW_PREFIX/share/info${INFOPATH:+:$INFOPATH}"
-
-# Set up FZF
-export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --exclude .git
---color=always"
-export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_DEFAULT_OPTS="--ansi"
+# Single source of truth for env vars: dot_config/bash/env.sh.tmpl (data in .chezmoi.toml.tmpl)
+source "{{ .xdg_config_home }}/bash/env.sh"
 
 # Helper: run a tool's init command once per binary version, caching to XDG_CACHE_HOME.
 # Mirrors the PowerShell profile's starship-init caching pattern.
@@ -99,14 +57,6 @@ safe_add_path() {
     fi
 }
 
-# Set path using safe_add_path (in reverse order for prepending)
-safe_add_path "{{ .ghc_bin }}" prepend
-safe_add_path "$CABAL_DIR/bin" prepend
-safe_add_path "$CARGO_HOME/bin" prepend
+# Paths not covered by env.sh's PATH
 safe_add_path "$HOMEBREW_PREFIX/opt/java/bin" prepend
-safe_add_path "$LOCAL/bin" prepend
-safe_add_path "$HOMEBREW_PREFIX/bin" prepend
-safe_add_path "$HOMEBREW_PREFIX/sbin" prepend
-
-# Add ASDF to path (always prepend if shims directory exists)
 safe_add_path "${ASDF_DATA_DIR:-$HOME/.asdf}/shims" prepend

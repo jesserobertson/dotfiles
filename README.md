@@ -178,17 +178,63 @@ pager = "less"
 git_pager = "delta"
 cargo_home = "~/.local/share/cargo"
 rustup_home = "~/.local/share/rustup"
-cabal_home = "~/.cabal"
-pixi_home = "~/.pixi"
+pixi_home = "~/.local/share/pixi"
+juliaup_home = "~/.local/share/juliaup"
+julia_depot_path = "~/.local/share/julia"
+ghcup_install_base_prefix = "~/.local/share"  # ghcup appends ".ghcup" itself
+# No cabal_home: cabal-install >=3.10 follows XDG_CONFIG_HOME/XDG_CACHE_HOME/
+# XDG_STATE_HOME on its own once CABAL_DIR is unset.
 ```
 
 ### Template Usage
 
-**Environment Variables:**
-```bash
-export XDG_CONFIG_HOME="{{ .xdg_config_home }}"
-export CARGO_HOME="{{ .cargo_home }}"
+**Environment Variables — single source of truth:**
+
+Which vars get exported (not just their values) is data-driven. `.chezmoi.toml.tmpl`
+declares two array-of-tables under `[data]`:
+
+```toml
+[[data.env_vars]]
+  name = "CARGO_HOME"
+  value = "/home/user/.local/share/cargo"
+# ...one entry per plain-value var (XDG dirs, tool homes, EDITOR/PAGER, fzf config, etc.)
+
+[[data.homebrew_env_vars]]
+  name = "HOMEBREW_PREFIX"
+  value = "/opt/homebrew"
+# ...Homebrew vars, kept separate since Windows/PowerShell has no Homebrew
 ```
+
+Bash, fish, and PowerShell each just `range` over these lists instead of
+hand-listing every variable:
+
+```bash
+# dot_config/bash/env.sh.tmpl
+{{- range .env_vars }}
+export {{ .name }}="{{ .value }}"
+{{- end }}
+```
+
+```fish
+# dot_config/fish/env.fish.tmpl
+{{- range .env_vars }}
+set -gx {{ .name }} "{{ .value }}"
+{{- end }}
+```
+
+```powershell
+# dot_config/powershell/profile.ps1.tmpl
+{{- range .env_vars }}
+[void](Set-EnvDefault {{ .name }} @("{{ .value }}"))
+{{- end }}
+```
+
+Adding a new variable means adding one `[[data.env_vars]]` entry — it then
+shows up in every shell automatically. `zsh` needs no entry at all since
+`dot_config/zsh/env.zsh.tmpl` just sources the rendered bash file. `PATH`,
+`MANPATH`, `INFOPATH`, and `SSH_AUTH_SOCK` are deliberately left hand-written
+per shell — each has real construction logic (separators, prepend order,
+empty-value skipping) that doesn't fit a flat name/value loop.
 
 **Conditional Logic:**
 ```ruby
@@ -291,8 +337,14 @@ Manages Fish shell plugins:
 
 - **Fish** (Primary shell): 119 custom functions, 9 completions
   - Git operations, project management, system utilities, text processing
-- **Bash/Zsh**: Templated configs using shared environment variables
-- **Common**: `dot_config/shell/env.sh.tmpl` (shared POSIX env vars sourced by bash/zsh)
+- **Bash/Zsh**: `dot_bashrc.tmpl`/`dot_zshrc.tmpl` source the shared env files below, then add shell-specific completions/prompt setup
+- **Common**: which vars get exported (bash/fish/PowerShell) is data-driven from
+  `.chezmoi.toml.tmpl`'s `[[data.env_vars]]`/`[[data.homebrew_env_vars]]` lists —
+  see [Template Usage](#template-usage). `dot_config/bash/env.sh.tmpl` is the
+  canonical POSIX file (`dot_config/zsh/env.zsh.tmpl` just sources it);
+  `dot_config/fish/env.fish.tmpl` and `dot_config/powershell/profile.ps1.tmpl`
+  each `range` over the same data in their own syntax. `PATH`/`MANPATH`/
+  `INFOPATH`/`SSH_AUTH_SOCK` stay hand-written per shell.
 
 #### Development Tools
 
@@ -434,9 +486,13 @@ bats tests/bats/install.bats tests/bats/shell-env.bats tests/bats/fish.bats
 chezmoi init --source="$PWD"   # needed once so template vars are available
 chezmoi execute-template < dot_bashrc.tmpl
 chezmoi execute-template < dot_zshrc.tmpl
+chezmoi execute-template < dot_config/bash/env.sh.tmpl
 chezmoi execute-template < dot_config/fish/env.fish.tmpl
+chezmoi execute-template < dot_config/powershell/profile.ps1.tmpl
 chezmoi execute-template < packages/brewfile.tmpl
 ```
+
+Or just `make test-templates`, which runs the same checks.
 
 ### What Gets Tested
 

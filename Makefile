@@ -45,7 +45,9 @@ test: test-templates test-docker  ## Run all tests
 test-templates:  ## Validate chezmoi templates render without errors
 	chezmoi execute-template < dot_bashrc.tmpl > /dev/null
 	chezmoi execute-template < dot_zshrc.tmpl > /dev/null
+	chezmoi execute-template < dot_config/bash/env.sh.tmpl > /dev/null
 	chezmoi execute-template < dot_config/fish/env.fish.tmpl > /dev/null
+	chezmoi execute-template < dot_config/powershell/profile.ps1.tmpl > /dev/null
 	chezmoi execute-template < packages/brewfile.tmpl > /dev/null
 	chezmoi execute-template < .chezmoiignore.tmpl > /dev/null
 	@echo "All templates OK"

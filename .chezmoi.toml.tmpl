@@ -55,10 +55,22 @@
   # Haskell environment (via Homebrew)
   ghc_home = {{ joinPath $homebrewPrefix "opt" "ghc@9.6" | quote }}
   ghc_bin = {{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" | quote }}
-  cabal_home = {{ joinPath .chezmoi.homeDir ".cabal" | quote }}
+  # No cabal_home/CABAL_DIR: cabal-install >=3.10 follows the XDG Base
+  # Directory spec on its own (config in XDG_CONFIG_HOME/cabal, cache in
+  # XDG_CACHE_HOME/cabal, store in XDG_STATE_HOME/cabal, installed
+  # executables in ~/.local/bin) as long as CABAL_DIR stays unset and no
+  # legacy ~/.cabal directory exists.
+
+  # Haskell environment (via ghcup, opt-in DOTFILES_FULL_INSTALL toolchain)
+  # ghcup always appends ".ghcup" to this prefix itself.
+  ghcup_install_base_prefix = {{ joinPath $localDir "share" | quote }}
 
   # Python environment (via pixi)
-  pixi_home = {{ joinPath .chezmoi.homeDir ".pixi" | quote }}
+  pixi_home = {{ joinPath $localDir "share" "pixi" | quote }}
+
+  # Julia environment (via juliaup)
+  juliaup_home = {{ joinPath $localDir "share" "juliaup" | quote }}
+  julia_depot_path = {{ joinPath $localDir "share" "julia" | quote }}
 
   # Homebrew paths (OS-aware)
   homebrew_prefix = {{ $homebrewPrefix | quote }}
@@ -82,6 +94,80 @@
   ssh_auth_sock = ""
   {{- end }}
 
+  # Vars valid on every platform (bash/zsh/fish AND PowerShell) — single
+  # source of truth for *which* vars each shell exports; see
+  # dot_config/bash/env.sh.tmpl, dot_config/fish/env.fish.tmpl and
+  # dot_config/powershell/profile.ps1.tmpl for the loops that consume this.
+  [[data.env_vars]]
+    name = "XDG_CONFIG_HOME"
+    value = {{ joinPath .chezmoi.homeDir ".config" | quote }}
+  [[data.env_vars]]
+    name = "XDG_DATA_HOME"
+    value = {{ joinPath $localDir "share" | quote }}
+  [[data.env_vars]]
+    name = "XDG_CACHE_HOME"
+    value = {{ joinPath .chezmoi.homeDir ".cache" | quote }}
+  [[data.env_vars]]
+    name = "XDG_STATE_HOME"
+    value = {{ joinPath $localDir "state" | quote }}
+  [[data.env_vars]]
+    name = "LOCAL"
+    value = {{ $localDir | quote }}
+  [[data.env_vars]]
+    name = "LOCAL_BIN"
+    value = {{ joinPath $localDir "bin" | quote }}
+  [[data.env_vars]]
+    name = "CONFIG"
+    value = {{ joinPath .chezmoi.homeDir ".config" | quote }}
+  [[data.env_vars]]
+    name = "RUSTUP_HOME"
+    value = {{ joinPath $localDir "share" "rustup" | quote }}
+  [[data.env_vars]]
+    name = "CARGO_HOME"
+    value = {{ joinPath $localDir "share" "cargo" | quote }}
+  [[data.env_vars]]
+    name = "PIXI_HOME"
+    value = {{ joinPath $localDir "share" "pixi" | quote }}
+  [[data.env_vars]]
+    name = "JULIAUP_HOME"
+    value = {{ joinPath $localDir "share" "juliaup" | quote }}
+  [[data.env_vars]]
+    name = "JULIA_DEPOT_PATH"
+    value = {{ joinPath $localDir "share" "julia" | quote }}
+  [[data.env_vars]]
+    name = "GHCUP_INSTALL_BASE_PREFIX"
+    value = {{ joinPath $localDir "share" | quote }}
+  [[data.env_vars]]
+    name = "EDITOR"
+    value = "hx"
+  [[data.env_vars]]
+    name = "PAGER"
+    value = "less"
+  [[data.env_vars]]
+    name = "GIT_PAGER"
+    value = "delta"
+  [[data.env_vars]]
+    name = "FZF_DEFAULT_COMMAND"
+    value = "fd --type file --color=always --follow --hidden --exclude .git"
+  [[data.env_vars]]
+    name = "FZF_CTRL_T_COMMAND"
+    value = "fd --type file --color=always --follow --hidden --exclude .git"
+  [[data.env_vars]]
+    name = "FZF_DEFAULT_OPTS"
+    value = "--ansi"
+
+  # Homebrew vars — only meaningful on mac/linux (bash/zsh/fish); PowerShell/Windows
+  # has no Homebrew, so this is a separate list that only those templates loop over.
+  [[data.homebrew_env_vars]]
+    name = "HOMEBREW_PREFIX"
+    value = {{ $homebrewPrefix | quote }}
+  [[data.homebrew_env_vars]]
+    name = "HOMEBREW_CELLAR"
+    value = {{ joinPath $homebrewPrefix "Cellar" | quote }}
+  [[data.homebrew_env_vars]]
+    name = "HOMEBREW_REPOSITORY"
+    value = {{ $homebrewPrefix | quote }}
+
 [data.cpu]
   cores = {{ $cpuCores }}
   threads = {{ $cpuThreads }}
@@ -98,10 +184,10 @@
 
 [scriptEnv]
 {{- if eq .chezmoi.os "darwin" }}
-    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath $localDir "share" "pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- else if eq .chezmoi.os "linux" }}
-    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath .chezmoi.homeDir ".pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath .chezmoi.homeDir ".cabal" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    PATH = "{{ joinPath $homebrewPrefix "bin" }}:{{ joinPath $homebrewPrefix "sbin" }}:{{ joinPath $localDir "share" "pixi" "bin" }}:{{ joinPath $localDir "share" "cargo" "bin" }}:{{ joinPath $homebrewPrefix "opt" "ghc@9.6" "bin" }}:{{ joinPath $localDir "bin" }}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 {{- else if eq .chezmoi.os "windows" }}
-    PATH = "{{ joinPath .chezmoi.homeDir ".local" "scoop" "shims" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir ".pixi" "bin" | replace "\\" "/" }};{{ joinPath $localDir "share" "cargo" "bin" | replace "\\" "/" }};{{ joinPath $localDir "bin" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WindowsApps" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WinGet" "Links" | replace "\\" "/" }};C:/Program Files/PowerShell/7;C:/Windows/System32;C:/Windows"
+    PATH = "{{ joinPath .chezmoi.homeDir ".local" "scoop" "shims" | replace "\\" "/" }};{{ joinPath $localDir "share" "pixi" "bin" | replace "\\" "/" }};{{ joinPath $localDir "share" "cargo" "bin" | replace "\\" "/" }};{{ joinPath $localDir "bin" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WindowsApps" | replace "\\" "/" }};{{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WinGet" "Links" | replace "\\" "/" }};C:/Program Files/PowerShell/7;C:/Windows/System32;C:/Windows"
 {{- end }}
 

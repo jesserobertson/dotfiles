@@ -2,17 +2,25 @@ Import-Module "$PSScriptRoot/functions.psm1"
 Import-Module "$PSScriptRoot/gittools.psm1"
 
 # Use XDG base dirs so tools like Neovim find config in ~/.config rather than AppData
+# XDG_DATA_HOME is captured into $DataHome (reused below for PsModulePath/paths),
+# so it stays hand-written rather than folded into the .env_vars loop.
 $DataHome = Set-EnvDefault XDG_DATA_HOME   @($HOME, ".local", "share")
-[void](Set-EnvDefault XDG_CONFIG_HOME @($HOME, ".config"))
-[void](Set-EnvDefault XDG_STATE_HOME  @($HOME, ".local", "state"))
-[void](Set-EnvDefault XDG_CACHE_HOME  @($HOME, ".cache"))
-[void](Set-EnvDefault SCOOP           @($HOME, ".local", "scoop"))
+[void](Set-EnvDefault SCOOP @($HOME, ".local", "scoop"))
+
+# Vars defined once in .chezmoi.toml.tmpl's [[data.env_vars]] — add a new var
+# there, not here. (No .homebrew_env_vars loop: Windows has no Homebrew.)
+{{- range .env_vars }}
+[void](Set-EnvDefault {{ .name }} @("{{ .value }}"))
+{{- end }}
+
+# 1Password SSH agent (named pipe — same tool, Windows-native transport)
+[void](Set-EnvDefault SSH_AUTH_SOCK @("\\.\pipe\openssh-ssh-agent"))
 
 # Set Zed as default editor
 # Set-Item "env:EDITOR" "zed --wait"
 # Set-Item "env:VISUAL" "zed --wait"
 
-# Set helix as default editor
+# Set helix as default editor — same as bash/zsh/fish's .editor
 Set-Item "env:EDITOR" hx
 Set-Item "env:VISUAL" hx
 
@@ -26,10 +34,11 @@ if (-not ($env:PsModulePath -split [IO.Path]::PathSeparator -contains $ModuleHom
 # Add paths — first item in the list ends up first in PATH
 $paths = @(
     [IO.Path]::Combine($DataHome, "powershell", "bin"),
-    [IO.Path]::Combine($HOME, ".local", "bin"),
+    $env:LOCAL_BIN,
     [IO.Path]::Combine($HOME, ".local", "scoop", "shims"),
-    [IO.Path]::Combine($HOME, ".pixi", "bin"),
-    [IO.Path]::Combine($HOME, ".local", "share", "cargo", "bin"),
+    [IO.Path]::Combine($env:PIXI_HOME, "bin"),
+    [IO.Path]::Combine($env:JULIAUP_HOME, "bin"),
+    [IO.Path]::Combine($env:CARGO_HOME, "bin"),
     [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links"),
     # Git for Windows — winget installs here but doesn't always create a WinGet shim
     "C:\Program Files\Git\cmd"
