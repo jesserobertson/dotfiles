@@ -6,3 +6,5 @@ tests/bats/helpers/setup.bash
 .claude
 coverage.xml
 pester-results.xml
+.superpowers/
+docs/superpowers/
