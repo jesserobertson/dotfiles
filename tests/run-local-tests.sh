@@ -32,10 +32,11 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  -q, --quick           Run quick validation tests (fastest, ~5 seconds)"
+    echo "  -q, --quick           Run syntax.bats/templates.bats/repo-hygiene.bats (fastest, ~5 seconds)"
     echo "  -t, --test SUITE      Run specific test suite (default: all)"
     if [ "$BATS_AVAILABLE" = true ]; then
-        echo "                        Available (bats): developer-layout, shell-env"
+        echo "                        Available (bats): install, shell-env, fish, syntax, templates,"
+        echo "                        repo-hygiene, developer-layout, tmux-scripts"
     else
         echo "                        Available (legacy): developer-layout, shell-env"
         echo "                        Note: Install bats-core for improved test experience"
@@ -179,13 +180,11 @@ run_all_legacy_tests() {
 main() {
     # Run quick tests if requested
     if [ "$QUICK_MODE" = true ]; then
-        local quick_test="$SCRIPT_DIR/quick-test.sh"
-        if [ -x "$quick_test" ]; then
-            exec "$quick_test"
-        else
-            error "Quick test script not found or not executable: $quick_test"
+        if ! command -v bats >/dev/null 2>&1; then
+            error "bats-core not found. Install with: brew install bats-core"
             exit 1
         fi
+        exec bats "$BATS_DIR/syntax.bats" "$BATS_DIR/templates.bats" "$BATS_DIR/repo-hygiene.bats"
     fi
 
     echo ""
