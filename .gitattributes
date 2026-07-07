@@ -1,0 +1,6 @@
+# Force LF line endings for all text files regardless of platform/autocrlf
+# settings. This repo has no binary assets, and scripts/templates rendered
+# or executed by bash/zsh/fish/PowerShell all tolerate LF; CRLF creeping in
+# via a Windows checkout breaks bash parsing (e.g. inside Docker test
+# containers) and diffs noisily.
+* text=auto eol=lf
