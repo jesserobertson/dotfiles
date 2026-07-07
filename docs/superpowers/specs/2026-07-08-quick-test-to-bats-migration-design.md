@@ -80,6 +80,10 @@ behavior rather than hand-listing every file as a separate `@test`):
   `homebrew_env_vars` blocks
 - `bash and fish templates loop over env_vars` — no chezmoi dependency,
   always runs; static grep for `range .env_vars` in both templates
+- `dot_bashrc.tmpl and dot_zshrc.tmpl source the shared env file` — no
+  chezmoi dependency, always runs; carried over from `quick-test.sh`'s
+  existing check (missed in an earlier draft of this spec, added back during
+  plan self-review — see the implementation plan's Task 2)
 
 Splitting the chezmoi-dependent rendered check from the always-on static
 check (rather than one test with runtime branching, as `quick-test.sh` does
