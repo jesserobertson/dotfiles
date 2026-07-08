@@ -69,12 +69,14 @@ Three jobs in `.github/workflows/test-dotfiles.yml`:
 | `run_onchange_after_00-install-brews.sh.tmpl` | brewfile hash | `brew bundle install` |
 | `run_onchange_after_01-install-rust.fish.tmpl` | toolchain marker | rustup + stable/nightly |
 | `run_onchange_after_02-install-crates.fish.tmpl` | cratefile hash | `cargo install` |
-| `run_onchange_after_03-install-pixi.sh.tmpl` | package marker | pixi global install |
-| `run_onchange_after_04-install-skills.fish.tmpl` | marker | Claude Code skills |
-| `run_onchange_after_05-install-mcp-servers.fish.tmpl` | marker | MCP setup (macOS only) |
+| `run_onchange_after_03-install-extras.sh.tmpl` | pixi/skillfile/mcp-servers hashes (independent, bundled in one script) | pixi global install + Claude Code skills + MCP servers (macOS only) |
 | `run_once_after_06-install-tmux-plugins.sh.tmpl` | once | TPM install |
-| `run_onchange_after_07-setup-powershell.ps1` | — | wire `$PROFILE` (Windows only) |
+| `run_onchange_after_07-setup-powershell.ps1.tmpl` | — | wire `$PROFILE` (Windows only) |
 | `run_onchange_windows_install-packages.ps1.tmpl` | scoop+crate hash | Scoop + cargo (Windows only) |
 
-All Unix scripts use `{{- if eq .chezmoi.os "windows" -}}#!/bin/sh\nexit 0{{- else -}}` guard so they exit harmlessly on Windows. The PowerShell script is excluded via `.chezmoiignore.tmpl` on non-Windows (avoids requiring `pwsh` on macOS/Linux).
+Unix-only scripts and Windows-only scripts are mutually excluded via `.chezmoiignore.tmpl`'s
+target-filename matching (`{{- if eq .chezmoi.os "windows" }}...target names...{{ end -}}` and
+the inverse), not a per-script runtime OS guard — the actual target filename (after chezmoi
+strips the `run_onchange_after_NN-`/`.tmpl` parts, e.g. `03-install-extras.sh`) must be kept in
+sync with that ignore list whenever one of these scripts is renamed.
 

@@ -96,9 +96,7 @@ Chezmoi uses special prefixes to control how files are processed:
 ├── run_onchange_after_00-install-brews.sh.tmpl   # brew bundle (re-runs when brewfile changes)
 ├── run_onchange_after_01-install-rust.fish.tmpl  # rustup + stable/nightly
 ├── run_onchange_after_02-install-crates.fish.tmpl # cargo install (re-runs when cratefile changes)
-├── run_onchange_after_03-install-pixi.sh.tmpl    # pixi global install
-├── run_onchange_after_04-install-skills.fish.tmpl # Claude Code skills
-├── run_onchange_after_05-install-mcp-servers.fish.tmpl # MCP setup (macOS only)
+├── run_onchange_after_03-install-extras.sh.tmpl  # pixi + Claude Code skills + MCP servers (macOS-only), each re-runs independently on its own source hash
 ├── run_once_after_06-install-tmux-plugins.sh.tmpl # TPM install (once)
 ├── run_onchange_after_07-setup-powershell.ps1.tmpl # Wire $PROFILE (Windows only)
 ├── run_onchange_windows_install-packages.ps1.tmpl # Scoop + cargo crates (Windows only)
@@ -308,7 +306,7 @@ Manages global Python tools via conda-forge in isolated environments:
 - **python env**: python, uv, ruff, mypy
 - **requests env**: requests
 
-**Managed via**: `scripts/install-pixi.sh` (run automatically on `chezmoi apply` via `run_onchange_after_03`)
+**Managed via**: `scripts/install-pixi.sh` (run automatically on `chezmoi apply` via `run_onchange_after_03-install-extras.sh.tmpl`, bundled with Claude Code skills and MCP server setup)
 
 All packages are installed in `~/.pixi/bin` and automatically added to PATH.
 

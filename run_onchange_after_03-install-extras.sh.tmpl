@@ -1,0 +1,21 @@
+#!/bin/bash
+set -uo pipefail
+# Independent, order-agnostic installs bundled into one run_onchange_ script
+# since none of the three has any real ordering dependency on the others (or
+# on brews/rust/crates before it). Each step's own source is hashed below so
+# this script's rendered content — and therefore chezmoi's re-run trigger —
+# actually changes when what it installs changes, rather than only on a
+# manual edit to this file.
+# pixi packages hash: {{ include "scripts/install-pixi.sh" | sha256sum }}
+# skillfile hash: {{ include "dot_claude/skillfile" | sha256sum }}
+# mcp servers hash: {{ include "scripts/install-mcp-servers.fish" | sha256sum }}
+
+# Run all three even if one fails, so an unrelated failure (e.g. no network
+# for one npx package) doesn't block the other two — but still report
+# overall failure so chezmoi surfaces it.
+failed=0
+bash "{{ .chezmoi.sourceDir }}/scripts/install-pixi.sh" || failed=1
+fish "{{ .chezmoi.sourceDir }}/scripts/install-skills.fish" || failed=1
+fish "{{ .chezmoi.sourceDir }}/scripts/install-mcp-servers.fish" || failed=1
+
+exit $failed

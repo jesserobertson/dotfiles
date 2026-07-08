@@ -11,7 +11,7 @@ Claude Code configuration is managed in two main ways:
 **Skills** are GitHub repositories that extend Claude Code with custom capabilities, agents, and workflows.
 
 - **Configuration**: `skillfile` - List of GitHub URLs for skills to install
-- **Installation**: Automatic via `run_onchange_after_04-install-skills.fish.tmpl`
+- **Installation**: Automatic via `run_onchange_after_03-install-extras.sh.tmpl` (bundled with pixi and MCP server setup)
 - **Location**: Installed to `~/.claude/skills/`
 - **Updates**: Skills are automatically updated when you run `chezmoi apply`
 
@@ -46,8 +46,8 @@ More skills available at:
 
 **MCP Servers** provide Claude Code with access to external tools and data sources.
 
-- **Configuration**: `settings.json.tmpl` - Template for main settings file
-- **Installation**: Platform-specific via `run_onchange_after_05-install-mcp-servers.fish.tmpl`
+- **Configuration**: hardcoded in `scripts/install-mcp-servers.fish` (no separate settings.json.tmpl exists in this repo today)
+- **Installation**: Platform-specific via `run_onchange_after_03-install-extras.sh.tmpl` (bundled with pixi and Claude Code skills)
 - **Location**: Configured in `~/.claude/settings.json`
 
 #### Configured MCP Servers
@@ -60,9 +60,8 @@ More skills available at:
 
 #### Adding New MCP Servers
 
-1. Edit `settings.json.tmpl` to add server configuration
-2. Add installation logic to `run_onchange_after_05-install-mcp-servers.fish.tmpl` if needed
-3. Run `chezmoi apply`
+1. Add installation logic to `scripts/install-mcp-servers.fish`
+2. Run `chezmoi apply`
 
 Example MCP server configuration:
 ```json
@@ -78,17 +77,18 @@ Example MCP server configuration:
 
 ### Installation Flow
 
-1. **Skills Installation** (`run_onchange_after_04-install-skills.fish.tmpl`):
-   - Triggered when `skillfile` changes (detected via hash)
+1. **Skills Installation** (`run_onchange_after_03-install-extras.sh.tmpl`):
+   - Triggered when `skillfile` changes (real content hash, not just a marker)
    - Clones new skills from GitHub
    - Updates existing skills with `git pull`
    - Skills remain as git repositories for easy development
 
-2. **MCP Server Setup** (`run_onchange_after_05-install-mcp-servers.fish.tmpl`):
-   - Triggered when `settings.json.tmpl` changes
+2. **MCP Server Setup** (`run_onchange_after_03-install-extras.sh.tmpl`):
+   - Triggered when `scripts/install-mcp-servers.fish` itself changes (real content hash)
    - Verifies dependencies (e.g., Node.js for Things MCP)
    - Tests MCP server installation
    - Platform-specific setup (currently macOS only)
+   - Bundled in the same script as skills/pixi installs, but runs independently even if one of the others fails
 
 3. **Settings Application** (`settings.json.tmpl`):
    - Templated to support platform-specific configuration
