@@ -376,53 +376,33 @@ jobs:
           }
           Write-Host "All expected tools found on PATH"
 
-      - name: Verify Rust installed to the declared location, not scoop's persist dir
+      - name: Verify no legacy .cargo/.rustup dirs (rust install location regression guard)
         shell: pwsh
         run: |
-          # Regression guard: packages/scoopfile.full deliberately omits rustup
-          # (see its comment) because scoop's rustup package hardcodes
-          # CARGO_HOME/RUSTUP_HOME to its own persist dir, silently overriding
-          # whatever this repo declares. This is a fresh runner, so if
-          # ~/.cargo or ~/.rustup exist, or the toolchain isn't under
-          # .local/share/*, something reintroduced that path (e.g.
-          # `main/rustup` crept back into scoopfile.full).
-          #
-          # Checked via filesystem state, not $env:CARGO_HOME/RUSTUP_HOME:
-          # those were only ever set inside chezmoi's child-process scripts
-          # in the previous step and don't propagate to this one.
-          $expectedCargoBin = Join-Path $HOME ".local" "share" "cargo" "bin"
-          $expectedRustupToolchains = Join-Path $HOME ".local" "share" "rustup" "toolchains"
-          $failed = $false
-
-          if (-not (Test-Path $expectedCargoBin)) {
-            Write-Error "$expectedCargoBin does not exist - cargo did not install to the declared CARGO_HOME"
-            $failed = $true
-          }
-          if (-not (Test-Path $expectedRustupToolchains)) {
-            Write-Error "$expectedRustupToolchains does not exist - rustup did not install to the declared RUSTUP_HOME"
-            $failed = $true
-          }
-
+          # scripts/install-rust.ps1 skips the actual install when $env:CI is
+          # set (mirroring install-rust.fish's same CI skip), so this job
+          # never installs a real toolchain - can't assert cargo/rustup exist
+          # or are on PATH here. What this CAN and does assert: packages/
+          # scoopfile.full deliberately omits rustup (see its comment)
+          # because scoop's rustup package hardcodes CARGO_HOME/RUSTUP_HOME
+          # to its own persist dir via env_set, which runs regardless of
+          # $env:CI. So if `main/rustup` ever creeps back into
+          # scoopfile.full, ~/.cargo and ~/.rustup WOULD appear on this
+          # fresh runner even with the install itself skipped - that's
+          # exactly the regression this guards against.
           $legacyCargo = Join-Path $HOME ".cargo"
           $legacyRustup = Join-Path $HOME ".rustup"
+          $failed = $false
+
           if (Test-Path $legacyCargo) {
-            Write-Error "$legacyCargo exists - rust installed to the wrong (default) location"
+            Write-Error "$legacyCargo exists - something installed rust to the wrong (default) location"
             $failed = $true
           }
           if (Test-Path $legacyRustup) {
-            Write-Error "$legacyRustup exists - rust installed to the wrong (default) location"
-            $failed = $true
-          }
-
-          if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
-            Write-Error "cargo not found on PATH"
-            $failed = $true
-          }
-          if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) {
-            Write-Error "rustup not found on PATH"
+            Write-Error "$legacyRustup exists - something installed rust to the wrong (default) location"
             $failed = $true
           }
 
           if ($failed) { exit 1 }
-          Write-Host "Rust correctly installed under $HOME\.local\share (cargo/rustup), no legacy .cargo/.rustup dirs"
+          Write-Host "No legacy .cargo/.rustup dirs - packages/scoopfile.full still doesn't install rustup via scoop"
 
