@@ -334,6 +334,23 @@ jobs:
           echo "$scoopShims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "$cargoBin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+          # Most scoop packages expose their binary via a shim in $scoopShims
+          # above, but some add their own app directory straight to PATH
+          # instead (observed for starship - scoop printed "Adding ... to
+          # your path" rather than "Creating shim for 'starship'", which only
+          # updates the *live* Windows PATH, not $GITHUB_PATH). Add every
+          # installed scoop app's "current" dir defensively so this doesn't
+          # depend on which mechanism a given package's manifest happens to use.
+          $scoopAppsRoot = Join-Path $HOME ".local" "scoop" "apps"
+          if (Test-Path $scoopAppsRoot) {
+            Get-ChildItem -Path $scoopAppsRoot -Directory | ForEach-Object {
+              $currentDir = Join-Path $_.FullName "current"
+              if (Test-Path $currentDir) {
+                echo "$currentDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+              }
+            }
+          }
+
       - name: Verify installation
         shell: pwsh
         env:
