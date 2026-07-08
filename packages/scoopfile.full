@@ -1,8 +1,14 @@
 # Heavy/opt-in Scoop packages (Windows equivalent of the opt-in Brewfile
 # toolchains) — installed only when DOTFILES_FULL_INSTALL=1 is set.
 # Format: [bucket/]package — all from the default 'main' bucket
+#
+# Not listed: rustup. Scoop's rustup package hardcodes CARGO_HOME/RUSTUP_HOME
+# to its own persist directory via the package manifest's env_set (re-applied
+# on every scoop update), which fights our own declared values. Installed
+# instead via scripts/install-rust.ps1 (rustup-init.exe directly, respecting
+# our CARGO_HOME/RUSTUP_HOME), mirroring how scripts/install-rust.fish
+# installs it on Unix via sh.rustup.rs.
 
 main/nodejs
-main/rustup
 main/ghcup
 main/go

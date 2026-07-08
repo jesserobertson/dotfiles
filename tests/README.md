@@ -75,7 +75,8 @@ tests/
 │       ├── setup.bash             # Shared tmux test helpers
 │       └── brew.bash              # Homebrew env setup for bats
 ├── powershell/                     # Pester unit tests (Windows)
-│   └── functions.Tests.ps1
+│   ├── functions.Tests.ps1
+│   └── install-rust.Tests.ps1     # Get-RustupTargetTriple/Get-DefaultRustHomes from scripts/install-rust.ps1
 └── docker/                         # Docker E2E tests
     └── ubuntu/
         ├── Dockerfile

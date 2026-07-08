@@ -117,7 +117,8 @@ Chezmoi uses special prefixes to control how files are processed:
 │   ├── install-prereqs.sh            # Homebrew + 1Password (macOS/Linux)
 │   ├── install-prereqs.ps1           # Winget bootstrap (Windows)
 │   ├── install-brew.sh               # brew bundle install
-│   ├── install-rust.fish             # rustup + toolchains
+│   ├── install-rust.fish             # rustup + toolchains (macOS/Linux)
+│   ├── install-rust.ps1              # rustup-init.exe direct install (Windows, not scoop)
 │   ├── install-crates.fish           # cargo install from cratefile
 │   ├── install-crates.ps1            # cargo install (Windows)
 │   ├── install-pixi.sh               # pixi global install
@@ -274,6 +275,15 @@ always installed regardless of tier, since several other scripts depend on it.
 macOS GUI casks (Raycast, Chromium, Anki, Ghostty, fonts, etc.) are a fourth,
 separate concern — they install on a real machine but are always skipped in
 CI, independent of the flags above.
+
+**Rust on Windows is the one exception to "everything is a scoop/brew
+package":** `scripts/install-rust.ps1` runs `rustup-init.exe` directly rather
+than `scoop install rustup`, because scoop's rustup package manifest
+hardcodes `CARGO_HOME`/`RUSTUP_HOME` to its own persist directory (re-applied
+on every `scoop update`), which would silently override the
+`~/.local/share/cargo` / `~/.local/share/rustup` this repo declares
+everywhere else. `packages/scoopfile.full` intentionally omits `rustup` for
+this reason.
 
 ### Homebrew (Primary Package Manager)
 
@@ -521,7 +531,8 @@ tests/
 │   ├── fish.bats                 # Fish-specific startup and config tests
 │   └── helpers/                  # brew env setup, bats-support/assert loaders
 ├── powershell/                   # Pester unit tests (Windows)
-│   └── functions.Tests.ps1
+│   ├── functions.Tests.ps1
+│   └── install-rust.Tests.ps1
 └── docker/
     └── ubuntu/
         ├── Dockerfile

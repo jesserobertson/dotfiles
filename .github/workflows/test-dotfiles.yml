@@ -326,11 +326,13 @@ jobs:
         run: |
           chezmoi init --source="$env:GITHUB_WORKSPACE" --apply
 
-          # scoop shims aren't persisted to $GITHUB_PATH by the run_ script
-          # (it only updates its own process's PATH), so add them here for
-          # the verification step below.
+          # scoop shims and cargo/bin aren't persisted to $GITHUB_PATH by the
+          # run_ script (it only updates its own child process's PATH), so
+          # add them here for the verification steps below.
           $scoopShims = Join-Path $HOME ".local" "scoop" "shims"
+          $cargoBin = Join-Path $HOME ".local" "share" "cargo" "bin"
           echo "$scoopShims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$cargoBin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Verify installation
         shell: pwsh
@@ -356,4 +358,54 @@ jobs:
             exit 1
           }
           Write-Host "All expected tools found on PATH"
+
+      - name: Verify Rust installed to the declared location, not scoop's persist dir
+        shell: pwsh
+        run: |
+          # Regression guard: packages/scoopfile.full deliberately omits rustup
+          # (see its comment) because scoop's rustup package hardcodes
+          # CARGO_HOME/RUSTUP_HOME to its own persist dir, silently overriding
+          # whatever this repo declares. This is a fresh runner, so if
+          # ~/.cargo or ~/.rustup exist, or the toolchain isn't under
+          # .local/share/*, something reintroduced that path (e.g.
+          # `main/rustup` crept back into scoopfile.full).
+          #
+          # Checked via filesystem state, not $env:CARGO_HOME/RUSTUP_HOME:
+          # those were only ever set inside chezmoi's child-process scripts
+          # in the previous step and don't propagate to this one.
+          $expectedCargoBin = Join-Path $HOME ".local" "share" "cargo" "bin"
+          $expectedRustupToolchains = Join-Path $HOME ".local" "share" "rustup" "toolchains"
+          $failed = $false
+
+          if (-not (Test-Path $expectedCargoBin)) {
+            Write-Error "$expectedCargoBin does not exist - cargo did not install to the declared CARGO_HOME"
+            $failed = $true
+          }
+          if (-not (Test-Path $expectedRustupToolchains)) {
+            Write-Error "$expectedRustupToolchains does not exist - rustup did not install to the declared RUSTUP_HOME"
+            $failed = $true
+          }
+
+          $legacyCargo = Join-Path $HOME ".cargo"
+          $legacyRustup = Join-Path $HOME ".rustup"
+          if (Test-Path $legacyCargo) {
+            Write-Error "$legacyCargo exists - rust installed to the wrong (default) location"
+            $failed = $true
+          }
+          if (Test-Path $legacyRustup) {
+            Write-Error "$legacyRustup exists - rust installed to the wrong (default) location"
+            $failed = $true
+          }
+
+          if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+            Write-Error "cargo not found on PATH"
+            $failed = $true
+          }
+          if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) {
+            Write-Error "rustup not found on PATH"
+            $failed = $true
+          }
+
+          if ($failed) { exit 1 }
+          Write-Host "Rust correctly installed under $HOME\.local\share (cargo/rustup), no legacy .cargo/.rustup dirs"
 

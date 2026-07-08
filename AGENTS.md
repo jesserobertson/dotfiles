@@ -32,7 +32,10 @@ All template data lives in `.chezmoi.toml.tmpl`. Key variables:
 - `.editor` — default shell editor (currently `hx` / helix)
 - `.homebrew_prefix` — `/opt/homebrew` (macOS arm64), `/usr/local` (macOS x86), `/home/linuxbrew/.linuxbrew` (Linux)
 - `.ssh_auth_sock` — 1Password agent path; **empty string on Linux** so always guard with `{{- if .ssh_auth_sock }}`
-- `.cargo_home` — `~/.local/share/cargo` (not `~/.cargo`)
+- `.cargo_home` — `~/.local/share/cargo` (not `~/.cargo`). True on Windows too, but only
+  because rust installs via `scripts/install-rust.ps1` (`rustup-init.exe` directly) instead
+  of `scoop install rustup` — scoop's rustup package hardcodes CARGO_HOME/RUSTUP_HOME to its
+  own persist dir and re-applies that on every update, which would silently win over this value
 - `.xdg_*` — XDG base dirs baked in at render time
 
 ## Shell conventions
@@ -72,7 +75,7 @@ Three jobs in `.github/workflows/test-dotfiles.yml`:
 | `run_onchange_after_03-install-extras.sh.tmpl` | pixi/skillfile/mcp-servers hashes (independent, bundled in one script) | pixi global install + Claude Code skills + MCP servers (macOS only) |
 | `run_once_after_06-install-tmux-plugins.sh.tmpl` | once | TPM install |
 | `run_onchange_after_07-setup-powershell.ps1.tmpl` | — | wire `$PROFILE` (Windows only) |
-| `run_onchange_windows_install-packages.ps1.tmpl` | scoop+crate hash | Scoop + cargo (Windows only) |
+| `run_onchange_windows_install-packages.ps1.tmpl` | scoop+rust script+crate hash | Scoop + rustup-init.exe + cargo (Windows only) |
 
 Unix-only scripts and Windows-only scripts are mutually excluded via `.chezmoiignore.tmpl`'s
 target-filename matching (`{{- if eq .chezmoi.os "windows" }}...target names...{{ end -}}` and

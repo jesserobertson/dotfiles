@@ -9,12 +9,12 @@ if ($env:CI) {
 }
 
 if (-not $env:CARGO_HOME)  { $env:CARGO_HOME  = Join-Path $HOME ".local" "share" "cargo" }
-if (-not $env:RUSTUP_HOME) { $env:RUSTUP_HOME = Join-Path $HOME ".rustup" }
+if (-not $env:RUSTUP_HOME) { $env:RUSTUP_HOME = Join-Path $HOME ".local" "share" "rustup" }
 $cargoBin = Join-Path $env:CARGO_HOME "bin"
 if ($env:PATH -notlike "*$cargoBin*") { $env:PATH = "$cargoBin;$env:PATH" }
 
 if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
-    Write-Error "cargo not found. Ensure Rust is installed (scoop install rustup && rustup-init -y)"
+    Write-Error "cargo not found. Ensure Rust is installed first (make rust, or run scripts/install-rust.ps1)"
     exit 1
 }
 

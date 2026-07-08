@@ -17,10 +17,18 @@ brew:  ## Install Homebrew packages from Brewfile
 	bash scripts/install-brew.sh
 
 rust:  ## Install Rust toolchain via rustup
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File scripts/install-rust.ps1
+else
 	fish scripts/install-rust.fish
+endif
 
 crates:  ## Install Rust crates
+ifeq ($(OS),Windows_NT)
+	powershell -ExecutionPolicy Bypass -File scripts/install-crates.ps1
+else
 	fish scripts/install-crates.fish
+endif
 
 python:  ## Sync pixi global environments
 	fish scripts/install-python.fish
