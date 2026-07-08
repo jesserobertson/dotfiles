@@ -260,7 +260,7 @@ environment variables (set before running `chezmoi apply`/`chezmoi init`):
 | Tier | Packages | Default behavior | Controlled by |
 |------|----------|-------------------|----------------|
 | **Core** | Shell/dev essentials — `bat`, `chezmoi`, `direnv`, `eza`, `fd`, `fish`, `fzf`, `git`, `git-delta`, `gh`, `jq`, `just`, `neovim`, `pixi`, `ripgrep`, `starship`, `tmux`, `zoxide`, etc. (Windows equivalents via scoop: `starship`, `zoxide`, `fzf`, `ripgrep`, `fd`, `bat`, `delta`, `yq`, `helix`, `gh`, `aws`, `pixi`, ...) | Always installed | — |
-| **Heavy CLI tools** | `awscli`, `bats-core`, `cmake`, `coreutils`, `git-flow`, `gnupg`, `htop`, `juliaup`, `llm`, `openjdk`, `pandoc`, `roborev` | Installed on a real machine; skipped in Docker containers or CI | `HOMEBREW_SKIP_HEAVY=1` to skip (CI-only knob — you shouldn't need this) |
+| **Heavy CLI tools** | `awscli`, `bats-core`, `cmake`, `coreutils`, `gnupg`, `htop`, `juliaup`, `llm`, `openjdk`, `pandoc`, `roborev` | Installed on a real machine; skipped in Docker containers or CI | `HOMEBREW_SKIP_HEAVY=1` to skip (CI-only knob — you shouldn't need this) |
 | **Heavy toolchains** | `llvm`, `nodejs`, `golang`, `ghcup`, `rustup` | Skipped everywhere by default, even on a real machine, since they're slow and not always needed right after a fresh apply | `DOTFILES_FULL_INSTALL=1` to install |
 
 ```sh
