@@ -100,7 +100,7 @@ Chezmoi uses special prefixes to control how files are processed:
 ├── run_onchange_after_04-install-skills.fish.tmpl # Claude Code skills
 ├── run_onchange_after_05-install-mcp-servers.fish.tmpl # MCP setup (macOS only)
 ├── run_once_after_06-install-tmux-plugins.sh.tmpl # TPM install (once)
-├── run_onchange_after_07-setup-powershell.ps1    # Wire $PROFILE (Windows only)
+├── run_onchange_after_07-setup-powershell.ps1.tmpl # Wire $PROFILE (Windows only)
 ├── run_onchange_windows_install-packages.ps1.tmpl # Scoop + cargo crates (Windows only)
 │
 ├── dot_bashrc.tmpl                   # Bash config
@@ -125,14 +125,13 @@ Chezmoi uses special prefixes to control how files are processed:
 │   ├── install-pixi.sh               # pixi global install
 │   ├── install-skills.fish           # Claude Code skills
 │   ├── install-mcp-servers.fish      # MCP servers (macOS)
-│   ├── install-winget-packages.ps1   # Bulk winget install (Windows)
+│   ├── setup-powershell.ps1          # Wire $PROFILE (Windows)
 │   └── update-tmux.sh                # TPM install
 │
 ├── dot_config/
 │   ├── fish/                         # Fish shell config and functions
-│   ├── bash/                         # Bash-specific config
+│   ├── bash/                         # Bash config; env.sh.tmpl is the single source of truth for env vars (zsh sources it)
 │   ├── zsh/                          # Zsh-specific config
-│   ├── shell/                        # Shared POSIX env vars (sourced by bash/zsh)
 │   ├── powershell/                   # PowerShell profile and functions (Windows)
 │   ├── alacritty/                    # Terminal emulator
 │   ├── bat/                          # Syntax highlighter

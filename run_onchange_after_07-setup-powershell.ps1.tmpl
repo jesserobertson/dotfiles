@@ -1,0 +1,3 @@
+# Wire the PowerShell $PROFILE to the chezmoi-managed file. Delegates to
+# scripts/setup-powershell.ps1, which already no-ops on non-Windows.
+& "{{ .chezmoi.sourceDir }}/scripts/setup-powershell.ps1"
