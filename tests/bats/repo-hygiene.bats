@@ -63,3 +63,18 @@ REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     cd "$REPO_ROOT"
     ! git ls-files --others --exclude-standard dot_config/fish/conf.d/ | grep -q .
 }
+
+# ── Package declaration hygiene ─────────────────────────────────────────────
+
+@test "packages/scoopfile.full does not install rustup via scoop" {
+    # Regression guard: scoop's rustup package hardcodes CARGO_HOME/RUSTUP_HOME
+    # to its own persist dir via the package manifest's env_set (re-applied on
+    # every scoop update), silently overriding the ~/.local/share/cargo and
+    # ~/.local/share/rustup this repo declares everywhere else. Rust installs
+    # instead via scripts/install-rust.ps1 (rustup-init.exe directly). A CI
+    # runtime check for this doesn't work: windows-latest runners ship with
+    # Rust pre-installed at ~/.cargo/~/.rustup regardless of anything this repo
+    # does, so "the wrong dirs don't exist" can't be asserted at runtime - this
+    # static check on the source of truth is the real guard.
+    ! grep -qE '^\s*main/rustup\s*$' "$REPO_ROOT/packages/scoopfile.full"
+}
