@@ -318,7 +318,9 @@ Manages global Python tools via conda-forge in isolated environments:
 
 **Managed via**: `scripts/install-pixi.sh` (run automatically on `chezmoi apply` via `run_onchange_after_03-install-extras.sh.tmpl`, bundled with Claude Code skills and MCP server setup)
 
-All packages are installed in `~/.pixi/bin` and automatically added to PATH.
+All packages are installed in `~/.local/share/pixi/bin` (`$PIXI_HOME/bin` — see `pixi_home`
+above; PIXI_HOME redirects pixi away from its own un-redirected default) and automatically
+added to PATH.
 
 ### Cabal (Haskell Packages)
 
@@ -450,7 +452,7 @@ make crates
 ```
 
 **Python packages (via pixi):**
-Edit `~/.pixi/manifests/pixi-global.toml` and run:
+Edit `~/.local/share/pixi/manifests/pixi-global.toml` (`$PIXI_HOME/manifests/pixi-global.toml`) and run:
 ```sh
 make python
 ```

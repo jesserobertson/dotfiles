@@ -66,6 +66,23 @@ REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 
 # ── Package declaration hygiene ─────────────────────────────────────────────
 
+@test "no stale ~/.pixi references outside containers/" {
+    # Regression guard: .chezmoi.toml.tmpl redirects PIXI_HOME to
+    # ~/.local/share/pixi, so pixi's own default of ~/.pixi (binary root AND
+    # global env root) is never where anything actually lands once dotfiles
+    # are applied. That redirect happens in one template file; nothing else
+    # re-derives it, so docs/scripts that spell out "~/.pixi" by hand silently
+    # go stale the moment someone edits pixi_home - as README.md and
+    # install-python.fish both did. containers/ is exempt: those Dockerfiles
+    # install pixi before PIXI_HOME is ever set, so ~/.pixi (really /root/.pixi)
+    # is genuinely correct there.
+    ! grep -rE '(~|\$HOME)/\.pixi(/|$| )' "$REPO_ROOT" \
+        --include="*.md" --include="*.sh" --include="*.fish" --include="*.tmpl" \
+        2>/dev/null \
+        | grep -v "^$REPO_ROOT/containers/" \
+        | grep -q .
+}
+
 @test "packages/scoopfile.full does not install rustup via scoop" {
     # Regression guard: scoop's rustup package hardcodes CARGO_HOME/RUSTUP_HOME
     # to its own persist dir via the package manifest's env_set (re-applied on
