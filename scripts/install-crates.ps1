@@ -8,8 +8,14 @@ if ($env:CI) {
     exit 0
 }
 
-if (-not $env:CARGO_HOME)  { $env:CARGO_HOME  = Join-Path $HOME ".local" "share" "cargo" }
-if (-not $env:RUSTUP_HOME) { $env:RUSTUP_HOME = Join-Path $HOME ".local" "share" "rustup" }
+# Force these to our declared value rather than defaulting-if-unset: on
+# Windows, scoop's rustup package (if ever installed) sets CARGO_HOME as a
+# *persistent* user-level environment variable, so a default-if-unset check
+# would see it as "already set" and silently use scoop's location instead
+# (see scripts/install-rust.ps1, which installs rust without scoop for
+# exactly this reason).
+$env:CARGO_HOME  = Join-Path $HOME ".local" "share" "cargo"
+$env:RUSTUP_HOME = Join-Path $HOME ".local" "share" "rustup"
 $cargoBin = Join-Path $env:CARGO_HOME "bin"
 if ($env:PATH -notlike "*$cargoBin*") { $env:PATH = "$cargoBin;$env:PATH" }
 

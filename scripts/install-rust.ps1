@@ -46,9 +46,16 @@ if ($MyInvocation.InvocationName -ne '.') {
         exit 0
     }
 
+    # Force these to our declared value rather than defaulting-if-unset: on
+    # Windows, scoop's rustup package (when installed) sets CARGO_HOME/
+    # RUSTUP_HOME as *persistent* user-level environment variables, so a
+    # default-if-unset check would see them as "already set" and silently
+    # keep using scoop's location - exactly the problem this script exists
+    # to avoid. This script is the one place that gets to decide where rust
+    # lives; it doesn't inherit that decision from the ambient environment.
     $defaults = Get-DefaultRustHomes
-    if (-not $env:RUSTUP_HOME) { $env:RUSTUP_HOME = $defaults.RustupHome }
-    if (-not $env:CARGO_HOME)  { $env:CARGO_HOME  = $defaults.CargoHome }
+    $env:RUSTUP_HOME = $defaults.RustupHome
+    $env:CARGO_HOME  = $defaults.CargoHome
     $cargoBin = Join-Path $env:CARGO_HOME "bin"
     if ($env:PATH -notlike "*$cargoBin*") { $env:PATH = "$cargoBin;$env:PATH" }
 
@@ -69,6 +76,12 @@ if ($MyInvocation.InvocationName -ne '.') {
         $installerUrl = "https://static.rust-lang.org/rustup/dist/$arch/rustup-init.exe"
         $installerPath = Join-Path ([System.IO.Path]::GetTempPath()) "rustup-init.exe"
         Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+        # Re-assert immediately before invoking the installer: `scoop uninstall
+        # rustup` above has been observed to clear $env:CARGO_HOME/RUSTUP_HOME
+        # as part of its own cleanup (it originally set them via env_set), which
+        # would otherwise silently undo the override from earlier in this block.
+        $env:RUSTUP_HOME = $defaults.RustupHome
+        $env:CARGO_HOME  = $defaults.CargoHome
         & $installerPath -y --no-modify-path
         Remove-Item $installerPath -ErrorAction SilentlyContinue
         $env:PATH = "$cargoBin;$env:PATH"
