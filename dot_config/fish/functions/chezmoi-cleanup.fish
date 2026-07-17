@@ -60,10 +60,17 @@ function chezmoi-cleanup --description "Nuke all brew/crates installs, managed d
     # PHASE 2: Remove all Cargo/Rust installed packages
     echo ""
     echo "$yellow Phase 2: Removing all Cargo packages...$normal"
-    if test -d ~/.cargo/bin
+    # CARGO_HOME/RUSTUP_HOME are redirected to ~/.local/share/{cargo,rustup}
+    # (see .chezmoi.toml.tmpl); fall back to the bare dirs only if those
+    # vars aren't set, so this actually finds the real install instead of
+    # silently no-op'ing against directories that were never used.
+    set -q CARGO_HOME; or set -l CARGO_HOME "$HOME/.cargo"
+    set -q RUSTUP_HOME; or set -l RUSTUP_HOME "$HOME/.rustup"
+
+    if test -d "$CARGO_HOME/bin"
         echo "  Uninstalling all cargo-installed binaries..."
         if command -q cargo
-            set -l cargo_bins (ls ~/.cargo/bin/ 2>/dev/null)
+            set -l cargo_bins (ls "$CARGO_HOME/bin/" 2>/dev/null)
             for bin in $cargo_bins
                 # Skip cargo and rustc themselves
                 if not string match -q -r '^(cargo|rustc|rustup)' $bin
@@ -74,10 +81,15 @@ function chezmoi-cleanup --description "Nuke all brew/crates installs, managed d
         end
     end
 
-    echo "  Removing entire ~/.cargo directory..."
-    rip ~/.cargo 2>/dev/null || rm -rf ~/.cargo 2>/dev/null || true
+    echo "  Removing $CARGO_HOME directory..."
+    rip "$CARGO_HOME" 2>/dev/null || rm -rf "$CARGO_HOME" 2>/dev/null || true
 
-    echo "  Removing ~/.rustup directory..."
+    echo "  Removing $RUSTUP_HOME directory..."
+    rip "$RUSTUP_HOME" 2>/dev/null || rm -rf "$RUSTUP_HOME" 2>/dev/null || true
+
+    # Also remove the bare dirs in case a pre-redirect legacy install exists
+    echo "  Removing any legacy ~/.cargo / ~/.rustup directories..."
+    rip ~/.cargo 2>/dev/null || rm -rf ~/.cargo 2>/dev/null || true
     rip ~/.rustup 2>/dev/null || rm -rf ~/.rustup 2>/dev/null || true
 
     # PHASE 3: Remove all managed dotfiles
@@ -168,8 +180,11 @@ function chezmoi-cleanup --description "Nuke all brew/crates installs, managed d
     echo "  Installing Rust..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-    # Source cargo env
-    if test -f ~/.cargo/env
+    # Source cargo env (CARGO_HOME is redirected - see Phase 2 above - so the
+    # reinstalled toolchain's env file lands there, not at the bare ~/.cargo)
+    if test -f "$CARGO_HOME/env"
+        source "$CARGO_HOME/env"
+    else if test -f ~/.cargo/env
         source ~/.cargo/env
     end
 

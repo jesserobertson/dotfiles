@@ -36,6 +36,11 @@ All template data lives in `.chezmoi.toml.tmpl`. Key variables:
   because rust installs via `scripts/install-rust.ps1` (`rustup-init.exe` directly) instead
   of `scoop install rustup` — scoop's rustup package hardcodes CARGO_HOME/RUSTUP_HOME to its
   own persist dir and re-applies that on every update, which would silently win over this value
+- `.pixi_home` — `~/.local/share/pixi` (not `~/.pixi`), exported as `PIXI_HOME`. `scripts/install-pixi.sh`
+  and `scripts/install-python.fish` never reference this path themselves — they just run `pixi`
+  and trust `PIXI_HOME` from the environment, so this redirect is invisible from the install
+  scripts. Never hardcode `~/.pixi` in docs/scripts as a result (`tests/bats/repo-hygiene.bats`
+  guards against this); use `$PIXI_HOME` or spell out `~/.local/share/pixi`.
 - `.xdg_*` — XDG base dirs baked in at render time
 
 ## Shell conventions
