@@ -41,6 +41,10 @@ Public/**
 .node_modules/**
 .bundle/**
 
+# Serena MCP rewrites this file at runtime (project registration, etc.),
+# so tracking it just causes a conflict prompt on every chezmoi apply.
+.serena/**
+
 # Ignore local containers, scripts, and package definitions directories
 containers/**
 scripts/**

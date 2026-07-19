@@ -77,11 +77,6 @@
   homebrew_cellar = {{ joinPath $homebrewPrefix "Cellar" | quote }}
   homebrew_repository = {{ $homebrewPrefix | quote }}
 
-  # Shell tools
-  editor = "hx"
-  pager = "less"
-  git_pager = "delta"
-
   # 1Password availability
   has1password = {{ $has1password }}
 
@@ -142,7 +137,7 @@
     value = "hx"
   [[data.env_vars]]
     name = "PAGER"
-    value = "less"
+    value = "bat"
   [[data.env_vars]]
     name = "GIT_PAGER"
     value = "delta"
@@ -181,6 +176,9 @@
 
 [git]
   autoPush = false
+
+[diff]
+  pager = "delta"
 
 [scriptEnv]
 {{- if eq .chezmoi.os "darwin" }}
