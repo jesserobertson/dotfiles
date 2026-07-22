@@ -1,3 +1,10 @@
 command_timeout = 1000
 scan_timeout = 30
 
+# Disabled: renders on every prompt (not just in-project) once PIXI_ENVIRONMENT_NAME
+# is set by an activated shell, shelling out to `pixi --version` each time. Flaky
+# when the active project lives under OneDrive Files-On-Demand (cloud placeholder
+# reads can stall/fail) — see ~/Developer move for the same class of issue.
+[pixi]
+disabled = true
+
