@@ -68,6 +68,15 @@
   # Python environment (via pixi)
   pixi_home = {{ joinPath $localDir "share" "pixi" | quote }}
 
+  # pipx: keep app shims out of ~/.local/bin, which Claude Code's own
+  # claude.exe binary also occupies. pipx's post-install cleanup raw-byte-
+  # scans every file in its bin dir looking for "#!" shebangs to decide what
+  # it owns; a coincidental match inside a large unrelated binary crashes it
+  # with UnicodeDecodeError. Redirecting pipx's own dirs off LOCAL_BIN avoids
+  # sharing that directory with anything else.
+  pipx_home = {{ joinPath $localDir "share" "pipx" | quote }}
+  pipx_bin_dir = {{ joinPath $localDir "share" "pipx" "bin" | quote }}
+
   # Julia environment (via juliaup)
   juliaup_home = {{ joinPath $localDir "share" "juliaup" | quote }}
   julia_depot_path = {{ joinPath $localDir "share" "julia" | quote }}
@@ -123,6 +132,12 @@
   [[data.env_vars]]
     name = "PIXI_HOME"
     value = {{ joinPath $localDir "share" "pixi" | quote }}
+  [[data.env_vars]]
+    name = "PIPX_HOME"
+    value = {{ joinPath $localDir "share" "pipx" | quote }}
+  [[data.env_vars]]
+    name = "PIPX_BIN_DIR"
+    value = {{ joinPath $localDir "share" "pipx" "bin" | quote }}
   [[data.env_vars]]
     name = "JULIAUP_HOME"
     value = {{ joinPath $localDir "share" "juliaup" | quote }}
