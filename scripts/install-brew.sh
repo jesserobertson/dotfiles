@@ -33,6 +33,17 @@ esac
 export PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:$PATH"
 echo "Using Homebrew prefix: ${HOMEBREW_PREFIX}"
 
+# CI runners (and HOMEBREW_NO_AUTO_UPDATE) skip Homebrew's automatic
+# pre-command update, so a pre-baked/reused brew install can drift behind
+# homebrew-core's current formula definitions - e.g. runner images ship
+# Homebrew pinned to their build date, while bottles served by the API are
+# always current. That skew breaks `brew bundle install` outright when a
+# dependency's formula uses install-step syntax the stale client code
+# doesn't recognize yet (seen for dbus/ca-certificates: "unknown install
+# step: run"). An explicit `brew update` always runs regardless of
+# HOMEBREW_NO_AUTO_UPDATE, so run it here to keep the client in sync.
+brew update
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BREWFILE_TEMPLATE="${SCRIPT_DIR}/../packages/brewfile.tmpl"
 BREWFILE_PROCESSED="$(mktemp "${TMPDIR:-/tmp}/brewfile.XXXXXX")"
