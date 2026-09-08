@@ -54,6 +54,45 @@ Describe 'Get-DefaultRustHomes' {
     }
 }
 
+Describe 'Test-ToolchainInstalled' {
+    BeforeAll {
+        # Shape of `rustup toolchain list` output: one entry per line, channel
+        # name first, an optional " (active, default)" suffix on the default.
+        $script:list = @(
+            'stable-x86_64-pc-windows-msvc (active, default)'
+            'nightly-x86_64-pc-windows-msvc'
+            '1.96.1-x86_64-pc-windows-msvc'
+        )
+    }
+
+    It 'detects the stable channel in a populated list' {
+        Test-ToolchainInstalled -ToolchainList $script:list -Channel 'stable' | Should -Be $true
+    }
+
+    It 'detects the nightly channel in a populated list' {
+        Test-ToolchainInstalled -ToolchainList $script:list -Channel 'nightly' | Should -Be $true
+    }
+
+    It 'returns false for a channel that is not installed' {
+        Test-ToolchainInstalled -ToolchainList $script:list -Channel 'beta' | Should -Be $false
+    }
+
+    It 'returns false for an empty toolchain list' {
+        Test-ToolchainInstalled -ToolchainList @() -Channel 'stable' | Should -Be $false
+    }
+
+    It 'does not treat a pinned version toolchain as a channel' {
+        Test-ToolchainInstalled -ToolchainList @('1.96.1-x86_64-pc-windows-msvc') -Channel 'stable' | Should -Be $false
+    }
+
+    It 'does not partial-match a different channel (regression: array -notmatch bug)' {
+        # `$toolchains -notmatch "nightly"` returned the *non-matching* elements
+        # (a truthy array) rather than a boolean, so the old script reinstalled
+        # every toolchain on every run. Anchor the match so that can't recur.
+        Test-ToolchainInstalled -ToolchainList @('stable-x86_64-pc-windows-msvc') -Channel 'nightly' | Should -Be $false
+    }
+}
+
 Describe 'install-rust.ps1 dot-source safety' {
     It 'defines its functions without running the install' {
         # If dot-sourcing had run the install body, this test process would have

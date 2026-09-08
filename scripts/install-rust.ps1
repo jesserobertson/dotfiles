@@ -7,9 +7,9 @@
 # instead of scoop's package-level env_set hardcoding them to its own
 # persist directory (which fights any value we declare here).
 #
-# Functions below are pure/deterministic and dot-sourceable for Pester
-# (see tests/powershell/install-rust.Tests.ps1); the install itself only
-# runs when this file is executed directly, not dot-sourced.
+# Functions below are dot-sourceable for Pester (the pure ones are
+# unit-tested; see tests/powershell/install-rust.Tests.ps1); the install
+# itself only runs when this file is executed directly, not dot-sourced.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -38,6 +38,60 @@ function Get-DefaultRustHomes {
         CargoHome  = Join-Path $HomeDir ".local" "share" "cargo"
         RustupHome = Join-Path $HomeDir ".local" "share" "rustup"
     }
+}
+
+function Test-ToolchainInstalled {
+    <#
+    .SYNOPSIS
+        Is $Channel present in `rustup toolchain list` output?
+
+        Anchored to the start of each line on purpose: `rustup toolchain list`
+        emits "<channel>-<target> [(active, default)]" per line, so a bare
+        `$list -notmatch $channel` (the array-filtering form of -notmatch,
+        which returns the non-matching elements rather than a bool) reported
+        every toolchain as "missing" and reinstalled them all on every run.
+    #>
+    param(
+        [string[]]$ToolchainList,
+        [Parameter(Mandatory)][string]$Channel
+    )
+    $pattern = "^{0}(-|\s|$)" -f [regex]::Escape($Channel)
+    [bool](@($ToolchainList) -match $pattern)
+}
+
+function Invoke-RustupInstall {
+    <#
+    .SYNOPSIS
+        Run `rustup toolchain install $Channel`, streaming rustup's own output
+        to the console/log while printing a heartbeat every $HeartbeatSeconds.
+
+        rustup shows a progress bar for the download but goes silent for
+        minutes during the verify/unpack phase (rust-docs alone is tens of
+        thousands of files), which reads as a hang. The heartbeat proves it
+        is still alive. Start-Process ignores $ErrorActionPreference, so a
+        non-zero exit is turned back into a terminating error by hand.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Channel,
+        [int]$HeartbeatSeconds = 20
+    )
+    Write-Host "==> rustup toolchain install $Channel"
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $proc = Start-Process -FilePath "rustup" `
+        -ArgumentList "toolchain", "install", $Channel `
+        -NoNewWindow -PassThru
+    while (-not $proc.HasExited) {
+        Start-Sleep -Seconds $HeartbeatSeconds
+        if (-not $proc.HasExited) {
+            Write-Host ("    ... still working ({0:mm\:ss} elapsed)" -f $sw.Elapsed)
+        }
+    }
+    $proc.WaitForExit()
+    $sw.Stop()
+    if ($proc.ExitCode -ne 0) {
+        throw "rustup toolchain install $Channel exited with code $($proc.ExitCode) after $($sw.Elapsed)"
+    }
+    Write-Host ("    done ({0:mm\:ss})" -f $sw.Elapsed)
 }
 
 if ($MyInvocation.InvocationName -ne '.') {
@@ -93,22 +147,17 @@ if ($MyInvocation.InvocationName -ne '.') {
             Write-Host "Force mode enabled - reinstalling Rust toolchains..."
             try { rustup toolchain uninstall stable } catch {}
             try { rustup toolchain uninstall nightly } catch {}
-            rustup toolchain install stable
-            rustup toolchain install nightly
+            Invoke-RustupInstall -Channel "stable"
+            Invoke-RustupInstall -Channel "nightly"
         } else {
-            $toolchains = rustup toolchain list
-            if ($toolchains -notmatch "stable") {
-                Write-Host "Installing stable toolchain..."
-                rustup toolchain install stable
-            } else {
-                Write-Host "Stable toolchain already installed"
-            }
-
-            if ($toolchains -notmatch "nightly") {
-                Write-Host "Installing nightly toolchain..."
-                rustup toolchain install nightly
-            } else {
-                Write-Host "Nightly toolchain already installed"
+            $toolchains = @(rustup toolchain list)
+            foreach ($channel in "stable", "nightly") {
+                if (Test-ToolchainInstalled -ToolchainList $toolchains -Channel $channel) {
+                    Write-Host "$channel toolchain already installed"
+                } else {
+                    Write-Host "Installing $channel toolchain..."
+                    Invoke-RustupInstall -Channel $channel
+                }
             }
         }
 
