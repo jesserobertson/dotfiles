@@ -26,4 +26,5 @@ main/python
 main/pixi
 main/pipx
 main/uv
+main/nodejs-lts
 

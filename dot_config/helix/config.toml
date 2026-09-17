@@ -2,15 +2,72 @@
 theme = "dracula"
 
 [editor]
-shell = ["pwsh", "-c"]  # set the shell to use
 line-number = "relative"
+mouse = true
+middle-click-paste = true
 cursorline = true
-true-color = true
+cursorcolumn = false
+bufferline = "multiple"
 color-modes = true
+true-color = true
+auto-completion = true
+auto-format = true
+completion-trigger-len = 2
+completion-timeout = 50
+idle-timeout = 150
+preview-completion-insert = true
+rulers = [100]
+text-width = 100
+scrolloff = 5
+shell = ["pwsh", "-NoLogo", "-NoProfile", "-Command"]
+end-of-line-diagnostics = "hint"
 
-[editor.whitespace.render]
-space = "all"
-tab = "all"
-nbsp = "all"
-nnbsp = "all"
-newline = "none"
+[editor.inline-diagnostics]
+cursor-line = "warning"
+other-lines = "disable"
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
+center = []
+right = [
+  "diagnostics",
+  "selections",
+  "register",
+  "position",
+  "file-encoding",
+  "file-line-ending",
+  "file-type",
+]
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+snippets = true
+goto-reference-include-declaration = false
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+git-ignore = true
+git-global = true
+git-exclude = true
+
+[editor.indent-guides]
+render = true
+character = "╎"
+skip-levels = 1
+
+[editor.soft-wrap]
+enable = false
+
+[keys.normal]
+C-s = ":write"
+C-q = ":quit"
+C-g = [":new", ":insert-output lazygit", ":buffer-close!"]
+
+[keys.insert]
+C-s = ":write"
