@@ -33,17 +33,18 @@ if (-not ($env:PsModulePath -split [IO.Path]::PathSeparator -contains $ModuleHom
 
 # Add paths — first item in the list ends up first in PATH
 $paths = @(
+    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links"),
+    "C:\Program Files\Git\cmd",  # Git for Windows — winget installs here but doesn't always create a WinGet shim
+    "C:\Program Files\LLVM\bin",  # Make sure we find LLVM installed by winget
     [IO.Path]::Combine($DataHome, "powershell", "bin"),
     $env:LOCAL_BIN,
     $env:PIPX_BIN_DIR,
     [IO.Path]::Combine($HOME, ".local", "scoop", "shims"),
     [IO.Path]::Combine($env:PIXI_HOME, "bin"),
     [IO.Path]::Combine($env:JULIAUP_HOME, "bin"),
-    [IO.Path]::Combine($env:CARGO_HOME, "bin"),
-    [IO.Path]::Combine($env:LOCALAPPDATA, "Microsoft", "WinGet", "Links"),
-    # Git for Windows — winget installs here but doesn't always create a WinGet shim
-    "C:\Program Files\Git\cmd"
+    [IO.Path]::Combine($env:CARGO_HOME, "bin")
 )
+
 [array]::Reverse($paths)
 foreach ($p in $paths)
 {
