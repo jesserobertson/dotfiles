@@ -4,9 +4,15 @@
 # `local-linux` jobs have somewhere to run -- avoids paying for GitHub-hosted
 # VM minutes on that private, single-owner repo. Close a window (or Ctrl+C
 # inside it) to stop that runner.
+#
+# Both start-runner scripts are idempotent: safe to re-run any time (after
+# a crash, a kill, or just to be sure) -- each always kills its own
+# leftover local listener process and re-registers with --replace, so a
+# stale "A session for this runner already exists" server-side session can
+# never block startup.
 
-Start-Process -FilePath "cmd.exe" `
-    -ArgumentList '/k', 'C:\Users\robejess\.local\share\goethite-ci-runners\windows\start-runner.cmd' `
+Start-Process -FilePath "pwsh.exe" `
+    -ArgumentList '-NoExit', '-File', 'C:\Users\robejess\.local\share\goethite-ci-runners\windows\start-runner.ps1' `
     -WindowStyle Normal
 
 Start-Process -FilePath "wsl.exe" `
