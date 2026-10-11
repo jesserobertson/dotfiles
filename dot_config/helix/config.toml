@@ -3,7 +3,7 @@ theme = "dracula"
 
 [editor]
 line-number = "relative"
-mouse = true
+mouse = false
 middle-click-paste = true
 cursorline = true
 cursorcolumn = false
