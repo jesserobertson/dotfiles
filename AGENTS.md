@@ -78,7 +78,6 @@ Three jobs in `.github/workflows/test-dotfiles.yml`:
 | `run_onchange_after_01-install-rust.fish.tmpl` | toolchain marker | rustup + stable/nightly |
 | `run_onchange_after_02-install-crates.fish.tmpl` | cratefile hash | `cargo install` |
 | `run_onchange_after_03-install-extras.sh.tmpl` | pixi/skillfile/mcp-servers hashes (independent, bundled in one script) | pixi global install + Claude Code skills + MCP servers (macOS only) |
-| `run_once_after_06-install-tmux-plugins.sh.tmpl` | once | TPM install |
 | `run_onchange_after_07-setup-powershell.ps1.tmpl` | — | wire `$PROFILE` (Windows only) |
 | `run_onchange_windows_install-packages.ps1.tmpl` | scoop+rust script+crate hash | Scoop + rustup-init.exe + cargo (Windows only) |
 

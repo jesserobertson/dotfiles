@@ -45,7 +45,6 @@ make python      # Python tools via pixi
 make skills      # Claude Code skills
 make mcp         # MCP servers (macOS only)
 make pixi        # pixi global packages
-make tmux        # tmux plugin manager
 ```
 
 ---
@@ -97,7 +96,6 @@ Chezmoi uses special prefixes to control how files are processed:
 ├── run_onchange_after_01-install-rust.fish.tmpl  # rustup + stable/nightly
 ├── run_onchange_after_02-install-crates.fish.tmpl # cargo install (re-runs when cratefile changes)
 ├── run_onchange_after_03-install-extras.sh.tmpl  # pixi + Claude Code skills + MCP servers (macOS-only), each re-runs independently on its own source hash
-├── run_once_after_06-install-tmux-plugins.sh.tmpl # TPM install (once)
 ├── run_onchange_after_07-setup-powershell.ps1.tmpl # Wire $PROFILE (Windows only)
 ├── run_onchange_windows_install-packages.ps1.tmpl # Scoop + cargo crates (Windows only)
 │
@@ -125,7 +123,6 @@ Chezmoi uses special prefixes to control how files are processed:
 │   ├── install-skills.fish           # Claude Code skills
 │   ├── install-mcp-servers.fish      # MCP servers (macOS)
 │   ├── setup-powershell.ps1          # Wire $PROFILE (Windows)
-│   └── update-tmux.sh                # TPM install
 │
 ├── dot_config/
 │   ├── fish/                         # Fish shell config and functions
@@ -358,14 +355,13 @@ Manages Fish shell plugins:
 #### Development Tools
 
 - **Neovim**: LazyVim-based configuration with custom language support
-- **Tmux**: Modular configuration split across `conf.d/` for maintainability
+- **Tmux**: Single portable `tmux.conf` shared by tmux and psmux (no plugins or scripts)
 - **Git**: 1Password-integrated configuration for secure credential management
 - **Starship**: Customized prompt with extensive icon configuration
 
 #### Terminal & UI
 
 - **Alacritty**: Private templated config with 145+ color themes
-- **Tmux**: Modular configuration with TPM plugin management
 - **Sesh**: Session manager with predefined workspace layouts
 
 ## Platform-Specific Features

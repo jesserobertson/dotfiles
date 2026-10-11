@@ -1,4 +1,4 @@
-.PHONY: bootstrap dotfiles prereqs brew rust crates python skills mcp pixi tmux powershell test test-templates test-docker test-windows
+.PHONY: bootstrap dotfiles prereqs brew rust crates python skills mcp pixi powershell test test-templates test-docker test-windows
 
 bootstrap:  ## Full new-machine setup (dotfiles + all tools via run_onchange_ scripts)
 	chezmoi apply
@@ -41,9 +41,6 @@ mcp:  ## Install MCP servers (macOS only)
 
 pixi:  ## Install pixi global packages
 	bash scripts/install-pixi.sh
-
-tmux:  ## Install/update tmux plugin manager
-	bash scripts/update-tmux.sh
 
 powershell:  ## Write PowerShell $PROFILE wrapper (Windows)
 	powershell -ExecutionPolicy Bypass -File scripts/setup-powershell.ps1
