@@ -80,7 +80,16 @@ $global:Prompts = @{
 if ([System.Environment]::UserInteractive)
 {
     # lstr interactive tree explorer with git status, gitignore and icons
-    function tree { lstr interactive -Gg --icons @args }
+    function tree { lstr -Gg --icons i @args }
+
+    # psmux's pane border only expands pane_index and pane_title, so keep the
+    # title set to the current folder name
+    if ($env:TMUX_PANE)
+    {
+        function global:Set-PsmuxPaneTitle { & psmux select-pane -t $env:TMUX_PANE -T (Split-Path -Leaf $PWD.ProviderPath) 2>$null }
+        $ExecutionContext.SessionState.InvokeCommand.LocationChangedAction = { Set-PsmuxPaneTitle }
+        Set-PsmuxPaneTitle
+    }
 
     # Enable PSReadLine
     Import-Module PSReadLine
