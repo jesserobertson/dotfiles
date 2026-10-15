@@ -1,0 +1,24 @@
+[general]
+working_directory = "{{ .chezmoi.homeDir | replace "\\" "/" }}"
+import = ["{{ .xdg_config_home | replace "\\" "/" }}/alacritty/themes/themes/dracula.toml"]
+
+[font]
+size = 10.0
+
+[font.normal]
+family = "FiraCode Nerd Font Mono"
+style = "Medium"
+
+[window]
+decorations = "none"
+dynamic_padding = true
+dynamic_title = true
+opacity = 0.75
+blur = true
+startup_mode = "Maximized"
+padding = { x = 7, y = 5 }
+
+# PowerShell hosting a psmux session (attach to "main" if it exists, else create it).
+[terminal.shell]
+program = "pwsh"
+args = ["-NoLogo", "-NoExit", "-Command", "Remove-Item Env:PSMUX_SESSION -ErrorAction SilentlyContinue; psmux new-session -A -s main"]

@@ -3,9 +3,13 @@
 # Ensure homebrew and cargo binaries are in PATH
 export PATH="{{ .homebrew_prefix }}/bin:{{ .cargo_home }}/bin:$PATH"
 
-# Launch fish, fallback to zsh
+# Launch fish (inside tmux when available), fallback to zsh
 fish="{{ .homebrew_prefix }}/bin/fish"
 if [ -x "${fish}" ]; then
+  if command -v tmux >/dev/null 2>&1; then
+    # tmux derives its default shell from $SHELL; attach to "main" or create it
+    SHELL="${fish}" exec tmux new-session -A -s main
+  fi
   exec "${fish}"
 else
   exec /usr/bin/env zsh

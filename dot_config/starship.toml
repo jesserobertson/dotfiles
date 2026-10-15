@@ -1,4 +1,4 @@
-command_timeout = 1000
+command_timeout = 500
 scan_timeout = 30
 
 # Disabled: renders on every prompt (not just in-project) once PIXI_ENVIRONMENT_NAME
@@ -8,3 +8,19 @@ scan_timeout = 30
 [pixi]
 disabled = true
 
+
+# Slow modules that shell out or query the OS on every prompt (~30-50ms each).
+[docker_context]
+disabled = true
+
+[battery]
+disabled = true
+
+[username]
+disabled = true
+
+[package]
+disabled = true
+
+[git_status]
+ignore_submodules = true

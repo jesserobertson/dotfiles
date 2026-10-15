@@ -30,6 +30,11 @@ if ($env:PATH -notlike "*$scoopShims*") {
     $env:PATH = "$scoopShims;$env:PATH"
 }
 
+# --- Scoop buckets (needed by scoopfile entries outside 'main') ---
+if (-not (scoop bucket list | Select-String 'nerd-fonts' -Quiet)) {
+    scoop bucket add nerd-fonts
+}
+
 # --- Scoop packages ---
 function Install-ScoopPackages($scoopfile) {
     $packages = Get-Content $scoopfile |

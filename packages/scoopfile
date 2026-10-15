@@ -1,5 +1,5 @@
 # Scoop packages (Windows equivalent of Brewfile)
-# Format: [bucket/]package — all from the default 'main' bucket
+# Format: [bucket/]package — most from 'main'; extra buckets are added in run_onchange_windows_install-packages.ps1.tmpl
 
 # --- Shell & prompt ---
 main/starship
@@ -28,3 +28,5 @@ main/pipx
 main/uv
 main/nodejs-lts
 
+# --- Fonts (nerd-fonts bucket) ---
+nerd-fonts/FiraCode-NF-Mono

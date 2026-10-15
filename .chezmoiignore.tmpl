@@ -7,7 +7,7 @@
 # Skip non-Windows files on Windows
 {{- if eq .chezmoi.os "windows" }}
 .config/fish
-.config/alacritty
+.config/alacritty/alacritty.toml
 .config/bash
 .config/zsh
 .bashrc
@@ -23,6 +23,7 @@
 {{- if ne .chezmoi.os "windows" }}
 .tmux.conf
 .config/powershell
+AppData/Roaming/alacritty
 07-setup-powershell.ps1
 {{ end -}}
 
