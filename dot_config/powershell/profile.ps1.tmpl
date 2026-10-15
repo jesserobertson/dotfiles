@@ -82,6 +82,9 @@ if ([System.Environment]::UserInteractive)
     # lstr interactive tree explorer with git status, gitignore and icons
     function tree { lstr -Gg --icons i @args }
 
+    # zoxide jump then browse: ztr <dir>
+    function ztr { z @args; if ($?) { tree } }
+
     # psmux's pane border only expands pane_index and pane_title, so keep the
     # title set to the current folder name
     if ($env:TMUX_PANE)
