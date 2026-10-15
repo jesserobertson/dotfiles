@@ -79,6 +79,9 @@ $global:Prompts = @{
 # Only load interactive profile for interactive shells
 if ([System.Environment]::UserInteractive)
 {
+    # lstr interactive tree explorer with git status, gitignore and icons
+    function tree { lstr interactive -Gg --icons @args }
+
     # Enable PSReadLine
     Import-Module PSReadLine
     Set-PSReadLineOption -PredictionSource History

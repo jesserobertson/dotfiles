@@ -1,3 +1,4 @@
+# interactive lstr tree with git status, gitignore and icons; `command tree` is the real tree
 function tree
-    command tree --noreport $argv
+    lstr interactive -Gg --icons $argv
 end
