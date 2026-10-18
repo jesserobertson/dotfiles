@@ -18,7 +18,12 @@ blur = true
 startup_mode = "Maximized"
 padding = { x = 7, y = 5 }
 
-# PowerShell hosting a psmux session (attach to "main" if it exists, else create it).
+# PowerShell hosting a fresh psmux session (auto-named) for every new window.
 [terminal.shell]
 program = "pwsh"
-args = ["-NoLogo", "-NoExit", "-Command", "Remove-Item Env:PSMUX_SESSION -ErrorAction SilentlyContinue; psmux new-session -A -s main"]
+args = ["-NoLogo", "-NoExit", "-Command", "Remove-Item Env:PSMUX_SESSION -ErrorAction SilentlyContinue; psmux new-session"]
+
+[keyboard]
+bindings = [
+  { key = "W", mods = "Control|Shift", action = "ToggleMaximized" },
+]
